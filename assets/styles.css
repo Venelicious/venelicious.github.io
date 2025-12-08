@@ -1,14 +1,20 @@
 :root {
-  --bg: #f6fbff;
-  --accent: #0b2545;
-  --muted: #65788f;
+  --brand-navy: #0a3d91;
+  --brand-blue: #009fe3;
+  --brand-orange: #f39200;
+  --bg: #f2f7ff;
+  --accent: #0a3d91;
+  --muted: #49648a;
 }
 
 body {
   font-family: Inter, system-ui, Arial, sans-serif;
   margin: 18px;
   color: var(--accent);
-  background: #fff;
+  background: radial-gradient(circle at 20% 20%, rgba(0, 159, 227, 0.09), transparent 32%),
+    radial-gradient(circle at 80% 0%, rgba(243, 146, 0, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
+  min-height: 100vh;
 }
 
 .toursLayout {
@@ -20,11 +26,11 @@ body {
 }
 
 .panel {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border: 1px solid #e1e9f5;
-  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+  border: 1px solid #d4e5ff;
+  border-radius: 14px;
   padding: 16px;
-  box-shadow: 0 10px 28px rgba(11, 37, 69, 0.08);
+  box-shadow: 0 14px 30px rgba(10, 61, 145, 0.12);
 }
 
 .panelHeader {
@@ -40,15 +46,15 @@ body {
   gap: 6px;
   margin: 12px 0 4px;
   flex-wrap: wrap;
-  border-bottom: 1px solid #dbe5f3;
+  border-bottom: 2px solid #c4ddff;
   padding-bottom: 6px;
 }
 
 .tabButton {
   padding: 10px 14px;
-  border-radius: 10px 10px 0 0;
-  border: 1px solid #d0d7e0;
-  background: #f4f8ff;
+  border-radius: 12px 12px 0 0;
+  border: 1px solid #c6defd;
+  background: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
   color: var(--accent);
   cursor: pointer;
   font-weight: 700;
@@ -58,14 +64,20 @@ body {
   align-items: center;
   justify-content: center;
   border-bottom-color: transparent;
-  box-shadow: 0 2px 6px rgba(11, 37, 69, 0.06);
+  box-shadow: 0 3px 10px rgba(10, 61, 145, 0.14);
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.tabButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(10, 61, 145, 0.2);
 }
 
 .tabButton.active {
-  background: #0b2545;
+  background: linear-gradient(180deg, var(--brand-navy) 0%, #082f73 100%);
   color: #fff;
-  border-color: #0b2545;
-  box-shadow: 0 6px 12px rgba(11, 37, 69, 0.14);
+  border-color: var(--brand-navy);
+  box-shadow: 0 8px 20px rgba(10, 61, 145, 0.32);
 }
 
 .tabSection {
@@ -78,6 +90,8 @@ body {
 
 h1 {
   margin: 0 0 8px;
+  letter-spacing: 0.02em;
+  color: var(--brand-navy);
 }
 
 h3 {
@@ -87,7 +101,7 @@ h3 {
 
 hr {
   border: none;
-  border-top: 1px solid #eef6ff;
+  border-top: 1px solid #d7e8ff;
   margin: 10px 0;
 }
 
@@ -105,8 +119,18 @@ textarea {
   margin-top: 6px;
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #d0d7e0;
-  border-radius: 6px;
+  border: 1px solid #c7d9f5;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(0, 159, 227, 0.2);
 }
 
 .row {
@@ -123,14 +147,24 @@ table {
   border-collapse: collapse;
   margin-top: 12px;
   font-size: 0.95rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 th,
 td {
   padding: 8px;
-  border: 1px solid #e6eef8;
+  border: 1px solid #dce9ff;
   text-align: left;
   vertical-align: middle;
+}
+
+th {
+  background: linear-gradient(90deg, var(--brand-navy) 0%, #0b58b5 60%, var(--brand-blue) 100%);
+  color: #fff;
+  border-color: #0a3d91;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
 }
 
 th[data-sort] {
@@ -148,6 +182,7 @@ th[data-sort]::after {
   font-size: 0.9rem;
 }
 
+
 .controls {
   display: flex;
   gap: 8px;
@@ -157,36 +192,56 @@ th[data-sort]::after {
 
 .small {
   width: auto;
-  padding: 6px 10px;
+  padding: 6px 12px;
   cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(180deg, var(--brand-blue) 0%, #0087c6 100%);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 24px rgba(0, 159, 227, 0.32);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.small:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(0, 159, 227, 0.45);
+}
+
+.small:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(0, 159, 227, 0.35);
 }
 
 .summary {
-  background: var(--bg);
-  border: 1px solid #d8e8ff;
+  background: linear-gradient(180deg, #f9fbff 0%, #eef5ff 100%);
+  border: 1px solid #cde2ff;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-top: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 18px rgba(10, 61, 145, 0.08);
 }
 
 .tableCard {
   background: #fff;
-  border: 1px solid #e1e9f5;
-  border-radius: 10px;
+  border: 1px solid #d6e6ff;
+  border-radius: 12px;
   padding: 10px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 22px rgba(11, 37, 69, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 26px rgba(10, 61, 145, 0.09);
 }
 
 .toursPanel .summary {
-  box-shadow: 0 6px 16px rgba(11, 37, 69, 0.06);
+  box-shadow: 0 10px 18px rgba(10, 61, 145, 0.12);
   margin-top: 14px;
 }
 
 .actions-list {
   margin-top: 8px;
-  border: 1px dashed #dbe9ff;
+  border: 1px dashed #c4dbff;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: 8px;
+  background: rgba(0, 159, 227, 0.03);
 }
 
 .action-row {
@@ -203,9 +258,11 @@ th[data-sort]::after {
   font-size: 0.75rem;
   padding: 4px 8px;
   border-radius: 12px;
-  background: #eef6ff;
-  border: 1px solid #d0e7ff;
+  background: linear-gradient(180deg, #e5f3ff 0%, #d3eaff 100%);
+  border: 1px solid #bedbff;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--brand-navy);
 }
 
 .sumRow {
@@ -243,12 +300,12 @@ th[data-sort]::after {
 }
 
 .modalContent {
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f7ff 100%);
   padding: 18px;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 620px;
   max-width: 95%;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 18px 32px rgba(10, 61, 145, 0.25);
 }
 
 .flexRow {
