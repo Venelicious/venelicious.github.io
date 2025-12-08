@@ -19,11 +19,11 @@
 <h1>Provisionstool</h1>
 
 <nav class="tabNav">
-  <button id="tabTours" class="tabButton active">Touren</button>
-  <button id="tabSummary" class="tabButton">Zusammenfassung</button>
-  <button id="tabSettings" class="tabButton">Einstellungen</button>
-  <button id="tabBackups" class="tabButton">Backups</button>
-  <button id="tabExport" class="tabButton">Export</button>
+  <button id="tabTours" class="tabButton active" aria-label="Touren" title="Touren">🗺️</button>
+  <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">📊</button>
+  <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">⚙️</button>
+  <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">💾</button>
+  <button id="tabExport" class="tabButton" aria-label="Export" title="Export">📤</button>
 </nav>
 
 <section id="sectionTours" class="tabSection active">
