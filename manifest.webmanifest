@@ -6,8 +6,8 @@
   "start_url": "README.md",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b2545",
-  "theme_color": "#0b2545",
+  "background_color": "#0a3d91",
+  "theme_color": "#0a3d91",
   "orientation": "portrait",
   "icons": [
     {

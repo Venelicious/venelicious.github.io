@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Touren & Provisionen">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="theme-color" content="#0b2545">
+<meta name="theme-color" content="#0a3d91">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <link rel="stylesheet" href="assets/styles.css">
