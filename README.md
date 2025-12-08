@@ -17,139 +17,187 @@
 <body>
 
 <h1>Provisionstool</h1>
-<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px">
-  <!-- linke Spalte -->
-  <div style="flex:1;min-width:360px">
-    <h3>Neue Tour erfassen</h3>
 
-    <label>Monat / Jahr
+<nav class="tabNav">
+  <button id="tabTours" class="tabButton active">Touren</button>
+  <button id="tabSettings" class="tabButton">Einstellungen</button>
+  <button id="tabBackups" class="tabButton">Backups</button>
+  <button id="tabExport" class="tabButton">Export</button>
+</nav>
+
+<section id="sectionTours" class="tabSection active">
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px">
+    <!-- linke Spalte -->
+    <div style="flex:1;min-width:360px">
+      <h3>Neue Tour erfassen</h3>
+
+      <label>Monat / Jahr
+        <div class="row">
+          <select id="selectMonth" style="width:50%">
+            <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
+            <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
+            <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
+            <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
+          </select>
+          <select id="selectYear" style="width:50%"></select>
+        </div>
+      </label>
+
+      <label>Tour-Nr. / Bezeichnung
+        <input id="tourId" placeholder="z.B. Tour 101"/>
+      </label>
+
       <div class="row">
-        <select id="selectMonth" style="width:50%">
-          <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
-          <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
-          <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
-          <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
+        <div>
+          <label>Datum
+            <input id="date" type="date"/>
+          </label>
+        </div>
+        <div>
+          <label>Umsatz
+            <input id="amount" type="number" step="0.01" placeholder="Gesamtumsatz"/>
+          </label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Reklamation
+            <input id="reklamation" type="number" step="0.01" value="0.00"/>
+          </label>
+        </div>
+        <div>
+          <label>Gutscheine
+            <input id="gutscheine" type="number" step="0.01" value="0.00"/>
+          </label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Neukunden
+            <input id="newCustomers" type="number" step="1" min="0" value="0"/>
+          </label>
+        </div>
+        <div>
+          <label>Integrationen
+            <input id="integrations" type="number" step="1" min="0" value="0"/>
+          </label>
+        </div>
+      </div>
+
+      <label>Tourenart
+        <select id="tourType">
+          <option value="tourentag">Tourentag</option>
+          <option value="werbetag">Werbetag</option>
+          <option value="neukundentour">Neukundentour</option>
+          <option value="krank">Krank</option>
+          <option value="urlaub">Urlaub</option>
         </select>
-        <select id="selectYear" style="width:50%"></select>
+      </label>
+
+      <label style="margin-top:10px;"><input type="checkbox" id="vertretung"/> Vertretung (+2% Provision)</label>
+      <label><input type="checkbox" id="fahrt45"/> Entfernung >45 min (+0,25% Provision)</label>
+
+      <h4 style="margin-top:12px">Aktionen</h4>
+      <div class="actions-list" id="actionsList"></div>
+
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="actPrice" placeholder="Verkaufspreis €" type="number" step="0.01"/>
+        <input id="actQty" placeholder="Stückzahl" type="number" step="1"/>
+        <button id="addActionBtn" class="small">+ Aktion</button>
       </div>
-    </label>
 
-    <label>Tour-Nr. / Bezeichnung
-      <input id="tourId" placeholder="z.B. Tour 101"/>
-    </label>
+      <label>Notiz
+        <input id="note" placeholder="z.B. Neukunde, Aktion, Besonderheit"/>
+      </label>
 
-    <div class="row">
-      <div>
-        <label>Datum
-          <input id="date" type="date"/>
-        </label>
+      <div class="controls">
+        <button id="addBtn" class="small">🔺 Tour speichern</button>
+        <button id="clearBtn" class="small">✖ Leeren</button>
+        <button id="openSettings" class="small right">⚙ Einstellungen</button>
       </div>
-      <div>
-        <label>Umsatz
-          <input id="amount" type="number" step="0.01" placeholder="Gesamtumsatz"/>
-        </label>
-      </div>
-    </div>
 
-    <div class="row">
-      <div>
-        <label>Reklamation
-          <input id="reklamation" type="number" step="0.01" value="0.00"/>
-        </label>
-      </div>
-      <div>
-        <label>Gutscheine
-          <input id="gutscheine" type="number" step="0.01" value="0.00"/>
-        </label>
-      </div>
-    </div>
+      <h3 style="margin-top:18px">Touren</h3>
+      <table id="toursTable">
+        <thead>
+          <tr>
+            <th data-sort="date">Datum</th>
+            <th data-sort="id">Tour</th>
+            <th data-sort="tourType">Art</th>
+            <th data-sort="total">Umsatz</th>
+            <th data-sort="rekl">Rekl.</th>
+            <th data-sort="gs">GS</th>
+            <th data-sort="newC">NK</th>
+            <th data-sort="integrations">Int.</th>
+            <th>Spesen</th>
+            <th data-sort="actionsCount">Akt.</th>
+            <th data-sort="actionsEuro">Akt. (€)</th>
+            <th>Vert.</th>
+            <th>Entf.</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
 
-    <div class="row">
-      <div>
-        <label>Neukunden
-          <input id="newCustomers" type="number" step="1" min="0" value="0"/>
-        </label>
-      </div>
-      <div>
-        <label>Integrationen
-          <input id="integrations" type="number" step="1" min="0" value="0"/>
-        </label>
-      </div>
-    </div>
-
-    <label>Tourenart
-      <select id="tourType">
-        <option value="tourentag">Tourentag</option>
-        <option value="werbetag">Werbetag</option>
-        <option value="neukundentour">Neukundentour</option>
-        <option value="krank">Krank</option>
-        <option value="urlaub">Urlaub</option>
-      </select>
-    </label>
-
-    <label style="margin-top:10px;"><input type="checkbox" id="vertretung"/> Vertretung (+2% Provision)</label>
-    <label><input type="checkbox" id="fahrt45"/> Entfernung >45 min (+0,25% Provision)</label>
-
-    <h4 style="margin-top:12px">Aktionen</h4>
-    <div class="actions-list" id="actionsList"></div>
-
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <input id="actPrice" placeholder="Verkaufspreis €" type="number" step="0.01"/>
-      <input id="actQty" placeholder="Stückzahl" type="number" step="1"/>
-      <button id="addActionBtn" class="small">+ Aktion</button>
-    </div>
-
-    <label>Notiz
-      <input id="note" placeholder="z.B. Neukunde, Aktion, Besonderheit"/>
-    </label>
-
-    <div class="controls">
-      <button id="addBtn" class="small">🔺 Tour speichern</button>
-      <button id="clearBtn" class="small">✖ Leeren</button>
-      <button id="openSettings" class="small right">⚙</button>
-    </div>
-
-    <h3 style="margin-top:18px">Touren</h3>
-    <table id="toursTable">
-      <thead>
-        <tr>
-          <th data-sort="date">Datum</th>
-          <th data-sort="id">Tour</th>
-          <th data-sort="tourType">Art</th>
-          <th data-sort="total">Umsatz</th>
-          <th data-sort="rekl">Rekl.</th>
-          <th data-sort="gs">GS</th>
-          <th data-sort="newC">NK</th>
-          <th data-sort="integrations">Int.</th>
-          <th>Spesen</th>
-          <th data-sort="actionsCount">Akt.</th>
-          <th data-sort="actionsEuro">Akt. (€)</th>
-          <th>Vert.</th>
-          <th>Entf.</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <div class="summary" id="summary">
-      <strong>Zusammenfassung</strong>
-      <div id="summaryContent" style="margin-top:8px"></div>
-      <div style="margin-top:8px" class="controls">
-        <button id="exportCsv" class="small">CSV exportieren</button>
-        <button id="exportPdf" class="small">PDF exportieren</button>
-        <button id="importCsv" class="small">CSV importieren</button>
-        <button id="exportJson" class="small">JSON exportieren</button>
-        <button id="importJson" class="small">JSON importieren</button>
-        <button id="printReport" class="small">Drucken</button>
-        <button id="resetAll" class="small">Alle Daten löschen</button>
+      <div class="summary" id="summary">
+        <strong>Zusammenfassung</strong>
+        <div id="summaryContent" style="margin-top:8px"></div>
       </div>
     </div>
-
-    <input type="file" id="csvInput" accept=".csv" style="display:none" />
-    <input type="file" id="jsonInput" accept=".json" style="display:none" />
   </div>
-</div>
+</section>
+
+<section id="sectionSettings" class="tabSection">
+  <h3>Einstellungen</h3>
+  <hr/>
+  <h4>PAPROV</h4>
+  <div class="row">
+    <select id="paprovMonth"></select>
+    <input id="paprovValue" type="number" step="0.01" value="0.00" placeholder="PAPROV für Monat"/>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:6px">
+    <button id="savePaprov" class="small">Speichern (Monat)</button>
+    <button id="clearPaprov" class="small">Löschen (Monat)</button>
+  </div>
+
+  <hr/>
+  <h4>Kundenmanagement</h4>
+  <label>Im Schnitt verlorene Kunden
+    <input id="lostCustomersAvg" type="number" step="1" value="7"/>
+  </label>
+
+  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+    <button id="openBackups" class="small">Backups verwalten</button>
+    <button id="saveSettings" class="small">Einstellungen speichern</button>
+  </div>
+</section>
+
+<section id="sectionBackups" class="tabSection">
+  <h3>Backups</h3>
+  <div id="backupsList" style="max-height:50vh;overflow:auto"></div>
+  <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+    <button id="closeBackups" class="small">Zurück zu Touren</button>
+    <button id="clearBackups" class="small">Backups löschen</button>
+  </div>
+</section>
+
+<section id="sectionExport" class="tabSection">
+  <h3>Export, Import &amp; Drucken</h3>
+  <div class="muted" style="margin-bottom:8px">Aktionen wirken auf den ausgewählten Monat/Jahr.</div>
+  <div class="controls">
+    <button id="exportCsv" class="small">CSV exportieren</button>
+    <button id="exportPdf" class="small">PDF exportieren</button>
+    <button id="importCsv" class="small">CSV importieren</button>
+    <button id="exportJson" class="small">JSON exportieren</button>
+    <button id="importJson" class="small">JSON importieren</button>
+    <button id="printReport" class="small">Drucken</button>
+    <button id="resetAll" class="small">Alle Daten löschen</button>
+  </div>
+  <input type="file" id="csvInput" accept=".csv" style="display:none" />
+  <input type="file" id="jsonInput" accept=".json" style="display:none" />
+</section>
 
 <!-- Edit Modal -->
 <div id="editModal" class="modal"><div class="modalContent">
@@ -184,49 +232,6 @@
     </div>
   </form>
 </div></div>
-
-<!-- Settings Modal (wieder als Modal!) -->
-<div id="settingsModal" class="modal"><div class="modalContent">
-  <h3>Einstellungen</h3>
-  <hr/>
-  <h4>PAPROV</h4>
-  <div class="row">
-    <select id="paprovMonth"></select>
-    <input id="paprovValue" type="number" step="0.01" value="0.00" placeholder="PAPROV für Monat"/>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:6px">
-    <button id="savePaprov" class="small">Speichern (Monat)</button>
-    <button id="clearPaprov" class="small">Löschen (Monat)</button>
-  </div>
-
-  <hr/>
-  <h4>Kundenmanagement</h4>
-  <label>Im Schnitt verlorene Kunden
-    <input id="lostCustomersAvg" type="number" step="1" value="7"/>
-  </label>
-
-  <hr/>
-  <h4>Backups</h4>
-  <div style="display:flex;gap:8px;margin-top:6px;justify-content:flex-end">
-    <button id="openBackups" class="small">Backups verwalten</button>
-  </div>
-
-  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-    <button id="closeSettings" class="small">Schließen</button>
-    <button id="saveSettings" class="small">Einstellungen speichern</button>
-  </div>
-</div></div>
-
-<!-- Backups Modal -->
-<div id="backupsModal" class="modal"><div class="modalContent">
-  <h3>Backups</h3>
-  <div id="backupsList" style="max-height:50vh;overflow:auto"></div>
-  <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
-    <button id="closeBackups" class="small">Schließen</button>
-    <button id="clearBackups" class="small">Backups löschen</button>
-  </div>
-</div></div>
-
 
 <script type="module">
   import { init } from './assets/ui.js';

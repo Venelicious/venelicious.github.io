@@ -11,6 +11,37 @@ body {
   background: #fff;
 }
 
+.tabNav {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 4px;
+  flex-wrap: wrap;
+}
+
+.tabButton {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d0d7e0;
+  background: #f4f8ff;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tabButton.active {
+  background: #0b2545;
+  color: #fff;
+  border-color: #0b2545;
+}
+
+.tabSection {
+  display: none;
+}
+
+.tabSection.active {
+  display: block;
+}
+
 h1 {
   margin: 0 0 8px;
 }
