@@ -1,4 +1,3 @@
-<!doctype html>
 <html lang="de">
 <head>
 <link rel="manifest" href="manifest.webmanifest">
