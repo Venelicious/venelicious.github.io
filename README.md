@@ -233,16 +233,83 @@
       <label>Krankenkasse / Zusatzbeitrag
         <select id="netKvFund">
           <option value="2.45">Standard (2,45%)</option>
-          <option value="1.2">Techniker Krankenkasse (+1,20%)</option>
-          <option value="1.7">Barmer (+1,70%)</option>
-          <option value="1.6">DAK Gesundheit (+1,60%)</option>
-          <option value="1.39">AOK Baden-Württemberg (+1,39%)</option>
-          <option value="1.7">AOK Bayern (+1,70%)</option>
+          <option value="2.6">AOK Baden-Württemberg (2,60%)</option>
+          <option value="2.69">AOK Bayern (2,69%) – 2026: vorbehaltlich 19.12.2025</option>
+          <option value="2.49">AOK Bremen/Bremerhaven (2,49%)</option>
+          <option value="2.49">AOK Hessen (2,49%)</option>
+          <option value="2.7">AOK Niedersachsen (2,70%)</option>
+          <option value="3.5">AOK Nordost (3,50%)</option>
+          <option value="2.79">AOK NORDWEST (2,79%)</option>
+          <option value="3.1">AOK PLUS (3,10%) – 2026: Beschluss 19.12.2025</option>
+          <option value="2.47">AOK Rheinland-Pfalz/Saarland (2,47%)</option>
+          <option value="2.99">AOK Rheinland/Hamburg (2,99%)</option>
+          <option value="2.5">AOK Sachsen-Anhalt (2,50%)</option>
+          <option value="2.4">Audi BKK (2,40%)</option>
+          <option value="3.4">BAHN-BKK (3,40%)</option>
+          <option value="3.29">BARMER (3,29%) – 2026: geplant, Bestätigung 19.12.2025</option>
+          <option value="2.95">BERGISCHE Krankenkasse (2,95%)</option>
+          <option value="3.2">Bertelsmann BKK (3,20%)</option>
+          <option value="3.39">BIG direkt gesund (3,39%)</option>
+          <option value="4.39">BKK24 (4,39%)</option>
+          <option value="3.39">BKK Akzo Nobel Bayern (3,39%) – 2026: geplant, Beschluss 18.12.2025</option>
+          <option value="3.8">BKK Diakonie (3,80%)</option>
+          <option value="3.88">BKK DürkoppAdler (3,88%)</option>
+          <option value="3.39">BKK EUREGIO (3,39%)</option>
+          <option value="2.39">BKK exklusiv (2,39%)</option>
+          <option value="2.18">BKK Faber-Castell &amp; Partner (2,18%)</option>
+          <option value="2.18">BKK firmus (2,18%)</option>
+          <option value="2.49">BKK Freudenberg (2,49%)</option>
+          <option value="3.4">BKK GILDEMEISTER SEIDENSTICKER (3,40%)</option>
+          <option value="4.38">BKK Herkules (4,38%)</option>
+          <option value="2.99">BKK Linde (2,99%)</option>
+          <option value="3.5">bkk melitta hmr (3,50%)</option>
+          <option value="3.5">BKK mkk- meine Krankenkasse (3,50%)</option>
+          <option value="2.78">BKK PFAFF (2,78%)</option>
+          <option value="3.9">BKK Pfalz (3,90%)</option>
+          <option value="2.89">BKK ProVita (2,89%)</option>
+          <option value="2.3">BKK Public (2,30%)</option>
+          <option value="3.4">BKK Scheufelen (3,40%)</option>
+          <option value="2.44">BKK SBH (2,44%)</option>
+          <option value="3.49">BKK Technoform (3,49%)</option>
+          <option value="3.19">BKK VDN (3,19%) – 2026: voraussichtlich stabil</option>
+          <option value="3.89">BKK VerbundPlus (3,89%)</option>
+          <option value="3.39">BKK WERRA-MEISSNER (3,39%)</option>
+          <option value="3.99">BKK Wirtschaft &amp; Finanzen (3,99%)</option>
+          <option value="2.68">BOSCH BKK (2,68%)</option>
+          <option value="3.33">Continentale Betriebskrankenkasse (3,33%)</option>
+          <option value="2.8">DAK-Gesundheit (2,80%)</option>
+          <option value="3.25">Debeka BKK (3,25%)</option>
+          <option value="2.98">energie-BKK (2,98%) – 2026: 3,98%</option>
+          <option value="3.1">Heimat Krankenkasse (3,10%)</option>
+          <option value="2.5">HEK-Hanseatische Krankenkasse (2,50%)</option>
+          <option value="2.19">hkk Krankenkasse (2,19%)</option>
+          <option value="4.3">IKK - Die Innovationskasse (4,30%) – 2026: voraussichtlich stabil</option>
+          <option value="4.35">IKK Brandenburg und Berlin (4,35%)</option>
+          <option value="3.4">IKK classic (3,40%)</option>
+          <option value="3.39">IKK gesund plus (3,39%)</option>
+          <option value="3.25">IKK Südwest (3,25%) – 2026: voraussichtlich stabil</option>
+          <option value="3.78">KKH Kaufmännische Krankenkasse (3,78%) – 2026: geplant, Beschluss 20.12.2025</option>
+          <option value="4.4">Knappschaft (4,40%)</option>
+          <option value="3.29">mhplus BKK (3,29%)</option>
+          <option value="3.89">Mobil Krankenkasse (3,89%)</option>
+          <option value="2.98">Novitas BKK (2,98%)</option>
+          <option value="3.2">pronova BKK (3,20%)</option>
+          <option value="2.96">R + V Betriebskrankenkasse (2,96%)</option>
+          <option value="2.99">Salus BKK (2,99%)</option>
+          <option value="3.8">SBK (3,80%) – 2026: keine Erhöhung geplant (Sitzung 10.12.2025)</option>
+          <option value="3.9">SECURVITA Krankenkasse (3,90%)</option>
+          <option value="2.48">SKD BKK (2,48%)</option>
+          <option value="2.45">Techniker Krankenkasse (2,45%)</option>
+          <option value="2.5">TUI BKK (2,50%)</option>
+          <option value="3.27">VIACTIV Krankenkasse (3,27%)</option>
+          <option value="3.79">vivida bkk (3,79%)</option>
+          <option value="2.45">WMF BKK (2,45%)</option>
+          <option value="3.4">ZF BKK (3,40%)</option>
           <option value="custom">Individueller Satz</option>
         </select>
       </label>
       <label>KV-Zusatzbeitrag (14,6% + …)
-        <input id="netKvZusatz" type="number" step="0.01" min="0" max="4" />
+        <input id="netKvZusatz" type="number" step="0.01" min="0" max="5" />
       </label>
     </div>
     <div class="row">
