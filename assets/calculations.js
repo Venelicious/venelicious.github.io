@@ -94,7 +94,13 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   };
   const conf = { ...defaults, ...netConf };
   conf.churchTax = netConf.churchTax ?? defaults.churchTax;
-  conf.hasKids = netConf.hasKids ?? defaults.hasKids;
+  // Kinderstatus sauber normalisieren, damit der Zuschlag nur bei ausdrücklicher Kinderlosigkeit greift.
+  const hasKids = netConf.hasKids === false
+    ? false
+    : netConf.hasKids === true
+      ? true
+      : defaults.hasKids;
+  conf.hasKids = hasKids;
 
   if (brutto <= 0) {
     return {
@@ -110,7 +116,8 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   const kvRate = (conf.kvType === 'gesetzlich' || conf.kvType === 'freiwillig') ? ((14.6 + kvZusatz) / 100) / 2 : 0;
   const kvFlat = conf.kvType === 'privat' ? Number(conf.kvFlatRate || 0) : 0;
 
-  const pvSurcharge = (!conf.hasKids && Number(conf.age || 0) >= 23) ? Number(conf.pvSurchargeRate ?? defaults.pvSurchargeRate) : 0;
+  const isChildless = conf.hasKids === false;
+  const pvSurcharge = (isChildless && Number(conf.age || 0) >= 23) ? Number(conf.pvSurchargeRate ?? defaults.pvSurchargeRate) : 0;
   const pvRate = Number(conf.pvRate ?? defaults.pvRate) + pvSurcharge;
 
   const rvRate = Number(conf.rvRate ?? defaults.rvRate);
