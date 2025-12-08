@@ -26,10 +26,15 @@
 </nav>
 
 <section id="sectionTours" class="tabSection active">
-  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px">
+  <div class="toursLayout">
     <!-- linke Spalte -->
-    <div style="flex:1;min-width:360px">
-      <h3>Neue Tour erfassen</h3>
+    <div class="panel">
+      <div class="panelHeader">
+        <div>
+          <h3>Neue Tour erfassen</h3>
+          <p class="muted">Lege eine Tour mit allen Details an und speichere sie im gewünschten Zeitraum.</p>
+        </div>
+      </div>
 
       <label>Monat / Jahr
         <div class="row">
@@ -102,7 +107,7 @@
       <h4 style="margin-top:12px">Aktionen</h4>
       <div class="actions-list" id="actionsList"></div>
 
-      <div style="display:flex;gap:8px;margin-top:8px">
+      <div class="flexRow" style="margin-top:8px">
         <input id="actPrice" placeholder="Verkaufspreis €" type="number" step="0.01"/>
         <input id="actQty" placeholder="Stückzahl" type="number" step="1"/>
         <button id="addActionBtn" class="small">+ Aktion</button>
@@ -117,29 +122,39 @@
         <button id="clearBtn" class="small">✖ Leeren</button>
         <button id="openSettings" class="small right">⚙ Einstellungen</button>
       </div>
+    </div>
 
-      <h3 style="margin-top:18px">Touren</h3>
-      <table id="toursTable">
-        <thead>
-          <tr>
-            <th data-sort="date">Datum</th>
-            <th data-sort="id">Tour</th>
-            <th data-sort="tourType">Art</th>
-            <th data-sort="total">Umsatz</th>
-            <th data-sort="rekl">Rekl.</th>
-            <th data-sort="gs">GS</th>
-            <th data-sort="newC">NK</th>
-            <th data-sort="integrations">Int.</th>
-            <th>Spesen</th>
-            <th data-sort="actionsCount">Akt.</th>
-            <th data-sort="actionsEuro">Akt. (€)</th>
-            <th>Vert.</th>
-            <th>Entf.</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div class="panel toursPanel">
+      <div class="panelHeader">
+        <div>
+          <h3>Touren</h3>
+          <p class="muted">Gespeicherte Touren und aktuelle Zusammenfassung im Überblick.</p>
+        </div>
+      </div>
+
+      <div class="tableCard">
+        <table id="toursTable">
+          <thead>
+            <tr>
+              <th data-sort="date">Datum</th>
+              <th data-sort="id">Tour</th>
+              <th data-sort="tourType">Art</th>
+              <th data-sort="total">Umsatz</th>
+              <th data-sort="rekl">Rekl.</th>
+              <th data-sort="gs">GS</th>
+              <th data-sort="newC">NK</th>
+              <th data-sort="integrations">Int.</th>
+              <th>Spesen</th>
+              <th data-sort="actionsCount">Akt.</th>
+              <th data-sort="actionsEuro">Akt. (€)</th>
+              <th>Vert.</th>
+              <th>Entf.</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
       <div class="summary" id="summary">
         <strong>Zusammenfassung</strong>
