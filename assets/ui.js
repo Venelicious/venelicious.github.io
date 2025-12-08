@@ -19,6 +19,7 @@ import {
 const selectMonth = document.getElementById('selectMonth');
 const selectYear = document.getElementById('selectYear');
 const paprovMonth = document.getElementById('paprovMonth');
+const lostCustomersMonth = document.getElementById('lostCustomersMonth');
 const csvInput = document.getElementById('csvInput');
 const jsonInput = document.getElementById('jsonInput');
 let currentSort = { key:null, dir:'asc' };
@@ -93,7 +94,7 @@ function setActiveSection(sectionId){
   }
 }
 
-/* Jahre + PAPROV-Monate auffüllen */
+/* Jahre + Monatsselektoren auffüllen */
 (function populateYearsAndPaprov(){
   const now = new Date();
   const cy = now.getFullYear();
@@ -103,14 +104,15 @@ function setActiveSection(sectionId){
   }
   selectYear.value = cy;
 
-  paprovMonth.innerHTML = '';
+  const monthlySelectors = [paprovMonth, lostCustomersMonth].filter(Boolean);
+  monthlySelectors.forEach(sel => sel.innerHTML = '');
   for(let y=cy-1;y<=cy+1;y++){
     for(let m=1;m<=12;m++){
       const mm = String(m).padStart(2,'0');
       const opt = document.createElement('option');
       opt.value = `${y}-${mm}`;
       opt.textContent = `${mm}.${y}`;
-      paprovMonth.appendChild(opt);
+      monthlySelectors.forEach(sel => sel.appendChild(opt.cloneNode(true)));
     }
   }
 })();
@@ -223,6 +225,15 @@ async function loadConfObj(){
     spKleider: 1.2,
     spAuslagen: 10,
     lostCustomersAvg: Number(map.lostCustomersAvg || 0),
+    lostCustomersPerMonth: (()=>{
+      const perMonth = { ...(map.lostCustomersPerMonth || {}) };
+      if(Object.keys(perMonth).length === 0 && map.lostCustomersAvg !== undefined){
+        const today = new Date();
+        const mm = String(today.getMonth()+1).padStart(2,'0');
+        perMonth[`${today.getFullYear()}-${mm}`] = Number(map.lostCustomersAvg || 0);
+      }
+      return perMonth;
+    })(),
     paprovPerMonth: (map.paprovPerMonth || {}),
     netConfig: {
       taxClass: map.netConfig?.taxClass || 'I',
@@ -244,6 +255,16 @@ async function loadConfObj(){
   };
 }
 
+function getLostCustomersForPeriod(conf, period){
+  if(conf.lostCustomersPerMonth && conf.lostCustomersPerMonth[period] !== undefined){
+    return Number(conf.lostCustomersPerMonth[period]);
+  }
+  if(conf.lostCustomersAvg !== undefined){
+    return Number(conf.lostCustomersAvg);
+  }
+  return 0;
+}
+
 async function populateSettingsSection(){
   const conf = await loadConfObj();
   const yy = selectYear.value;
@@ -253,7 +274,8 @@ async function populateSettingsSection(){
   document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[curPeriod] !== undefined)
     ? conf.paprovPerMonth[curPeriod]
     : 0;
-  document.getElementById('lostCustomersAvg').value = conf.lostCustomersAvg || 0;
+  document.getElementById('lostCustomersMonth').value = curPeriod;
+  document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, curPeriod);
   const taxYearInput = document.getElementById('netTaxYear');
   if(taxYearInput) taxYearInput.value = yy || conf.netConfig.taxYear || new Date().getFullYear();
   document.getElementById('netBav').value = conf.netConfig.bavMonthly || 0;
@@ -295,9 +317,14 @@ async function migrateFromLocalStorageIfPresent(){
     try{
       const cObj = JSON.parse(cRaw);
       if(typeof cObj === 'object'){
-        const keys = ['lostCustomersAvg','paprovPerMonth'];
+        const keys = ['lostCustomersPerMonth','paprovPerMonth'];
         for(const k of keys){
           if(cObj[k] !== undefined) await idbPut('conf', { k: k, v: cObj[k] });
+        }
+        if(cObj.lostCustomersAvg !== undefined && cObj.lostCustomersPerMonth === undefined){
+          const today = new Date();
+          const mm = String(today.getMonth()+1).padStart(2,'0');
+          await idbPut('conf', { k: 'lostCustomersPerMonth', v: { [`${today.getFullYear()}-${mm}`]: Number(cObj.lostCustomersAvg || 0) } });
         }
       }
       localStorage.removeItem('provision_conf_v3');
@@ -525,7 +552,6 @@ if(netKvFundSelect){
 }
 
 document.getElementById('saveSettings').addEventListener('click', async ()=>{
-  const lost = Number(document.getElementById('lostCustomersAvg').value || 0);
   const kvFundSelect = document.getElementById('netKvFund');
   const selectedKv = kvFundSelect ? kvFundSelect.value : 'custom';
   const kvZusatz = selectedKv !== 'custom' ? Number(selectedKv) : Number(document.getElementById('netKvZusatz').value || 0);
@@ -548,7 +574,6 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
     avRate: Number(document.getElementById('netAvRate').value || 0.013),
     taxYear: Number(document.getElementById('netTaxYear').value || selectYear.value || new Date().getFullYear())
   };
-  await saveConf('lostCustomersAvg', lost);
   await saveConf('netConfig', netConfig);
   alert('Einstellungen gespeichert.');
   await renderTours();
@@ -582,6 +607,35 @@ document.getElementById('paprovMonth').addEventListener('change', async ()=>{
   const conf = await loadConfObj();
   const pm = document.getElementById('paprovMonth').value;
   document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[pm] !== undefined) ? conf.paprovPerMonth[pm] : 0;
+});
+
+/* Kundenmanagement speichern/löschen */
+document.getElementById('saveLostCustomers').addEventListener('click', async ()=>{
+  const key = document.getElementById('lostCustomersMonth').value;
+  const v = Number(document.getElementById('lostCustomersValue').value || 0);
+  const conf = await loadConfObj();
+  conf.lostCustomersPerMonth = conf.lostCustomersPerMonth || {};
+  conf.lostCustomersPerMonth[key] = v;
+  await saveConf('lostCustomersPerMonth', conf.lostCustomersPerMonth);
+  alert('Kundenmanagement-Wert gespeichert.');
+  await renderTours();
+  await triggerAutoBackup('lost_customers_saved');
+});
+document.getElementById('clearLostCustomers').addEventListener('click', async ()=>{
+  const key = document.getElementById('lostCustomersMonth').value;
+  const conf = await loadConfObj();
+  conf.lostCustomersPerMonth = conf.lostCustomersPerMonth || {};
+  delete conf.lostCustomersPerMonth[key];
+  await saveConf('lostCustomersPerMonth', conf.lostCustomersPerMonth);
+  document.getElementById('lostCustomersValue').value = '';
+  alert('Kundenmanagement-Wert gelöscht.');
+  await renderTours();
+  await triggerAutoBackup('lost_customers_cleared');
+});
+document.getElementById('lostCustomersMonth').addEventListener('change', async ()=>{
+  const conf = await loadConfObj();
+  const key = document.getElementById('lostCustomersMonth').value;
+  document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, key);
 });
 
 /* Gutscheinanzeige */
@@ -717,7 +771,8 @@ async function renderTours(){
   const avgVGEuros = (countVGTours>0) ? (totalVGRevenueCents/100/countVGTours) : 0;
   const vgRate = determineVGRate(avgVGEuros);
   const vgProvisionCents = Math.round(totalVGRevenueCents * vgRate);
-  const rawKm = computeKundenmanagementBonusCents(conf.lostCustomersAvg||0);
+  const lostCustomersValue = getLostCustomersForPeriod(conf, monthFilter);
+  const rawKm = computeKundenmanagementBonusCents(lostCustomersValue);
   const totalTours = tours.length;
   const relevant = countVGTours + countNeukundentouren;
   const kmBonusCents = Math.round(rawKm * (totalTours>0 ? (relevant/totalTours) : 0));
@@ -880,7 +935,8 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
   const avgVGEuros = (countVGTours>0) ? (totalVGRevenueCents/100/countVGTours) : 0;
   const vgRate = determineVGRate(avgVGEuros);
   const vgProvisionCents = Math.round(totalVGRevenueCents * vgRate);
-  const rawKm = computeKundenmanagementBonusCents(conf.lostCustomersAvg||0);
+  const lostCustomersValue = getLostCustomersForPeriod(conf, periodKey);
+  const rawKm = computeKundenmanagementBonusCents(lostCustomersValue);
   const totalTours = tours.length;
   const relevant = countVGTours + countNeukundentouren;
   const kmBonus = Math.round(rawKm * (totalTours>0 ? (relevant/totalTours) : 0));
@@ -1025,14 +1081,15 @@ export async function init(){
   await migrateFromLocalStorageIfPresent();
 
   const today = new Date(); 
-  const mm = String(today.getMonth()+1).padStart(2,'0'); 
+  const mm = String(today.getMonth()+1).padStart(2,'0');
   const yy = today.getFullYear();
   selectMonth.value = mm; selectYear.value = yy;
   document.getElementById('date').value = today.toISOString().slice(0,10);
   document.getElementById('paprovMonth').value = `${yy}-${mm}`;
+  document.getElementById('lostCustomersMonth').value = `${yy}-${mm}`;
 
   const conf = await loadConfObj();
-  document.getElementById('lostCustomersAvg').value = conf.lostCustomersAvg || 0;
+  document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, `${yy}-${mm}`);
   document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[`${yy}-${mm}`]) ? conf.paprovPerMonth[`${yy}-${mm}`] : 0;
 
   Object.entries(tabTargets).forEach(([tabId, sectionId])=>{
