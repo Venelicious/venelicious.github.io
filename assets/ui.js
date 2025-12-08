@@ -193,7 +193,7 @@ async function loadConfObj(){
       referenceBrutto: map.netConfig?.referenceBrutto || 0,
       referenceNetto: map.netConfig?.referenceNetto || 0,
       rvRate: map.netConfig?.rvRate ?? 0.093,
-      avRate: map.netConfig?.avRate ?? 0.0125,
+      avRate: map.netConfig?.avRate ?? 0.013,
       pvRate: map.netConfig?.pvRate ?? 0.024,
       taxYear: Number(map.netConfig?.taxYear || new Date().getFullYear())
     }
@@ -229,7 +229,7 @@ async function populateSettingsSection(){
   const pvSurchargeField = document.getElementById('netPvSurcharge');
   if(pvSurchargeField) pvSurchargeField.value = `${((conf.netConfig.pvSurchargeRate ?? 0.0035)*100).toFixed(2)}%`;
   document.getElementById('netRvRate').value = conf.netConfig.rvRate ?? 0.093;
-  document.getElementById('netAvRate').value = conf.netConfig.avRate ?? 0.0125;
+  document.getElementById('netAvRate').value = conf.netConfig.avRate ?? 0.013;
   document.getElementById('netReferenceBrutto').value = conf.netConfig.referenceBrutto || '';
   document.getElementById('netReferenceNetto').value = conf.netConfig.referenceNetto || '';
 }
@@ -501,7 +501,7 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
     referenceBrutto: Number(document.getElementById('netReferenceBrutto').value || 0),
     referenceNetto: Number(document.getElementById('netReferenceNetto').value || 0),
     rvRate: Number(document.getElementById('netRvRate').value || 0.093),
-    avRate: Number(document.getElementById('netAvRate').value || 0.0125),
+    avRate: Number(document.getElementById('netAvRate').value || 0.013),
     taxYear: Number(document.getElementById('netTaxYear').value || selectYear.value || new Date().getFullYear())
   };
   await saveConf('lostCustomersAvg', lost);

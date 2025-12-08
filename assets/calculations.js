@@ -133,7 +133,9 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   const pv = taxableBrutto * pvRate;
   const sozial = rv + av + kv + pv;
 
-  const annualBrutto = taxableBrutto * 12;
+  const taxableIncome = Math.max(taxableBrutto - sozial, 0);
+
+  const annualBrutto = taxableIncome * 12;
   let lohnsteuerAnnual = 0;
   if (annualBrutto <= 11604) {
     lohnsteuerAnnual = 0;
@@ -165,7 +167,7 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
 
   return {
     netto,
-    breakdown: { rv, av, kv, pv, social: sozial, lohnsteuer: lohnsteuerMonat, soli, kirche, bav, taxableBrutto }
+    breakdown: { rv, av, kv, pv, social: sozial, lohnsteuer: lohnsteuerMonat, soli, kirche, bav, taxableBrutto, taxableIncome }
   };
 }
 
