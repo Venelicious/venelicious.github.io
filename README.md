@@ -316,8 +316,13 @@
       </label>
       <label>Kinderlosenzuschlag
         <select id="netKids">
-          <option value="yes">Kinder vorhanden</option>
-          <option value="no">Kinderlos</option>
+          <option value="childless_over_23">Kinderlos, mind. 23</option>
+          <option value="childless_under_23">Kinderlos, unter 23</option>
+          <option value="one_child">1 Kind</option>
+          <option value="two_children">2 Kinder</option>
+          <option value="three_children">3 Kinder</option>
+          <option value="four_children">4 Kinder</option>
+          <option value="five_plus_children">5 oder mehr Kinder</option>
         </select>
       </label>
     </div>
