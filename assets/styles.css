@@ -11,6 +11,30 @@ body {
   background: #fff;
 }
 
+.toursLayout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 18px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+.panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #e1e9f5;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 28px rgba(11, 37, 69, 0.08);
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
 .tabNav {
   display: flex;
   gap: 8px;
@@ -135,6 +159,19 @@ th[data-sort]::after {
   margin-top: 12px;
 }
 
+.tableCard {
+  background: #fff;
+  border: 1px solid #e1e9f5;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 22px rgba(11, 37, 69, 0.06);
+}
+
+.toursPanel .summary {
+  box-shadow: 0 6px 16px rgba(11, 37, 69, 0.06);
+  margin-top: 14px;
+}
+
 .actions-list {
   margin-top: 8px;
   border: 1px dashed #dbe9ff;
@@ -220,6 +257,10 @@ th[data-sort]::after {
 
   .flexRow {
     flex-direction: column;
+  }
+
+  .toursLayout {
+    grid-template-columns: 1fr;
   }
 
   .modalContent {
