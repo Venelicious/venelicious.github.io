@@ -95,7 +95,7 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
     age: 30,
     bavMonthly: 0,
     rvRate: 0.093,
-    avRate: 0.0125,
+    avRate: 0.013,
     pvRate: 0.024,
     pvSurchargeRate: 0.0035,
     referenceBrutto: 0,
