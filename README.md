@@ -171,7 +171,7 @@
         <button id="exportPdf" class="small">PDF exportieren</button>
         <button id="importCsv" class="small">CSV importieren</button>
         <button id="exportJson" class="small">JSON exportieren</button>
-        <button id="importJson" class="small">JSON import</button>
+        <button id="importJson" class="small">JSON importieren</button>
         <button id="printReport" class="small">Drucken</button>
         <button id="resetAll" class="small">Alle Daten löschen</button>
       </div>
