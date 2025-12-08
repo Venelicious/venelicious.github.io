@@ -329,7 +329,7 @@ function toCents(e){ return Math.round(Number(e||0)*100); }
 function fromCents(c){ return (c/100).toFixed(2); }
 function sanitizeForPdf(s){
   if(s === null || s === undefined) return '';
-  return String(s).replace(/&/g,'und').replace(/</g,'').replace(/>/g,'').replace(/\u2013/g,'-');
+  return String(s).replace(/&/g,'und').replace(/</g,'').replace(/>/g,'').replace(/–/g,'-');
 }
 function tickFor(val){ return val ? '✔' : '✖'; }
 
