@@ -167,10 +167,10 @@
       <strong>Zusammenfassung</strong>
       <div id="summaryContent" style="margin-top:8px"></div>
       <div style="margin-top:8px" class="controls">
-        <button id="exportCsv" class="small">CSV export</button>
-        <button id="exportPdf" class="small">PDF export</button>
+        <button id="exportCsv" class="small">CSV exportieren</button>
+        <button id="exportPdf" class="small">PDF exportieren</button>
         <button id="importCsv" class="small">CSV importieren</button>
-        <button id="exportJson" class="small">JSON export</button>
+        <button id="exportJson" class="small">JSON exportieren</button>
         <button id="importJson" class="small">JSON import</button>
         <button id="printReport" class="small">Drucken</button>
         <button id="resetAll" class="small">Alle Daten löschen</button>
