@@ -324,7 +324,6 @@
           <option value="four_children">4 Kinder</option>
           <option value="five_plus_children">5 oder mehr Kinder</option>
         </select>
-        <small class="muted">Berücksichtigt Zuschlag für Kinderlose ab 23 sowie Abschläge ab dem zweiten Kind (2026er Sätze, +0,5 %-Punkte in Sachsen).</small>
       </label>
     </div>
     <div class="row">
