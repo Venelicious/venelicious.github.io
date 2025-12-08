@@ -19,145 +19,145 @@
 <h1>Provisionstool</h1>
 
 <nav class="tabNav">
-  <button id="tabTours" class="tabButton active" aria-label="Touren" title="Touren">🗺️</button>
+  <button id="tabNewTour" class="tabButton active" aria-label="Neue Tour erfassen" title="Neue Tour erfassen">📝</button>
+  <button id="tabTours" class="tabButton" aria-label="Touren" title="Touren">🗺️</button>
   <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">📊</button>
   <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">⚙️</button>
   <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">💾</button>
   <button id="tabExport" class="tabButton" aria-label="Export" title="Export">📤</button>
 </nav>
 
-<section id="sectionTours" class="tabSection active">
-  <div class="toursLayout">
-    <!-- linke Spalte -->
-    <div class="panel">
-      <div class="panelHeader">
-        <div>
-          <h3>Neue Tour erfassen</h3>
-          <p class="muted">Lege eine Tour mit allen Details an und speichere sie im gewünschten Zeitraum.</p>
-        </div>
+<section id="sectionNewTour" class="tabSection active">
+  <div class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3>Neue Tour erfassen</h3>
+        <p class="muted">Lege eine Tour mit allen Details an und speichere sie im gewünschten Zeitraum.</p>
       </div>
+    </div>
 
-      <label>Monat / Jahr
-        <div class="row">
-          <select id="selectMonth" style="width:50%">
-            <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
-            <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
-            <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
-            <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
-          </select>
-          <select id="selectYear" style="width:50%"></select>
-        </div>
-      </label>
-
-      <label>Tour-Nr. / Bezeichnung
-        <input id="tourId" placeholder="z.B. Tour 101"/>
-      </label>
-
+    <label>Monat / Jahr
       <div class="row">
-        <div>
-          <label>Datum
-            <input id="date" type="date"/>
-          </label>
-        </div>
-        <div>
-          <label>Umsatz
-            <input id="amount" type="number" step="0.01" placeholder="Gesamtumsatz"/>
-          </label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Reklamation
-            <input id="reklamation" type="number" step="0.01" value="0.00"/>
-          </label>
-        </div>
-        <div>
-          <label>Gutscheine
-            <input id="gutscheine" type="number" step="0.01" value="0.00"/>
-          </label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Neukunden
-            <input id="newCustomers" type="number" step="1" min="0" value="0"/>
-          </label>
-        </div>
-        <div>
-          <label>Integrationen
-            <input id="integrations" type="number" step="1" min="0" value="0"/>
-          </label>
-        </div>
-      </div>
-
-      <label>Tourenart
-        <select id="tourType">
-          <option value="tourentag">Tourentag</option>
-          <option value="werbetag">Werbetag</option>
-          <option value="neukundentour">Neukundentour</option>
-          <option value="krank">Krank</option>
-          <option value="urlaub">Urlaub</option>
+        <select id="selectMonth" style="width:50%">
+          <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
+          <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
+          <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
+          <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
         </select>
-      </label>
-
-      <label style="margin-top:10px;"><input type="checkbox" id="vertretung"/> Vertretung (+2% Provision)</label>
-      <label><input type="checkbox" id="fahrt45"/> Entfernung >45 min (+0,25% Provision)</label>
-
-      <h4 style="margin-top:12px">Aktionen</h4>
-      <div class="actions-list" id="actionsList"></div>
-
-      <div class="flexRow" style="margin-top:8px">
-        <input id="actPrice" placeholder="Verkaufspreis €" type="number" step="0.01"/>
-        <input id="actQty" placeholder="Stückzahl" type="number" step="1"/>
-        <button id="addActionBtn" class="small">+ Aktion</button>
+        <select id="selectYear" style="width:50%"></select>
       </div>
+    </label>
 
-      <label>Notiz
-        <input id="note" placeholder="z.B. Neukunde, Aktion, Besonderheit"/>
-      </label>
+    <label>Tour-Nr. / Bezeichnung
+      <input id="tourId" placeholder="z.B. Tour 101"/>
+    </label>
 
-      <div class="controls">
-        <button id="addBtn" class="small">🔺 Tour speichern</button>
-        <button id="clearBtn" class="small">✖ Leeren</button>
-        <button id="openSettings" class="small right">⚙ Einstellungen</button>
+    <div class="row">
+      <div>
+        <label>Datum
+          <input id="date" type="date"/>
+        </label>
+      </div>
+      <div>
+        <label>Umsatz
+          <input id="amount" type="number" step="0.01" placeholder="Gesamtumsatz"/>
+        </label>
       </div>
     </div>
 
-    <div class="panel toursPanel">
-      <div class="panelHeader">
-        <div>
-          <h3>Touren</h3>
-          <p class="muted">Gespeicherte Touren und aktuelle Zusammenfassung im Überblick.</p>
-        </div>
+    <div class="row">
+      <div>
+        <label>Reklamation
+          <input id="reklamation" type="number" step="0.01" value="0.00"/>
+        </label>
       </div>
-
-      <div class="tableCard">
-        <table id="toursTable">
-          <thead>
-            <tr>
-              <th data-sort="date">Datum</th>
-              <th data-sort="id">Tour</th>
-              <th data-sort="tourType">Art</th>
-              <th data-sort="total">Umsatz</th>
-              <th data-sort="rekl">Rekl.</th>
-              <th data-sort="gs">GS</th>
-              <th data-sort="newC">NK</th>
-              <th data-sort="integrations">Int.</th>
-              <th>Spesen</th>
-              <th data-sort="actionsCount">Akt.</th>
-              <th data-sort="actionsEuro">Akt. (€)</th>
-              <th>Vert.</th>
-              <th>Entf.</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div>
+        <label>Gutscheine
+          <input id="gutscheine" type="number" step="0.01" value="0.00"/>
+        </label>
       </div>
-
     </div>
+
+    <div class="row">
+      <div>
+        <label>Neukunden
+          <input id="newCustomers" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+      <div>
+        <label>Integrationen
+          <input id="integrations" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+    </div>
+
+    <label>Tourenart
+      <select id="tourType">
+        <option value="tourentag">Tourentag</option>
+        <option value="werbetag">Werbetag</option>
+        <option value="neukundentour">Neukundentour</option>
+        <option value="krank">Krank</option>
+        <option value="urlaub">Urlaub</option>
+      </select>
+    </label>
+
+    <label style="margin-top:10px;"><input type="checkbox" id="vertretung"/> Vertretung (+2% Provision)</label>
+    <label><input type="checkbox" id="fahrt45"/> Entfernung >45 min (+0,25% Provision)</label>
+
+    <h4 style="margin-top:12px">Aktionen</h4>
+    <div class="actions-list" id="actionsList"></div>
+
+    <div class="flexRow" style="margin-top:8px">
+      <input id="actPrice" placeholder="Verkaufspreis €" type="number" step="0.01"/>
+      <input id="actQty" placeholder="Stückzahl" type="number" step="1"/>
+      <button id="addActionBtn" class="small">+ Aktion</button>
+    </div>
+
+    <label>Notiz
+      <input id="note" placeholder="z.B. Neukunde, Aktion, Besonderheit"/>
+    </label>
+
+    <div class="controls">
+      <button id="addBtn" class="small">🔺 Tour speichern</button>
+      <button id="clearBtn" class="small">✖ Leeren</button>
+      <button id="openSettings" class="small right">⚙ Einstellungen</button>
+    </div>
+  </div>
+</section>
+
+<section id="sectionTours" class="tabSection">
+  <div class="panel toursPanel">
+    <div class="panelHeader">
+      <div>
+        <h3>Touren</h3>
+        <p class="muted">Gespeicherte Touren und aktuelle Zusammenfassung im Überblick.</p>
+      </div>
+    </div>
+
+    <div class="tableCard">
+      <table id="toursTable">
+        <thead>
+          <tr>
+            <th data-sort="date">Datum</th>
+            <th data-sort="id">Tour</th>
+            <th data-sort="tourType">Art</th>
+            <th data-sort="total">Umsatz</th>
+            <th data-sort="rekl">Rekl.</th>
+            <th data-sort="gs">GS</th>
+            <th data-sort="newC">NK</th>
+            <th data-sort="integrations">Int.</th>
+            <th>Spesen</th>
+            <th data-sort="actionsCount">Akt.</th>
+            <th data-sort="actionsEuro">Akt. (€)</th>
+            <th>Vert.</th>
+            <th>Entf.</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
   </div>
 </section>
 
