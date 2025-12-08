@@ -38,6 +38,24 @@ function deriveChildrenStatus(netConf, defaults){
   return 'one_child';
 }
 
+// Pflegeversicherung 2026: 1,8 % Arbeitnehmeranteil, +0,6 % Zuschlag für
+// Kinderlose ab 23, -0,25 % ab dem zweiten Kind (max. -1,0 %), +0,5 %-Punkte
+// in Sachsen. Berechnung erfolgt auf den Arbeitnehmeranteil.
+function computeEmployeePvRate({ childrenCount, state, age, childrenStatus }){
+  const baseRate = 0.018;
+  const stateAdjustment = state === 'SN' ? 0.005 : 0;
+  const hasKids = childrenCount > 0;
+  const isChildless = !hasKids;
+  const surcharge = isChildless
+    && (childrenStatus === 'childless_over_23'
+      || (childrenStatus !== 'childless_under_23' && Number(age || 0) >= 23))
+    ? 0.006
+    : 0;
+  const discount = hasKids ? Math.min(Math.max(childrenCount - 1, 0) * 0.0025, 0.01) : 0;
+
+  return Math.max(baseRate + stateAdjustment + surcharge - discount, 0);
+}
+
 export function toCents(e) {
   return Math.round(Number(e || 0) * 100);
 }
@@ -127,8 +145,8 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
     bavMonthly: 0,
     rvRate: 0.093,
     avRate: 0.013,
-    pvRate: 0.024,
-    pvSurchargeRate: 0.0035,
+    pvRate: 0.018,
+    pvSurchargeRate: 0.006,
     taxYear: new Date().getFullYear(),
   };
   const conf = { ...defaults, ...netConf };
@@ -154,10 +172,12 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   const kvRate = (conf.kvType === 'gesetzlich' || conf.kvType === 'freiwillig') ? ((14.6 + kvZusatz) / 100) / 2 : 0;
   const kvFlat = conf.kvType === 'privat' ? Number(conf.kvFlatRate || 0) : 0;
 
-  const pvSurchargeRate = (childrenCount === 0 && childrenStatus === 'childless_over_23')
-    ? Number(conf.pvSurchargeRate ?? defaults.pvSurchargeRate)
-    : 0;
-  const pvRate = Number(conf.pvRate ?? defaults.pvRate) + pvSurchargeRate;
+  const pvRate = computeEmployeePvRate({
+    childrenCount,
+    state: conf.state,
+    age: conf.age,
+    childrenStatus
+  });
 
   const rvRate = Number(conf.rvRate ?? defaults.rvRate);
   const avRate = Number(conf.avRate ?? defaults.avRate);
