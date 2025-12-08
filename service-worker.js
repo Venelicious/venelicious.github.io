@@ -1,11 +1,11 @@
 const CACHE_NAME = "provision-pwa-v1";
 const FILES_TO_CACHE = [
   "./",
-  "./index3.html",
+  "./README.md",
   "./manifest.webmanifest",
   "./service-worker.js",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -38,3 +38,4 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
