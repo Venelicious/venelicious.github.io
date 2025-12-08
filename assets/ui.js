@@ -178,7 +178,19 @@ async function loadConfObj(){
     spKleider: 1.2,
     spAuslagen: 10,
     lostCustomersAvg: Number(map.lostCustomersAvg || 0),
-    paprovPerMonth: (map.paprovPerMonth || {})
+    paprovPerMonth: (map.paprovPerMonth || {}),
+    netConfig: {
+      taxClass: map.netConfig?.taxClass || 'I',
+      state: map.netConfig?.state || 'NW',
+      churchTax: map.netConfig?.churchTax ?? false,
+      kvZusatz: map.netConfig?.kvZusatz ?? 2.45,
+      pvSurcharge: map.netConfig?.pvSurcharge ?? true,
+      referenceBrutto: map.netConfig?.referenceBrutto || 0,
+      referenceNetto: map.netConfig?.referenceNetto || 0,
+      rvRate: map.netConfig?.rvRate ?? 0.093,
+      avRate: map.netConfig?.avRate ?? 0.0125,
+      pvRate: map.netConfig?.pvRate ?? 0.024
+    }
   };
 }
 
@@ -192,6 +204,12 @@ async function populateSettingsSection(){
     ? conf.paprovPerMonth[curPeriod]
     : 0;
   document.getElementById('lostCustomersAvg').value = conf.lostCustomersAvg || 0;
+  document.getElementById('netTaxClass').value = conf.netConfig.taxClass;
+  document.getElementById('netState').value = conf.netConfig.state;
+  document.getElementById('netChurch').value = conf.netConfig.churchTax ? 'yes' : 'no';
+  document.getElementById('netKvZusatz').value = conf.netConfig.kvZusatz;
+  document.getElementById('netReferenceBrutto').value = conf.netConfig.referenceBrutto || '';
+  document.getElementById('netReferenceNetto').value = conf.netConfig.referenceNetto || '';
 }
 
 /* Migration von localStorage (falls noch alte Daten) */
@@ -435,7 +453,17 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
 /* Settings speichern (nur verlorene Kunden) */
 document.getElementById('saveSettings').addEventListener('click', async ()=>{
   const lost = Number(document.getElementById('lostCustomersAvg').value || 0);
+  const netConfig = {
+    taxClass: document.getElementById('netTaxClass').value,
+    state: document.getElementById('netState').value,
+    churchTax: document.getElementById('netChurch').value === 'yes',
+    kvZusatz: Number(document.getElementById('netKvZusatz').value || 0),
+    pvSurcharge: true,
+    referenceBrutto: Number(document.getElementById('netReferenceBrutto').value || 0),
+    referenceNetto: Number(document.getElementById('netReferenceNetto').value || 0)
+  };
   await saveConf('lostCustomersAvg', lost);
+  await saveConf('netConfig', netConfig);
   alert('Einstellungen gespeichert.');
   await renderTours();
   await triggerAutoBackup('settings_saved');
@@ -611,7 +639,7 @@ async function renderTours(){
   const baseSalaryCents = toCents(conf.baseSalary || 0);
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
-  const netto = computeNetFromBrutto(brutto);
+  const netto = computeNetFromBrutto(brutto, conf.netConfig);
   const nettoFromBruttoCents = Math.round(netto*100);
   const finalPayoutCents = nettoFromBruttoCents + totalSpesenCents;
 
@@ -777,7 +805,7 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
   const baseSalaryCents = toCents(conf.baseSalary||0);
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
-  const netto = computeNetFromBrutto(brutto);
+  const netto = computeNetFromBrutto(brutto, conf.netConfig);
   const nettoFromBruttoCents = Math.round(netto*100);
   const finalPayoutCents = nettoFromBruttoCents + totalSpesenCents;
 

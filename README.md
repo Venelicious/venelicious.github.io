@@ -178,53 +178,95 @@
 </section>
 
 <section id="sectionSettings" class="tabSection">
-  <h3>Einstellungen</h3>
-  <hr/>
-  <h4>PAPROV</h4>
-  <div class="row">
-    <select id="paprovMonth"></select>
-    <input id="paprovValue" type="number" step="0.01" value="0.00" placeholder="PAPROV für Monat"/>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:6px">
-    <button id="savePaprov" class="small">Speichern (Monat)</button>
-    <button id="clearPaprov" class="small">Löschen (Monat)</button>
-  </div>
+  <div class="panel">
+    <h3>Einstellungen</h3>
+    <hr/>
+    <h4>PAPROV</h4>
+    <div class="row">
+      <select id="paprovMonth"></select>
+      <input id="paprovValue" type="number" step="0.01" value="0.00" placeholder="PAPROV für Monat"/>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button id="savePaprov" class="small">Speichern (Monat)</button>
+      <button id="clearPaprov" class="small">Löschen (Monat)</button>
+    </div>
 
-  <hr/>
-  <h4>Kundenmanagement</h4>
-  <label>Im Schnitt verlorene Kunden
-    <input id="lostCustomersAvg" type="number" step="1" value="7"/>
-  </label>
+    <hr/>
+    <h4>Nettolohn (www.nettolohn.de)</h4>
+    <p class="muted">Nutze die gleichen Angaben wie in deiner Abfrage auf <a href="https://www.nettolohn.de" target="_blank" rel="noopener noreferrer">nettolohn.de</a>, damit die Netto-Berechnung hier übereinstimmt.</p>
+    <div class="row">
+      <label>Steuerklasse
+        <select id="netTaxClass">
+          <option value="I">I</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option><option value="VI">VI</option>
+        </select>
+      </label>
+      <label>Bundesland
+        <select id="netState">
+          <option value="BW">Baden-Württemberg</option><option value="BY">Bayern</option><option value="BE">Berlin</option><option value="BB">Brandenburg</option><option value="HB">Bremen</option><option value="HH">Hamburg</option><option value="HE">Hessen</option><option value="MV">Mecklenburg-Vorpommern</option><option value="NI">Niedersachsen</option><option value="NW">Nordrhein-Westfalen</option><option value="RP">Rheinland-Pfalz</option><option value="SL">Saarland</option><option value="SN">Sachsen</option><option value="ST">Sachsen-Anhalt</option><option value="SH">Schleswig-Holstein</option><option value="TH">Thüringen</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Kirchensteuer (ja/nein)
+        <select id="netChurch">
+          <option value="yes">Ja</option>
+          <option value="no">Nein</option>
+        </select>
+      </label>
+      <label>KV-Zusatzbeitrag (in %)
+        <input id="netKvZusatz" type="number" step="0.1" min="0" max="4" />
+      </label>
+    </div>
+    <div class="row">
+      <label>Referenz-Brutto laut nettolohn.de
+        <input id="netReferenceBrutto" type="number" step="0.01" placeholder="z.B. 2500" />
+      </label>
+      <label>Referenz-Netto laut nettolohn.de
+        <input id="netReferenceNetto" type="number" step="0.01" placeholder="Ergebnis aus nettolohn.de" />
+      </label>
+    </div>
+    <div class="muted" style="margin-top:6px">Falls du Brutto- und Netto-Referenzwerte hinterlegst, wird das Verhältnis für die Berechnung deiner Auszahlungen genutzt.</div>
 
-  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-    <button id="openBackups" class="small">Backups verwalten</button>
-    <button id="saveSettings" class="small">Einstellungen speichern</button>
+    <hr/>
+    <h4>Kundenmanagement</h4>
+    <label>Im Schnitt verlorene Kunden
+      <input id="lostCustomersAvg" type="number" step="1" value="7"/>
+    </label>
+
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+      <button id="openBackups" class="small">Backups verwalten</button>
+      <button id="saveSettings" class="small">Einstellungen speichern</button>
+    </div>
   </div>
 </section>
 
 <section id="sectionBackups" class="tabSection">
-  <h3>Backups</h3>
-  <div id="backupsList" style="max-height:50vh;overflow:auto"></div>
-  <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
-    <button id="closeBackups" class="small">Zurück zu Touren</button>
-    <button id="clearBackups" class="small">Backups löschen</button>
+  <div class="panel">
+    <h3>Backups</h3>
+    <div id="backupsList" style="max-height:50vh;overflow:auto"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+      <button id="closeBackups" class="small">Zurück zu Touren</button>
+      <button id="clearBackups" class="small">Backups löschen</button>
+    </div>
   </div>
 </section>
 
 <section id="sectionExport" class="tabSection">
-  <h3>Export, Import &amp; Drucken</h3>
-  <div class="muted" style="margin-bottom:8px">Aktionen wirken auf den ausgewählten Monat/Jahr.</div>
-  <div class="controls">
-    <button id="exportCsv" class="small">CSV exportieren</button>
-    <button id="exportPdf" class="small">PDF exportieren</button>
-    <button id="importCsv" class="small">CSV importieren</button>
-    <button id="exportJson" class="small">JSON exportieren</button>
-    <button id="importJson" class="small">JSON importieren</button>
-    <button id="printReport" class="small">Drucken</button>
-    <button id="resetAll" class="small">Alle Daten löschen</button>
+  <div class="panel">
+    <h3>Export, Import &amp; Drucken</h3>
+    <div class="muted" style="margin-bottom:8px">Aktionen wirken auf den ausgewählten Monat/Jahr.</div>
+    <div class="controls">
+      <button id="exportCsv" class="small">CSV exportieren</button>
+      <button id="exportPdf" class="small">PDF exportieren</button>
+      <button id="importCsv" class="small">CSV importieren</button>
+      <button id="exportJson" class="small">JSON exportieren</button>
+      <button id="importJson" class="small">JSON importieren</button>
+      <button id="printReport" class="small">Drucken</button>
+      <button id="resetAll" class="small">Alle Daten löschen</button>
+    </div>
+    <input type="file" id="csvInput" accept=".csv" style="display:none" />
+    <input type="file" id="jsonInput" accept=".json" style="display:none" />
   </div>
-  <input type="file" id="csvInput" accept=".csv" style="display:none" />
-  <input type="file" id="jsonInput" accept=".json" style="display:none" />
 </section>
 
 <!-- Edit Modal -->
