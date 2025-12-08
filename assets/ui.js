@@ -23,6 +23,31 @@ const csvInput = document.getElementById('csvInput');
 const jsonInput = document.getElementById('jsonInput');
 let currentSort = { key:null, dir:'asc' };
 
+const tabTargets = {
+  tabTours: 'sectionTours',
+  tabSettings: 'sectionSettings',
+  tabBackups: 'sectionBackups',
+  tabExport: 'sectionExport'
+};
+
+function setActiveSection(sectionId){
+  Object.entries(tabTargets).forEach(([tabId, targetId]) => {
+    const tab = document.getElementById(tabId);
+    const section = document.getElementById(targetId);
+    if(tab && section){
+      const isActive = targetId === sectionId;
+      tab.classList.toggle('active', isActive);
+      section.classList.toggle('active', isActive);
+    }
+  });
+
+  if(sectionId === 'sectionSettings'){
+    populateSettingsSection().catch(err => console.error('Settings laden fehlgeschlagen', err));
+  }else if(sectionId === 'sectionBackups'){
+    loadBackupsList().catch(err => console.error('Backups laden fehlgeschlagen', err));
+  }
+}
+
 /* Jahre + PAPROV-Monate auffüllen */
 (function populateYearsAndPaprov(){
   const now = new Date();
@@ -104,6 +129,18 @@ async function loadConfObj(){
   };
 }
 
+async function populateSettingsSection(){
+  const conf = await loadConfObj();
+  const yy = selectYear.value;
+  const mm = selectMonth.value;
+  const curPeriod = `${yy}-${mm}`;
+  paprovMonth.value = curPeriod;
+  document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[curPeriod] !== undefined)
+    ? conf.paprovPerMonth[curPeriod]
+    : 0;
+  document.getElementById('lostCustomersAvg').value = conf.lostCustomersAvg || 0;
+}
+
 /* Migration von localStorage (falls noch alte Daten) */
 async function migrateFromLocalStorageIfPresent(){
   const tRaw = localStorage.getItem('provision_tours_v3') || localStorage.getItem('provision_tours_v2') || localStorage.getItem('provision_tours_v1');
@@ -163,6 +200,34 @@ function downloadJson(obj, filename){
   a.click();
   a.remove();
   URL.revokeObjectURL(a.href);
+}
+
+async function loadBackupsList(){
+  const list = document.getElementById('backupsList');
+  if(!list) return;
+  list.innerHTML = '<em>Lade...</em>';
+  const all = await idbGetAll('backups');
+  if(!all.length){
+    list.innerHTML = '<div class="muted">Keine Backups vorhanden</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  all.sort((a,b)=> b.ts.localeCompare(a.ts));
+  all.forEach(b=>{
+    const el = document.createElement('div');
+    el.style.borderBottom = '1px solid #eef6ff';
+    el.style.padding = '8px 4px';
+    el.innerHTML = `<div><strong>${b.ts}</strong> <span class="muted" style="margin-left:6px">${(b.payload && b.payload.reason) ? b.payload.reason : ''}</span></div>
+                    <div style="margin-top:6px"><button class="small dlBackup">Download</button> <button class="small delBackup">Löschen</button></div>`;
+    el.querySelector('.dlBackup').addEventListener('click', ()=> downloadJson(b.payload, `backup_${b.ts.replace(/[:.]/g,'-')}.json`));
+    el.querySelector('.delBackup').addEventListener('click', async ()=>{
+      if(!confirm('Backup löschen?')) return;
+      await idbDelete('backups', b.ts);
+      el.remove();
+    });
+    list.appendChild(el);
+  });
 }
 
 /* JSON Export/Import */
@@ -319,7 +384,6 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
   const lost = Number(document.getElementById('lostCustomersAvg').value || 0);
   await saveConf('lostCustomersAvg', lost);
   alert('Einstellungen gespeichert.');
-  document.getElementById('settingsModal').classList.remove('active');
   await renderTours();
   await triggerAutoBackup('settings_saved');
 });
@@ -754,33 +818,11 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
   doc.save(fname);
 });
 
-/* Backups Modal */
-document.getElementById('openBackups').addEventListener('click', async ()=>{
-  const list = document.getElementById('backupsList');
-  list.innerHTML = '<em>Lade...</em>';
-  const all = await idbGetAll('backups');
-  if(!all.length){ list.innerHTML = '<div class="muted">Keine Backups vorhanden</div>'; }
-  else{
-    list.innerHTML = '';
-    all.sort((a,b)=> b.ts.localeCompare(a.ts));
-    all.forEach(b=>{
-      const el = document.createElement('div');
-      el.style.borderBottom = '1px solid #eef6ff';
-      el.style.padding = '8px 4px';
-      el.innerHTML = `<div><strong>${b.ts}</strong> <span class="muted" style="margin-left:6px">${(b.payload && b.payload.reason) ? b.payload.reason : ''}</span></div>
-                      <div style="margin-top:6px"><button class="small dlBackup">Download</button> <button class="small delBackup">Löschen</button></div>`;
-      el.querySelector('.dlBackup').addEventListener('click', ()=> downloadJson(b.payload, `backup_${b.ts.replace(/[:.]/g,'-')}.json`));
-      el.querySelector('.delBackup').addEventListener('click', async ()=>{
-        if(!confirm('Backup löschen?')) return;
-        await idbDelete('backups', b.ts);
-        el.remove();
-      });
-      list.appendChild(el);
-    });
-  }
-  document.getElementById('backupsModal').classList.add('active');
+/* Backups */
+document.getElementById('openBackups').addEventListener('click', ()=>{
+  setActiveSection('sectionBackups');
 });
-document.getElementById('closeBackups').addEventListener('click', ()=> document.getElementById('backupsModal').classList.remove('active'));
+document.getElementById('closeBackups').addEventListener('click', ()=> setActiveSection('sectionTours'));
 document.getElementById('clearBackups').addEventListener('click', async ()=>{
   if(!confirm('Alle Backups löschen?')) return;
   await idbClear('backups'); document.getElementById('backupsList').innerHTML = '<div class="muted">Keine Backups vorhanden</div>';
@@ -794,18 +836,7 @@ document.getElementById('resetAll').addEventListener('click', async ()=>{
 });
 document.getElementById('printReport').addEventListener('click', ()=> window.print());
 
-/* Settings-Modal öffnen/schließen */
-document.getElementById('openSettings').addEventListener('click', async ()=>{
-  const conf = await loadConfObj();
-  const yy = selectYear.value;
-  const mm = selectMonth.value;
-  const curPeriod = `${yy}-${mm}`;
-  document.getElementById('paprovMonth').value = curPeriod;
-  document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[curPeriod] !== undefined) ? conf.paprovPerMonth[curPeriod] : 0;
-  document.getElementById('lostCustomersAvg').value = conf.lostCustomersAvg || 0;
-  document.getElementById('settingsModal').classList.add('active');
-});
-document.getElementById('closeSettings').addEventListener('click', ()=> document.getElementById('settingsModal').classList.remove('active'));
+document.getElementById('openSettings').addEventListener('click', ()=> setActiveSection('sectionSettings'));
 
 /* CSV-Import Button */
 document.getElementById('importCsv').addEventListener('click', ()=> csvInput.click());
@@ -839,8 +870,20 @@ export async function init(){
   document.getElementById('lostCustomersAvg').value = conf.lostCustomersAvg || 0;
   document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[`${yy}-${mm}`]) ? conf.paprovPerMonth[`${yy}-${mm}`] : 0;
 
-  selectMonth.addEventListener('change', ()=> renderTours());
-  selectYear.addEventListener('change', ()=> renderTours());
+  Object.entries(tabTargets).forEach(([tabId, sectionId])=>{
+    const tab = document.getElementById(tabId);
+    if(tab) tab.addEventListener('click', ()=> setActiveSection(sectionId));
+  });
 
+  selectMonth.addEventListener('change', ()=> {
+    renderTours();
+    if(document.getElementById('sectionSettings').classList.contains('active')) populateSettingsSection();
+  });
+  selectYear.addEventListener('change', ()=> {
+    renderTours();
+    if(document.getElementById('sectionSettings').classList.contains('active')) populateSettingsSection();
+  });
+
+  setActiveSection('sectionTours');
   await renderTours();
 }
