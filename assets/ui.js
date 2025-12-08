@@ -671,8 +671,9 @@ async function renderTours(){
     const actionsSumCents = toCents(computeActionSum(t.actions || []));
 
     const tr = document.createElement('tr');
+    const dateDisplay = t.date ? new Date(t.date).toLocaleDateString('de-DE') : '';
     tr.innerHTML = `
-      <td>${t.date}</td>
+      <td>${dateDisplay}</td>
       <td>${t.id}</td>
       <td><span class="tag">${t.tourType}</span></td>
       <td>${fromCents(tourTotalCents)}</td>
