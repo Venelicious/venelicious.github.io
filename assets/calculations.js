@@ -1,3 +1,5 @@
+import { computeLohnsteuer2025 } from './lohnsteuer2025.js';
+
 export function toCents(e) {
   return Math.round(Number(e || 0) * 100);
 }
@@ -72,16 +74,6 @@ export function determineVGRate(avgEuro) {
   return 0.085;
 }
 
-function taxClassFactor(tc) {
-  switch (tc) {
-    case 'II': return 0.98;
-    case 'III': return 0.6;
-    case 'V': return 1.3;
-    case 'VI': return 1.4;
-    default: return 1; // I & IV
-  }
-}
-
 export function computeNetResult(bruttoEuro, netConf = {}) {
   const brutto = Number(bruttoEuro || 0);
   const defaults = {
@@ -131,26 +123,30 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   const pv = taxableBrutto * pvRate;
   const sozial = rv + av + kv + pv;
 
-  const taxableIncome = Math.max(taxableBrutto - sozial, 0);
+  // PAP-2025 basierte Lohnsteuer
+  const taxableForPapEuro = Math.max(taxableBrutto, 0);
+  const birthYear = conf.age ? (conf.taxYear - conf.age) : null;
+  const ajahr = conf.age ? birthYear + 65 : 0;
+  const papResult = computeLohnsteuer2025({
+    RE4: toCents(taxableForPapEuro),
+    LZZ: 2,
+    STKL: conf.taxClass,
+    KVZ: Number(conf.kvZusatz ?? defaults.kvZusatz),
+    PKV: conf.kvType === 'privat' ? 2 : 0,
+    PKPV: conf.kvType === 'privat' ? toCents(conf.kvFlatRate || 0) : 0,
+    KRV: rvRate === 0 ? 1 : 0,
+    PVS: conf.state === 'SN' ? 1 : 0,
+    PVZ: (!conf.hasKids && Number(conf.age || 0) >= 23) ? 1 : 0,
+    PVA: 0,
+    R: conf.churchTax ? 1 : 0,
+    ZKF: conf.hasKids ? 1 : 0,
+    ALTER1: Number(conf.age || 0) >= 64 ? 1 : 0,
+    AJAHR: ajahr || 0,
+  });
 
-  const annualBrutto = taxableIncome * 12;
-  let lohnsteuerAnnual = 0;
-  if (annualBrutto <= 11604) {
-    lohnsteuerAnnual = 0;
-  } else if (annualBrutto <= 17005) {
-    const y = (annualBrutto - 11604) / 10000;
-    lohnsteuerAnnual = (922.98 * y + 1400) * y;
-  } else if (annualBrutto <= 66799) {
-    const z = (annualBrutto - 17005) / 10000;
-    lohnsteuerAnnual = (181.19 * z + 2397) * z + 1025;
-  } else {
-    lohnsteuerAnnual = annualBrutto * 0.42 - 9972.98;
-  }
-  lohnsteuerAnnual *= taxClassFactor(conf.taxClass);
-
-  let lohnsteuerMonat = lohnsteuerAnnual / 12;
-  let soli = lohnsteuerMonat > 16 ? lohnsteuerMonat * 0.055 : 0;
-  let kirche = lohnsteuerMonat * churchRate;
+  const lohnsteuerMonat = papResult.LSTLZZ;
+  const soli = papResult.SOLZLZZ;
+  const kirche = papResult.BK * churchRate;
 
   let netto = brutto - sozial - lohnsteuerMonat - soli - kirche - bav;
 
