@@ -149,6 +149,7 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   const kirche = papResult.BK * churchRate;
 
   let netto = brutto - sozial - lohnsteuerMonat - soli - kirche - bav;
+  const taxableIncome = papResult.ZVE ? papResult.ZVE / 100 : taxableBrutto;
 
   return {
     netto,
