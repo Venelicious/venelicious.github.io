@@ -192,8 +192,6 @@
     </div>
 
     <hr/>
-    <h4>Nettolohn (www.nettolohn.de)</h4>
-    <p class="muted">Nutze die gleichen Angaben wie in deiner Abfrage auf <a href="https://www.nettolohn.de" target="_blank" rel="noopener noreferrer">nettolohn.de</a>, damit die Netto-Berechnung hier übereinstimmt.</p>
     <div class="row">
       <label>Abrechnungsjahr (automatisch)
         <input id="netTaxYear" type="number" readonly />
@@ -342,9 +340,6 @@
           <option value="0.015">Erhöhter Satz (1,5%)</option>
           <option value="0">Befreit (0%)</option>
         </select>
-      </label>
-      <label>Kinderlosenzuschlag aktiv?
-        <input id="netPvSurcharge" type="text" value="0,35%" readonly />
       </label>
     </div>
     <hr/>
