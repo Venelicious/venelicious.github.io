@@ -120,7 +120,6 @@
     <div class="controls">
       <button id="addBtn" class="small">🔺 Tour speichern</button>
       <button id="clearBtn" class="small">✖ Leeren</button>
-      <button id="openSettings" class="small right">⚙ Einstellungen</button>
     </div>
   </div>
 </section>

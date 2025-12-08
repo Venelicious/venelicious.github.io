@@ -1001,7 +1001,6 @@ document.getElementById('resetAll').addEventListener('click', async ()=>{
 });
 document.getElementById('printReport').addEventListener('click', ()=> window.print());
 
-document.getElementById('openSettings').addEventListener('click', ()=> setActiveSection('sectionSettings'));
 
 /* CSV-Import Button */
 document.getElementById('importCsv').addEventListener('click', ()=> csvInput.click());
