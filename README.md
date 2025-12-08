@@ -195,6 +195,14 @@
     <h4>Nettolohn (www.nettolohn.de)</h4>
     <p class="muted">Nutze die gleichen Angaben wie in deiner Abfrage auf <a href="https://www.nettolohn.de" target="_blank" rel="noopener noreferrer">nettolohn.de</a>, damit die Netto-Berechnung hier übereinstimmt.</p>
     <div class="row">
+      <label>Abrechnungsjahr (automatisch)
+        <input id="netTaxYear" type="number" readonly />
+      </label>
+      <label>Betriebliche Altersvorsorge (€/mtl.)
+        <input id="netBav" type="number" step="0.01" value="0.00" />
+      </label>
+    </div>
+    <div class="row">
       <label>Steuerklasse
         <select id="netTaxClass">
           <option value="I">I</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option><option value="VI">VI</option>
@@ -213,8 +221,63 @@
           <option value="no">Nein</option>
         </select>
       </label>
-      <label>KV-Zusatzbeitrag (in %)
-        <input id="netKvZusatz" type="number" step="0.1" min="0" max="4" />
+      <label>Krankenversicherung
+        <select id="netKvType">
+          <option value="gesetzlich">Gesetzlich</option>
+          <option value="freiwillig">Freiwillig gesetzlich</option>
+          <option value="privat">Privat</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Krankenkasse / Zusatzbeitrag
+        <select id="netKvFund">
+          <option value="2.45">Standard (2,45%)</option>
+          <option value="1.2">Techniker Krankenkasse (+1,20%)</option>
+          <option value="1.7">Barmer (+1,70%)</option>
+          <option value="1.6">DAK Gesundheit (+1,60%)</option>
+          <option value="1.39">AOK Baden-Württemberg (+1,39%)</option>
+          <option value="1.7">AOK Bayern (+1,70%)</option>
+          <option value="custom">Individueller Satz</option>
+        </select>
+      </label>
+      <label>KV-Zusatzbeitrag (14,6% + …)
+        <input id="netKvZusatz" type="number" step="0.01" min="0" max="4" />
+      </label>
+    </div>
+    <div class="row">
+      <label>Privatbeitrag (€/mtl., nur bei PKV)
+        <input id="netKvFlatRate" type="number" step="0.01" value="0.00" />
+      </label>
+      <label>Kinderlosenzuschlag
+        <select id="netKids">
+          <option value="yes">Kinder vorhanden</option>
+          <option value="no">Kinderlos</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Ihr Alter
+        <input id="netAge" type="number" min="16" max="80" />
+      </label>
+      <label>Rentenversicherung
+        <select id="netRvRate">
+          <option value="0.093">Standard (9,3%)</option>
+          <option value="0">Befreit (0%)</option>
+          <option value="0.101">Knappschaft Bahn/See (10,1%)</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Arbeitslosenversicherung
+        <select id="netAvRate">
+          <option value="0.0125">Standard (1,25%)</option>
+          <option value="0.015">Erhöhter Satz (1,5%)</option>
+          <option value="0">Befreit (0%)</option>
+        </select>
+      </label>
+      <label>Kinderlosenzuschlag aktiv?
+        <input id="netPvSurcharge" type="text" value="0,35%" readonly />
       </label>
     </div>
     <div class="row">

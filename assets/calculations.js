@@ -72,34 +72,68 @@ export function determineVGRate(avgEuro) {
   return 0.085;
 }
 
-export function computeNetFromBrutto(bruttoEuro, netConf = {}) {
-  const brutto = Number(bruttoEuro || 0);
-  if (brutto <= 0) return 0;
+function taxClassFactor(tc) {
+  switch (tc) {
+    case 'II': return 0.98;
+    case 'III': return 0.6;
+    case 'V': return 1.3;
+    case 'VI': return 1.4;
+    default: return 1; // I & IV
+  }
+}
 
-  // Wenn Referenzwerte aus nettolohn.de vorliegen, nutze das Verhältnis als Näherung
-  const refBrutto = Number(netConf.referenceBrutto || 0);
-  const refNetto = Number(netConf.referenceNetto || 0);
-  if (refBrutto > 0 && refNetto > 0) {
-    const factor = refNetto / refBrutto;
-    return brutto * factor;
+export function computeNetResult(bruttoEuro, netConf = {}) {
+  const brutto = Number(bruttoEuro || 0);
+  const defaults = {
+    taxClass: 'I',
+    state: 'NW',
+    churchTax: false,
+    kvType: 'gesetzlich',
+    kvZusatz: 2.45,
+    kvFlatRate: 0,
+    hasKids: true,
+    age: 30,
+    bavMonthly: 0,
+    rvRate: 0.093,
+    avRate: 0.0125,
+    pvRate: 0.024,
+    pvSurchargeRate: 0.0035,
+    referenceBrutto: 0,
+    referenceNetto: 0,
+    taxYear: new Date().getFullYear(),
+  };
+  const conf = { ...defaults, ...netConf };
+  conf.churchTax = netConf.churchTax ?? defaults.churchTax;
+  conf.hasKids = netConf.hasKids ?? defaults.hasKids;
+
+  if (brutto <= 0) {
+    return {
+      netto: 0,
+      breakdown: { rv: 0, av: 0, kv: 0, pv: 0, social: 0, lohnsteuer: 0, soli: 0, kirche: 0, bav: Number(conf.bavMonthly || 0), taxableBrutto: 0 }
+    };
   }
 
-  const rvRate = Number(netConf.rvRate ?? 0.093);
-  const avRate = Number(netConf.avRate ?? 0.0125);
-  const kvZusatz = Number(netConf.kvZusatz ?? 2.45);
-  const kvRate = ((14.6 + kvZusatz) / 100) / 2; // Arbeitnehmeranteil
-  const pvBase = Number(netConf.pvRate ?? 0.024);
-  const pvSurcharge = netConf.pvSurcharge ? 0.0035 : 0;
-  const pvRate = pvBase + pvSurcharge;
-  const churchRate = netConf.churchTax ? (netConf.state === 'BY' || netConf.state === 'BW' ? 0.08 : 0.09) : 0;
+  const bav = Number(conf.bavMonthly || 0);
+  const taxableBrutto = Math.max(brutto - bav, 0);
 
-  const rv = brutto * rvRate;
-  const av = brutto * avRate;
-  const kv = brutto * kvRate;
-  const pv = brutto * pvRate;
+  const kvZusatz = Number(conf.kvZusatz ?? defaults.kvZusatz);
+  const kvRate = (conf.kvType === 'gesetzlich' || conf.kvType === 'freiwillig') ? ((14.6 + kvZusatz) / 100) / 2 : 0;
+  const kvFlat = conf.kvType === 'privat' ? Number(conf.kvFlatRate || 0) : 0;
+
+  const pvSurcharge = (!conf.hasKids && Number(conf.age || 0) >= 23) ? Number(conf.pvSurchargeRate ?? defaults.pvSurchargeRate) : 0;
+  const pvRate = Number(conf.pvRate ?? defaults.pvRate) + pvSurcharge;
+
+  const rvRate = Number(conf.rvRate ?? defaults.rvRate);
+  const avRate = Number(conf.avRate ?? defaults.avRate);
+  const churchRate = conf.churchTax ? (conf.state === 'BY' || conf.state === 'BW' ? 0.08 : 0.09) : 0;
+
+  const rv = taxableBrutto * rvRate;
+  const av = taxableBrutto * avRate;
+  const kv = taxableBrutto * kvRate + kvFlat;
+  const pv = taxableBrutto * pvRate;
   const sozial = rv + av + kv + pv;
 
-  const annualBrutto = brutto * 12;
+  const annualBrutto = taxableBrutto * 12;
   let lohnsteuerAnnual = 0;
   if (annualBrutto <= 11604) {
     lohnsteuerAnnual = 0;
@@ -112,9 +146,29 @@ export function computeNetFromBrutto(bruttoEuro, netConf = {}) {
   } else {
     lohnsteuerAnnual = annualBrutto * 0.42 - 9972.98;
   }
-  const lohnsteuerMonat = lohnsteuerAnnual / 12;
-  const soli = lohnsteuerMonat > 16 ? lohnsteuerMonat * 0.055 : 0;
-  const kirche = lohnsteuerMonat * churchRate;
-  const netto = brutto - sozial - lohnsteuerMonat - soli - kirche;
-  return netto;
+  lohnsteuerAnnual *= taxClassFactor(conf.taxClass);
+
+  let lohnsteuerMonat = lohnsteuerAnnual / 12;
+  let soli = lohnsteuerMonat > 16 ? lohnsteuerMonat * 0.055 : 0;
+  let kirche = lohnsteuerMonat * churchRate;
+
+  let netto = brutto - sozial - lohnsteuerMonat - soli - kirche - bav;
+
+  if (conf.referenceBrutto > 0 && conf.referenceNetto > 0) {
+    const targetNetto = brutto * (conf.referenceNetto / conf.referenceBrutto);
+    const correction = targetNetto - netto;
+    lohnsteuerMonat = Math.max(lohnsteuerMonat - correction, 0);
+    soli = lohnsteuerMonat > 16 ? lohnsteuerMonat * 0.055 : 0;
+    kirche = lohnsteuerMonat * churchRate;
+    netto = brutto - sozial - lohnsteuerMonat - soli - kirche - bav;
+  }
+
+  return {
+    netto,
+    breakdown: { rv, av, kv, pv, social: sozial, lohnsteuer: lohnsteuerMonat, soli, kirche, bav, taxableBrutto }
+  };
+}
+
+export function computeNetFromBrutto(bruttoEuro, netConf = {}) {
+  return computeNetResult(bruttoEuro, netConf).netto;
 }
