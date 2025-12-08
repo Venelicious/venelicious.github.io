@@ -20,6 +20,7 @@
 
 <nav class="tabNav">
   <button id="tabTours" class="tabButton active">Touren</button>
+  <button id="tabSummary" class="tabButton">Zusammenfassung</button>
   <button id="tabSettings" class="tabButton">Einstellungen</button>
   <button id="tabBackups" class="tabButton">Backups</button>
   <button id="tabExport" class="tabButton">Export</button>
@@ -156,10 +157,22 @@
         </table>
       </div>
 
-      <div class="summary" id="summary">
-        <strong>Zusammenfassung</strong>
-        <div id="summaryContent" style="margin-top:8px"></div>
+    </div>
+  </div>
+</section>
+
+<section id="sectionSummary" class="tabSection">
+  <div class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3>Zusammenfassung</h3>
+        <p class="muted">Aktuelle Kennzahlen und Summen für den ausgewählten Zeitraum.</p>
       </div>
+    </div>
+
+    <div class="summary" id="summary">
+      <strong>Zusammenfassung</strong>
+      <div id="summaryContent" style="margin-top:8px"></div>
     </div>
   </div>
 </section>
