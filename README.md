@@ -314,7 +314,7 @@
       <label>Privatbeitrag (€/mtl., nur bei PKV)
         <input id="netKvFlatRate" type="number" step="0.01" value="0.00" />
       </label>
-      <label>Kinderlosenzuschlag
+      <label>Pflegeversicherung: Kinderstatus
         <select id="netKids">
           <option value="childless_over_23">Kinderlos, mind. 23</option>
           <option value="childless_under_23">Kinderlos, unter 23</option>
@@ -324,6 +324,7 @@
           <option value="four_children">4 Kinder</option>
           <option value="five_plus_children">5 oder mehr Kinder</option>
         </select>
+        <small class="muted">Berücksichtigt Zuschlag für Kinderlose ab 23 sowie Abschläge ab dem zweiten Kind (2026er Sätze, +0,5 %-Punkte in Sachsen).</small>
       </label>
     </div>
     <div class="row">

@@ -236,10 +236,9 @@ async function loadConfObj(){
       childrenCount,
       age: Number(map.netConfig?.age || 30),
       bavMonthly: Number(map.netConfig?.bavMonthly || 0),
-      pvSurchargeRate: Number(map.netConfig?.pvSurchargeRate ?? 0.0035),
       rvRate: map.netConfig?.rvRate ?? 0.093,
       avRate: map.netConfig?.avRate ?? 0.013,
-      pvRate: map.netConfig?.pvRate ?? 0.024,
+      pvRate: map.netConfig?.pvRate ?? 0.018,
       taxYear: Number(map.netConfig?.taxYear || new Date().getFullYear())
     }
   };
@@ -272,7 +271,7 @@ async function populateSettingsSection(){
   document.getElementById('netKids').value = conf.netConfig.childrenStatus || 'one_child';
   document.getElementById('netAge').value = conf.netConfig.age || '';
   const pvSurchargeField = document.getElementById('netPvSurcharge');
-  if(pvSurchargeField) pvSurchargeField.value = `${((conf.netConfig.pvSurchargeRate ?? 0.0035)*100).toFixed(2)}%`;
+  if(pvSurchargeField) pvSurchargeField.value = `${((conf.netConfig.pvSurchargeRate ?? 0.006)*100).toFixed(2)}%`;
   document.getElementById('netRvRate').value = conf.netConfig.rvRate ?? 0.093;
   document.getElementById('netAvRate').value = conf.netConfig.avRate ?? 0.013;
 }
@@ -544,7 +543,7 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
     childrenCount,
     age: Number(document.getElementById('netAge').value || 0),
     bavMonthly: Number(document.getElementById('netBav').value || 0),
-    pvSurchargeRate: 0.0035,
+    pvSurchargeRate: 0.006,
     rvRate: Number(document.getElementById('netRvRate').value || 0.093),
     avRate: Number(document.getElementById('netAvRate').value || 0.013),
     taxYear: Number(document.getElementById('netTaxYear').value || selectYear.value || new Date().getFullYear())
