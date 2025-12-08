@@ -137,7 +137,7 @@
     <div class="controls">
       <button id="addBtn" class="small">🔺 Tour speichern</button>
       <button id="clearBtn" class="small">✖ Leeren</button>
-      <button id="openSettings" class="small right">⚙ Einstellungen</button>
+      <button id="openSettings" class="small right">⚙</button>
     </div>
 
     <h3 style="margin-top:18px">Touren</h3>
