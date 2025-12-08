@@ -280,16 +280,6 @@
         <input id="netPvSurcharge" type="text" value="0,35%" readonly />
       </label>
     </div>
-    <div class="row">
-      <label>Referenz-Brutto laut nettolohn.de
-        <input id="netReferenceBrutto" type="number" step="0.01" placeholder="z.B. 2500" />
-      </label>
-      <label>Referenz-Netto laut nettolohn.de
-        <input id="netReferenceNetto" type="number" step="0.01" placeholder="Ergebnis aus nettolohn.de" />
-      </label>
-    </div>
-    <div class="muted" style="margin-top:6px">Falls du Brutto- und Netto-Referenzwerte hinterlegst, wird das Verhältnis für die Berechnung deiner Auszahlungen genutzt.</div>
-
     <hr/>
     <h4>Kundenmanagement</h4>
     <label>Im Schnitt verlorene Kunden
