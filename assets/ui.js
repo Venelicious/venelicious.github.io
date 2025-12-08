@@ -73,17 +73,68 @@ function setActiveSection(sectionId){
 /* Aktionen-UI */
 function createActionRow(price='', qty=''){
   const row = document.createElement('div'); row.className = 'action-row';
-  row.innerHTML = `<input class="actPrice" type="number" step="0.01" value="${price}" placeholder="Preis €">
-                   <input class="actQty" type="number" step="1" value="${qty}" placeholder="Stück">
-                   <button class="small delAct" type="button">x</button>`;
-  row.querySelector('.delAct').addEventListener('click', ()=> row.remove());
+
+  const priceInput = document.createElement('input');
+  priceInput.className = 'actPrice';
+  priceInput.type = 'number';
+  priceInput.step = '0.01';
+  priceInput.value = price;
+  priceInput.placeholder = 'Preis €';
+
+  const qtyInput = document.createElement('input');
+  qtyInput.className = 'actQty';
+  qtyInput.type = 'number';
+  qtyInput.step = '1';
+  qtyInput.value = qty;
+  qtyInput.placeholder = 'Stück';
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'small delAct';
+  delBtn.type = 'button';
+  delBtn.textContent = 'x';
+  delBtn.addEventListener('click', ()=> row.remove());
+
+  row.append(priceInput, qtyInput, delBtn);
+  return row;
+}
+function renderActionsList(actions = [], target = document.getElementById('actionsList')){
+  if(!target) return;
+  target.innerHTML = '';
+  actions.forEach(a => target.appendChild(createActionRow(a.price ?? '', a.qty ?? '')));
+}
+function createSumRow(label, value, { emphasize=false, style='' } = {}){
+  const row = document.createElement('div');
+  row.className = 'sumRow';
+  if(style) row.style.cssText = style;
+
+  const labelSpan = document.createElement('span');
+  const valueSpan = document.createElement('span');
+
+  if(emphasize){
+    const strongLabel = document.createElement('strong');
+    strongLabel.textContent = label;
+    const strongValue = document.createElement('strong');
+    strongValue.textContent = value;
+    labelSpan.appendChild(strongLabel);
+    valueSpan.appendChild(strongValue);
+  } else {
+    labelSpan.textContent = label;
+    valueSpan.textContent = value;
+  }
+
+  row.append(labelSpan, valueSpan);
   return row;
 }
 document.getElementById('addActionBtn').addEventListener('click', (e)=>{
   e.preventDefault();
   const p = document.getElementById('actPrice').value;
   const q = document.getElementById('actQty').value;
-  document.getElementById('actionsList').appendChild(createActionRow(p,q));
+  const list = document.getElementById('actionsList');
+  const existing = Array.from(list.querySelectorAll('.action-row')).map(r=>({
+    price: r.querySelector('.actPrice').value,
+    qty: r.querySelector('.actQty').value
+  }));
+  renderActionsList([...existing, { price: p, qty: q }], list);
   document.getElementById('actPrice').value=''; document.getElementById('actQty').value='';
 });
 
@@ -364,7 +415,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   document.getElementById('tourId').value=''; document.getElementById('amount').value='';
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
-  document.getElementById('note').value=''; document.getElementById('actionsList').innerHTML='';
+  document.getElementById('note').value=''; renderActionsList([]);
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
   await renderTours();
   await triggerAutoBackup('tour_added');
@@ -375,7 +426,7 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   document.getElementById('tourId').value=''; document.getElementById('amount').value='';
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
-  document.getElementById('note').value=''; document.getElementById('actionsList').innerHTML='';
+  document.getElementById('note').value=''; renderActionsList([]);
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
 });
 
@@ -571,48 +622,49 @@ async function renderTours(){
   const soli = lohnsteuer > 16 ? lohnsteuer * 0.055 : 0;
 
   const summary = document.getElementById('summaryContent');
-  summary.innerHTML = `
-    <div class="sumRow"><span>❯ Arbeitstage</span><span>${tours.length}</span></div>
-    <div class="sumRow"><span>❯ Tourentage</span><span>${countVGTours}</span></div>
-    <div class="sumRow"><span>❯ Gesamtumsatz</span><span>€ ${fromCents(totalUmsatzAllCents)}</span></div>
-    <div class="sumRow"><span>❯ Tagesumsatz ⌀</span><span>€ ${avgVGEuros.toFixed(2)}</span></div>
-    <div class="sumRow"><span>❯ Provisionssatz</span><span>${(vgRate*100).toFixed(2)}%</span></div>
-    <div class="sumRow"><span>❯ Provision</span><span>€ ${fromCents(vgProvisionCents)}</span></div>
-
-    <hr/>
-
-    <div class="sumRow"><span>❯ Neukunden-Boni</span><span>€ ${fromCents(totalNeukCents)}</span></div>
-    <div class="sumRow"><span>❯ Integrationen</span><span>€ ${fromCents(totalIntegrationCents)}</span></div>
-    <div class="sumRow"><span>❯ Aktionen (10%)</span><span>€ ${fromCents(totalActionProvCents)}</span></div>
-    <div class="sumRow"><span>❯ PAPROV</span><span>€ ${fromCents(totalPaprovCents)}</span></div>
-    <div class="sumRow"><span>❯ Zusatzprovision</span><span>€ ${fromCents(totalExtrasCents)}</span></div>
-    <div class="sumRow"><span>❯ Kundenmanagement</span><span>€ ${fromCents(kmBonusCents)}</span></div>
-
-    <hr/>
-
-    <div class="sumRow"><span>❯ Spesen</span><span>€ ${fromCents(totalSpesenCents)}</span></div>
-
-    <hr/>
-
-    <div class="sumRow"><span><strong>❯ Provision</strong></span><span><strong>€ ${fromCents(totalProvisionCents)}</strong></span></div>
-    <div class="sumRow"><span>❯ Grundgehalt</span><span>€ ${fromCents(baseSalaryCents)}</span></div>
-    <div class="sumRow"><span><strong>❯ Monatsbrutto</strong></span><span><strong>€ ${fromCents(monthlyBeforeSpesenCents)}</strong></span></div>
-
-    <hr/>
-
-    <div class="sumRow"><span>Rentenversicherung</span><span>€ ${rv.toFixed(2)}</span></div>
-    <div class="sumRow"><span>Arbeitslosenversicherung</span><span>€ ${av.toFixed(2)}</span></div>
-    <div class="sumRow"><span>Krankenversicherung</span><span>€ ${kv.toFixed(2)}</span></div>
-    <div class="sumRow"><span>Pflegeversicherung</span><span>€ ${pv.toFixed(2)}</span></div>
-    <div class="sumRow"><span>Lohnsteuer</span><span>€ ${lohnsteuer.toFixed(2)}</span></div>
-    <div class="sumRow"><span>Soli</span><span>€ ${soli.toFixed(2)}</span></div>
-
-    <hr/>
-
-    <div class="sumRow"><span><strong>Netto</strong></span><span><strong>€ ${fromCents(nettoFromBruttoCents)}</strong></span></div>
-    <div class="sumRow"><span>+ Spesen</span><span>€ ${fromCents(totalSpesenCents)}</span></div>
-    <div class="sumRow" style="margin-top:12px;font-size:1.1rem"><span><strong>💰 Auszahlung</strong></span><span><strong>€ ${fromCents(finalPayoutCents)}</strong></span></div>
-  `;
+  summary.innerHTML = '';
+  summary.append(
+    createSumRow('❯ Arbeitstage', tours.length),
+    createSumRow('❯ Tourentage', countVGTours),
+    createSumRow('❯ Gesamtumsatz', `€ ${fromCents(totalUmsatzAllCents)}`),
+    createSumRow('❯ Tagesumsatz ⌀', `€ ${avgVGEuros.toFixed(2)}`),
+    createSumRow('❯ Provisionssatz', `${(vgRate*100).toFixed(2)}%`),
+    createSumRow('❯ Provision', `€ ${fromCents(vgProvisionCents)}`),
+  );
+  summary.appendChild(document.createElement('hr'));
+  summary.append(
+    createSumRow('❯ Neukunden-Boni', `€ ${fromCents(totalNeukCents)}`),
+    createSumRow('❯ Integrationen', `€ ${fromCents(totalIntegrationCents)}`),
+    createSumRow('❯ Aktionen (10%)', `€ ${fromCents(totalActionProvCents)}`),
+    createSumRow('❯ PAPROV', `€ ${fromCents(totalPaprovCents)}`),
+    createSumRow('❯ Zusatzprovision', `€ ${fromCents(totalExtrasCents)}`),
+    createSumRow('❯ Kundenmanagement', `€ ${fromCents(kmBonusCents)}`),
+  );
+  summary.appendChild(document.createElement('hr'));
+  summary.append(
+    createSumRow('❯ Spesen', `€ ${fromCents(totalSpesenCents)}`),
+  );
+  summary.appendChild(document.createElement('hr'));
+  summary.append(
+    createSumRow('❯ Provision', `€ ${fromCents(totalProvisionCents)}`, { emphasize: true }),
+    createSumRow('❯ Grundgehalt', `€ ${fromCents(baseSalaryCents)}`),
+    createSumRow('❯ Monatsbrutto', `€ ${fromCents(monthlyBeforeSpesenCents)}`, { emphasize: true }),
+  );
+  summary.appendChild(document.createElement('hr'));
+  summary.append(
+    createSumRow('Rentenversicherung', `€ ${rv.toFixed(2)}`),
+    createSumRow('Arbeitslosenversicherung', `€ ${av.toFixed(2)}`),
+    createSumRow('Krankenversicherung', `€ ${kv.toFixed(2)}`),
+    createSumRow('Pflegeversicherung', `€ ${pv.toFixed(2)}`),
+    createSumRow('Lohnsteuer', `€ ${lohnsteuer.toFixed(2)}`),
+    createSumRow('Soli', `€ ${soli.toFixed(2)}`),
+  );
+  summary.appendChild(document.createElement('hr'));
+  summary.append(
+    createSumRow('Netto', `€ ${fromCents(nettoFromBruttoCents)}`, { emphasize: true }),
+    createSumRow('+ Spesen', `€ ${fromCents(totalSpesenCents)}`),
+    createSumRow('💰 Auszahlung', `€ ${fromCents(finalPayoutCents)}`, { emphasize: true, style: 'margin-top:12px;font-size:1.1rem' }),
+  );
 }
 
 /* ========== Edit-Modal ========== */
