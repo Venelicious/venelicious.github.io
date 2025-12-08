@@ -25,6 +25,7 @@ let currentSort = { key:null, dir:'asc' };
 
 const tabTargets = {
   tabTours: 'sectionTours',
+  tabSummary: 'sectionSummary',
   tabSettings: 'sectionSettings',
   tabBackups: 'sectionBackups',
   tabExport: 'sectionExport'
