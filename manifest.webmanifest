@@ -1,9 +1,9 @@
 {
   "name": "Touren & Provisionen",
   "short_name": "Provisionen",
-  "description": "Offline Provisionstool mit Touren, PAPROV & Monatsabrechnung.",
+  "description": "Provisionstool",
   "lang": "de-DE",
-  "start_url": "index3.html",
+  "start_url": "README.md",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0b2545",
@@ -22,4 +22,5 @@
     }
   ]
 }
+
 
