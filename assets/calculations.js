@@ -72,12 +72,31 @@ export function determineVGRate(avgEuro) {
   return 0.085;
 }
 
-export function computeNetFromBrutto(bruttoEuro) {
+export function computeNetFromBrutto(bruttoEuro, netConf = {}) {
   const brutto = Number(bruttoEuro || 0);
-  const rv = brutto * 0.093;
-  const av = brutto * 0.0125;
-  const kv = brutto * ((14.6 + 2.45) / 100 / 2);
-  const pv = brutto * 0.024;
+  if (brutto <= 0) return 0;
+
+  // Wenn Referenzwerte aus nettolohn.de vorliegen, nutze das Verhältnis als Näherung
+  const refBrutto = Number(netConf.referenceBrutto || 0);
+  const refNetto = Number(netConf.referenceNetto || 0);
+  if (refBrutto > 0 && refNetto > 0) {
+    const factor = refNetto / refBrutto;
+    return brutto * factor;
+  }
+
+  const rvRate = Number(netConf.rvRate ?? 0.093);
+  const avRate = Number(netConf.avRate ?? 0.0125);
+  const kvZusatz = Number(netConf.kvZusatz ?? 2.45);
+  const kvRate = ((14.6 + kvZusatz) / 100) / 2; // Arbeitnehmeranteil
+  const pvBase = Number(netConf.pvRate ?? 0.024);
+  const pvSurcharge = netConf.pvSurcharge ? 0.0035 : 0;
+  const pvRate = pvBase + pvSurcharge;
+  const churchRate = netConf.churchTax ? (netConf.state === 'BY' || netConf.state === 'BW' ? 0.08 : 0.09) : 0;
+
+  const rv = brutto * rvRate;
+  const av = brutto * avRate;
+  const kv = brutto * kvRate;
+  const pv = brutto * pvRate;
   const sozial = rv + av + kv + pv;
 
   const annualBrutto = brutto * 12;
@@ -95,6 +114,7 @@ export function computeNetFromBrutto(bruttoEuro) {
   }
   const lohnsteuerMonat = lohnsteuerAnnual / 12;
   const soli = lohnsteuerMonat > 16 ? lohnsteuerMonat * 0.055 : 0;
-  const netto = brutto - sozial - lohnsteuerMonat - soli;
+  const kirche = lohnsteuerMonat * churchRate;
+  const netto = brutto - sozial - lohnsteuerMonat - soli - kirche;
   return netto;
 }
