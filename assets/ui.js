@@ -24,6 +24,7 @@ const jsonInput = document.getElementById('jsonInput');
 let currentSort = { key:null, dir:'asc' };
 
 const tabTargets = {
+  tabNewTour: 'sectionNewTour',
   tabTours: 'sectionTours',
   tabSummary: 'sectionSummary',
   tabSettings: 'sectionSettings',
@@ -937,6 +938,6 @@ export async function init(){
     if(document.getElementById('sectionSettings').classList.contains('active')) populateSettingsSection();
   });
 
-  setActiveSection('sectionTours');
+  setActiveSection('sectionNewTour');
   await renderTours();
 }
