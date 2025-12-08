@@ -271,7 +271,7 @@
     <div class="row">
       <label>Arbeitslosenversicherung
         <select id="netAvRate">
-          <option value="0.0125">Standard (1,25%)</option>
+          <option value="0.013">Standard (1,3%)</option>
           <option value="0.015">Erhöhter Satz (1,5%)</option>
           <option value="0">Befreit (0%)</option>
         </select>
