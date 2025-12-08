@@ -30,12 +30,19 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Offline-Fallback
+// Cache-first strategy with navigation-only offline fallback
 self.addEventListener("fetch", (event) => {
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match("./"))
+        .then((response) => response || caches.match("/"))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((resp) => {
-      return resp || fetch(event.request);
-    })
+    caches.match(event.request).then((resp) => resp || fetch(event.request))
   );
 });
 
