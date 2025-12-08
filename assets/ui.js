@@ -190,8 +190,6 @@ async function loadConfObj(){
       age: Number(map.netConfig?.age || 30),
       bavMonthly: Number(map.netConfig?.bavMonthly || 0),
       pvSurchargeRate: Number(map.netConfig?.pvSurchargeRate ?? 0.0035),
-      referenceBrutto: map.netConfig?.referenceBrutto || 0,
-      referenceNetto: map.netConfig?.referenceNetto || 0,
       rvRate: map.netConfig?.rvRate ?? 0.093,
       avRate: map.netConfig?.avRate ?? 0.013,
       pvRate: map.netConfig?.pvRate ?? 0.024,
@@ -230,8 +228,6 @@ async function populateSettingsSection(){
   if(pvSurchargeField) pvSurchargeField.value = `${((conf.netConfig.pvSurchargeRate ?? 0.0035)*100).toFixed(2)}%`;
   document.getElementById('netRvRate').value = conf.netConfig.rvRate ?? 0.093;
   document.getElementById('netAvRate').value = conf.netConfig.avRate ?? 0.013;
-  document.getElementById('netReferenceBrutto').value = conf.netConfig.referenceBrutto || '';
-  document.getElementById('netReferenceNetto').value = conf.netConfig.referenceNetto || '';
 }
 
 /* Migration von localStorage (falls noch alte Daten) */
@@ -498,8 +494,6 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
     age: Number(document.getElementById('netAge').value || 0),
     bavMonthly: Number(document.getElementById('netBav').value || 0),
     pvSurchargeRate: 0.0035,
-    referenceBrutto: Number(document.getElementById('netReferenceBrutto').value || 0),
-    referenceNetto: Number(document.getElementById('netReferenceNetto').value || 0),
     rvRate: Number(document.getElementById('netRvRate').value || 0.093),
     avRate: Number(document.getElementById('netAvRate').value || 0.013),
     taxYear: Number(document.getElementById('netTaxYear').value || selectYear.value || new Date().getFullYear())

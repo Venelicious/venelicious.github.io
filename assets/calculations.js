@@ -98,8 +98,6 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
     avRate: 0.013,
     pvRate: 0.024,
     pvSurchargeRate: 0.0035,
-    referenceBrutto: 0,
-    referenceNetto: 0,
     taxYear: new Date().getFullYear(),
   };
   const conf = { ...defaults, ...netConf };
@@ -155,15 +153,6 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   let kirche = lohnsteuerMonat * churchRate;
 
   let netto = brutto - sozial - lohnsteuerMonat - soli - kirche - bav;
-
-  if (conf.referenceBrutto > 0 && conf.referenceNetto > 0) {
-    const targetNetto = brutto * (conf.referenceNetto / conf.referenceBrutto);
-    const correction = targetNetto - netto;
-    lohnsteuerMonat = Math.max(lohnsteuerMonat - correction, 0);
-    soli = lohnsteuerMonat > 16 ? lohnsteuerMonat * 0.055 : 0;
-    kirche = lohnsteuerMonat * churchRate;
-    netto = brutto - sozial - lohnsteuerMonat - soli - kirche - bav;
-  }
 
   return {
     netto,
