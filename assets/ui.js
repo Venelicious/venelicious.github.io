@@ -12,7 +12,7 @@ import {
   computeSpesenCentsForTour,
   computeKundenmanagementBonusCents,
   determineVGRate,
-  computeNetFromBrutto,
+  computeNetResult,
 } from './calculations.js';
 
 /* ========== UI init-Grundlagen ========== */
@@ -183,13 +183,19 @@ async function loadConfObj(){
       taxClass: map.netConfig?.taxClass || 'I',
       state: map.netConfig?.state || 'NW',
       churchTax: map.netConfig?.churchTax ?? false,
-      kvZusatz: map.netConfig?.kvZusatz ?? 2.45,
-      pvSurcharge: map.netConfig?.pvSurcharge ?? true,
+      kvType: map.netConfig?.kvType || 'gesetzlich',
+      kvZusatz: Number(map.netConfig?.kvZusatz ?? 2.45),
+      kvFlatRate: Number(map.netConfig?.kvFlatRate || 0),
+      hasKids: map.netConfig?.hasKids ?? true,
+      age: Number(map.netConfig?.age || 30),
+      bavMonthly: Number(map.netConfig?.bavMonthly || 0),
+      pvSurchargeRate: Number(map.netConfig?.pvSurchargeRate ?? 0.0035),
       referenceBrutto: map.netConfig?.referenceBrutto || 0,
       referenceNetto: map.netConfig?.referenceNetto || 0,
       rvRate: map.netConfig?.rvRate ?? 0.093,
       avRate: map.netConfig?.avRate ?? 0.0125,
-      pvRate: map.netConfig?.pvRate ?? 0.024
+      pvRate: map.netConfig?.pvRate ?? 0.024,
+      taxYear: Number(map.netConfig?.taxYear || new Date().getFullYear())
     }
   };
 }
@@ -204,10 +210,26 @@ async function populateSettingsSection(){
     ? conf.paprovPerMonth[curPeriod]
     : 0;
   document.getElementById('lostCustomersAvg').value = conf.lostCustomersAvg || 0;
+  const taxYearInput = document.getElementById('netTaxYear');
+  if(taxYearInput) taxYearInput.value = yy || conf.netConfig.taxYear || new Date().getFullYear();
+  document.getElementById('netBav').value = conf.netConfig.bavMonthly || 0;
   document.getElementById('netTaxClass').value = conf.netConfig.taxClass;
   document.getElementById('netState').value = conf.netConfig.state;
   document.getElementById('netChurch').value = conf.netConfig.churchTax ? 'yes' : 'no';
+  document.getElementById('netKvType').value = conf.netConfig.kvType || 'gesetzlich';
+  const kvFundSelect = document.getElementById('netKvFund');
+  if(kvFundSelect){
+    const match = Array.from(kvFundSelect.options).find(o=> Number(o.value) === Number(conf.netConfig.kvZusatz));
+    kvFundSelect.value = match ? match.value : 'custom';
+  }
   document.getElementById('netKvZusatz').value = conf.netConfig.kvZusatz;
+  document.getElementById('netKvFlatRate').value = conf.netConfig.kvFlatRate || 0;
+  document.getElementById('netKids').value = conf.netConfig.hasKids ? 'yes' : 'no';
+  document.getElementById('netAge').value = conf.netConfig.age || '';
+  const pvSurchargeField = document.getElementById('netPvSurcharge');
+  if(pvSurchargeField) pvSurchargeField.value = `${((conf.netConfig.pvSurchargeRate ?? 0.0035)*100).toFixed(2)}%`;
+  document.getElementById('netRvRate').value = conf.netConfig.rvRate ?? 0.093;
+  document.getElementById('netAvRate').value = conf.netConfig.avRate ?? 0.0125;
   document.getElementById('netReferenceBrutto').value = conf.netConfig.referenceBrutto || '';
   document.getElementById('netReferenceNetto').value = conf.netConfig.referenceNetto || '';
 }
@@ -451,16 +473,36 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
 });
 
 /* Settings speichern (nur verlorene Kunden) */
+const netKvFundSelect = document.getElementById('netKvFund');
+if(netKvFundSelect){
+  netKvFundSelect.addEventListener('change', ()=>{
+    if(netKvFundSelect.value !== 'custom'){
+      document.getElementById('netKvZusatz').value = netKvFundSelect.value;
+    }
+  });
+}
+
 document.getElementById('saveSettings').addEventListener('click', async ()=>{
   const lost = Number(document.getElementById('lostCustomersAvg').value || 0);
+  const kvFundSelect = document.getElementById('netKvFund');
+  const selectedKv = kvFundSelect ? kvFundSelect.value : 'custom';
+  const kvZusatz = selectedKv !== 'custom' ? Number(selectedKv) : Number(document.getElementById('netKvZusatz').value || 0);
   const netConfig = {
     taxClass: document.getElementById('netTaxClass').value,
     state: document.getElementById('netState').value,
     churchTax: document.getElementById('netChurch').value === 'yes',
-    kvZusatz: Number(document.getElementById('netKvZusatz').value || 0),
-    pvSurcharge: true,
+    kvType: document.getElementById('netKvType').value,
+    kvZusatz: kvZusatz,
+    kvFlatRate: Number(document.getElementById('netKvFlatRate').value || 0),
+    hasKids: document.getElementById('netKids').value === 'yes',
+    age: Number(document.getElementById('netAge').value || 0),
+    bavMonthly: Number(document.getElementById('netBav').value || 0),
+    pvSurchargeRate: 0.0035,
     referenceBrutto: Number(document.getElementById('netReferenceBrutto').value || 0),
-    referenceNetto: Number(document.getElementById('netReferenceNetto').value || 0)
+    referenceNetto: Number(document.getElementById('netReferenceNetto').value || 0),
+    rvRate: Number(document.getElementById('netRvRate').value || 0.093),
+    avRate: Number(document.getElementById('netAvRate').value || 0.0125),
+    taxYear: Number(document.getElementById('netTaxYear').value || selectYear.value || new Date().getFullYear())
   };
   await saveConf('lostCustomersAvg', lost);
   await saveConf('netConfig', netConfig);
@@ -639,17 +681,11 @@ async function renderTours(){
   const baseSalaryCents = toCents(conf.baseSalary || 0);
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
-  const netto = computeNetFromBrutto(brutto, conf.netConfig);
-  const nettoFromBruttoCents = Math.round(netto*100);
+  const netResult = computeNetResult(brutto, { ...conf.netConfig, taxYear: Number(selectYear.value) });
+  const nettoFromBruttoCents = Math.round(netResult.netto*100);
   const finalPayoutCents = nettoFromBruttoCents + totalSpesenCents;
 
-  const rv = brutto * 0.093;
-  const av = brutto * 0.0125;
-  const kv = brutto * 0.08525;
-  const pv = brutto * 0.024;
-  const sozial = rv + av + kv + pv;
-  const lohnsteuer = Math.max(0, brutto - sozial - netto);
-  const soli = lohnsteuer > 16 ? lohnsteuer * 0.055 : 0;
+  const { rv, av, kv, pv, lohnsteuer, soli, kirche, bav } = netResult.breakdown;
 
   const summary = document.getElementById('summaryContent');
   summary.innerHTML = '';
@@ -687,7 +723,9 @@ async function renderTours(){
     createSumRow('Krankenversicherung', `€ ${kv.toFixed(2)}`),
     createSumRow('Pflegeversicherung', `€ ${pv.toFixed(2)}`),
     createSumRow('Lohnsteuer', `€ ${lohnsteuer.toFixed(2)}`),
+    createSumRow('Kirchensteuer', `€ ${kirche.toFixed(2)}`),
     createSumRow('Soli', `€ ${soli.toFixed(2)}`),
+    createSumRow('Betriebliche Altersvorsorge', `€ ${bav.toFixed(2)}`),
   );
   summary.appendChild(document.createElement('hr'));
   summary.append(
@@ -805,8 +843,8 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
   const baseSalaryCents = toCents(conf.baseSalary||0);
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
-  const netto = computeNetFromBrutto(brutto, conf.netConfig);
-  const nettoFromBruttoCents = Math.round(netto*100);
+  const netResult = computeNetResult(brutto, { ...conf.netConfig, taxYear: Number(selectYear.value) });
+  const nettoFromBruttoCents = Math.round(netResult.netto*100);
   const finalPayoutCents = nettoFromBruttoCents + totalSpesenCents;
 
   doc.setFillColor(11,37,69); doc.rect(0,0,doc.internal.pageSize.width,70,'F');
@@ -835,6 +873,7 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
     ['Provision gesamt (ohne Spesen)', `€ ${fromCents(totalProvisionCents)}`],
     ['Grundgehalt (Brutto)', `€ ${fromCents(baseSalaryCents)}`],
     ['Monatsbrutto (für Netto)', `€ ${fromCents(monthlyBeforeSpesenCents)}`],
+    ['Betriebliche Altersvorsorge', `€ ${netResult.breakdown.bav.toFixed(2)}`],
     ['Netto (ohne Spesen)', `€ ${fromCents(nettoFromBruttoCents)}`],
     ['End-Auszahlung (Netto + Spesen)', `€ ${fromCents(finalPayoutCents)}`]
   ];
