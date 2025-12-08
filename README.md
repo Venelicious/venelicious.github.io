@@ -348,9 +348,14 @@
     </div>
     <hr/>
     <h4>Kundenmanagement</h4>
-    <label>Im Schnitt verlorene Kunden
-      <input id="lostCustomersAvg" type="number" step="1" value="7"/>
-    </label>
+    <div class="row">
+      <select id="lostCustomersMonth"></select>
+      <input id="lostCustomersValue" type="number" step="1" value="0" placeholder="Verlorene Kunden im Monat" />
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button id="saveLostCustomers" class="small">Speichern (Monat)</button>
+      <button id="clearLostCustomers" class="small">Löschen (Monat)</button>
+    </div>
 
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button id="openBackups" class="small">Backups verwalten</button>
