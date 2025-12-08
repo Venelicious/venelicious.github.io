@@ -1,5 +1,43 @@
 import { computeLohnsteuer2025 } from './lohnsteuer2025.js';
 
+function childrenCountForStatus(status){
+  switch(status){
+    case 'childless_over_23':
+    case 'childless_under_23':
+      return 0;
+    case 'two_children':
+      return 2;
+    case 'three_children':
+      return 3;
+    case 'four_children':
+      return 4;
+    case 'five_plus_children':
+      return 5;
+    case 'one_child':
+    default:
+      return 1;
+  }
+}
+
+function deriveChildrenStatus(netConf, defaults){
+  if(netConf.childrenStatus) return netConf.childrenStatus;
+  const count = Number(netConf.childrenCount);
+  if(!Number.isNaN(count) && count > 0){
+    if(count >= 5) return 'five_plus_children';
+    if(count === 4) return 'four_children';
+    if(count === 3) return 'three_children';
+    if(count === 2) return 'two_children';
+    return 'one_child';
+  }
+
+  if(netConf.hasKids === false){
+    const ageVal = Number(netConf.age ?? defaults.age ?? 0);
+    return ageVal >= 23 ? 'childless_over_23' : 'childless_under_23';
+  }
+
+  return 'one_child';
+}
+
 export function toCents(e) {
   return Math.round(Number(e || 0) * 100);
 }
@@ -83,6 +121,7 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
     kvType: 'gesetzlich',
     kvZusatz: 2.45,
     kvFlatRate: 0,
+    childrenStatus: 'one_child',
     hasKids: true,
     age: 30,
     bavMonthly: 0,
@@ -94,12 +133,11 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   };
   const conf = { ...defaults, ...netConf };
   conf.churchTax = netConf.churchTax ?? defaults.churchTax;
-  // Kinderstatus sauber normalisieren, damit der Zuschlag nur bei ausdrücklicher Kinderlosigkeit greift.
-  const hasKids = netConf.hasKids === false
-    ? false
-    : netConf.hasKids === true
-      ? true
-      : defaults.hasKids;
+  const childrenStatus = deriveChildrenStatus(netConf, defaults);
+  const childrenCount = childrenCountForStatus(childrenStatus);
+  const hasKids = childrenCount > 0;
+  conf.childrenStatus = childrenStatus;
+  conf.childrenCount = childrenCount;
   conf.hasKids = hasKids;
 
   if (brutto <= 0) {
@@ -116,9 +154,10 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
   const kvRate = (conf.kvType === 'gesetzlich' || conf.kvType === 'freiwillig') ? ((14.6 + kvZusatz) / 100) / 2 : 0;
   const kvFlat = conf.kvType === 'privat' ? Number(conf.kvFlatRate || 0) : 0;
 
-  const isChildless = conf.hasKids === false;
-  const pvSurcharge = (isChildless && Number(conf.age || 0) >= 23) ? Number(conf.pvSurchargeRate ?? defaults.pvSurchargeRate) : 0;
-  const pvRate = Number(conf.pvRate ?? defaults.pvRate) + pvSurcharge;
+  const pvSurchargeRate = (childrenCount === 0 && childrenStatus === 'childless_over_23')
+    ? Number(conf.pvSurchargeRate ?? defaults.pvSurchargeRate)
+    : 0;
+  const pvRate = Number(conf.pvRate ?? defaults.pvRate) + pvSurchargeRate;
 
   const rvRate = Number(conf.rvRate ?? defaults.rvRate);
   const avRate = Number(conf.avRate ?? defaults.avRate);
@@ -143,10 +182,10 @@ export function computeNetResult(bruttoEuro, netConf = {}) {
     PKPV: conf.kvType === 'privat' ? toCents(conf.kvFlatRate || 0) : 0,
     KRV: rvRate === 0 ? 1 : 0,
     PVS: conf.state === 'SN' ? 1 : 0,
-    PVZ: (!conf.hasKids && Number(conf.age || 0) >= 23) ? 1 : 0,
+    PVZ: childrenStatus === 'childless_over_23' ? 1 : 0,
     PVA: 0,
     R: conf.churchTax ? 1 : 0,
-    ZKF: conf.hasKids ? 1 : 0,
+    ZKF: childrenCount,
     ALTER1: Number(conf.age || 0) >= 64 ? 1 : 0,
     AJAHR: ajahr || 0,
   });

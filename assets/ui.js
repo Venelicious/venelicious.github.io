@@ -32,6 +32,49 @@ const tabTargets = {
   tabExport: 'sectionExport'
 };
 
+function childrenCountForStatus(status){
+  switch(status){
+    case 'childless_over_23':
+    case 'childless_under_23':
+      return 0;
+    case 'two_children':
+      return 2;
+    case 'three_children':
+      return 3;
+    case 'four_children':
+      return 4;
+    case 'five_plus_children':
+      return 5;
+    case 'one_child':
+    default:
+      return 1;
+  }
+}
+
+function deriveChildrenStatusFromConfig(netCfg = {}){
+  if(netCfg.childrenStatus) return netCfg.childrenStatus;
+
+  const count = Number(netCfg.childrenCount);
+  if(!Number.isNaN(count)){
+    if(count <= 0){
+      const ageVal = Number(netCfg.age || 0);
+      return ageVal >= 23 ? 'childless_over_23' : 'childless_under_23';
+    }
+    if(count >= 5) return 'five_plus_children';
+    if(count === 4) return 'four_children';
+    if(count === 3) return 'three_children';
+    if(count === 2) return 'two_children';
+    return 'one_child';
+  }
+
+  if(netCfg.hasKids === false){
+    const ageVal = Number(netCfg.age || 0);
+    return ageVal >= 23 ? 'childless_over_23' : 'childless_under_23';
+  }
+
+  return 'one_child';
+}
+
 function setActiveSection(sectionId){
   Object.entries(tabTargets).forEach(([tabId, targetId]) => {
     const tab = document.getElementById(tabId);
@@ -168,6 +211,8 @@ async function loadConfObj(){
   const all = await idbGetAll('conf');
   const map = {};
   all.forEach(x=> map[x.k] = x.v);
+  const childrenStatus = deriveChildrenStatusFromConfig(map.netConfig || {});
+  const childrenCount = childrenCountForStatus(childrenStatus);
   return {
     // Feste Werte
     baseSalary: 2500,
@@ -186,7 +231,9 @@ async function loadConfObj(){
       kvType: map.netConfig?.kvType || 'gesetzlich',
       kvZusatz: Number(map.netConfig?.kvZusatz ?? 2.45),
       kvFlatRate: Number(map.netConfig?.kvFlatRate || 0),
-      hasKids: map.netConfig?.hasKids ?? true,
+      hasKids: childrenCount > 0,
+      childrenStatus,
+      childrenCount,
       age: Number(map.netConfig?.age || 30),
       bavMonthly: Number(map.netConfig?.bavMonthly || 0),
       pvSurchargeRate: Number(map.netConfig?.pvSurchargeRate ?? 0.0035),
@@ -222,7 +269,7 @@ async function populateSettingsSection(){
   }
   document.getElementById('netKvZusatz').value = conf.netConfig.kvZusatz;
   document.getElementById('netKvFlatRate').value = conf.netConfig.kvFlatRate || 0;
-  document.getElementById('netKids').value = conf.netConfig.hasKids ? 'yes' : 'no';
+  document.getElementById('netKids').value = conf.netConfig.childrenStatus || 'one_child';
   document.getElementById('netAge').value = conf.netConfig.age || '';
   const pvSurchargeField = document.getElementById('netPvSurcharge');
   if(pvSurchargeField) pvSurchargeField.value = `${((conf.netConfig.pvSurchargeRate ?? 0.0035)*100).toFixed(2)}%`;
@@ -483,6 +530,8 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
   const kvFundSelect = document.getElementById('netKvFund');
   const selectedKv = kvFundSelect ? kvFundSelect.value : 'custom';
   const kvZusatz = selectedKv !== 'custom' ? Number(selectedKv) : Number(document.getElementById('netKvZusatz').value || 0);
+  const childrenStatus = document.getElementById('netKids').value;
+  const childrenCount = childrenCountForStatus(childrenStatus);
   const netConfig = {
     taxClass: document.getElementById('netTaxClass').value,
     state: document.getElementById('netState').value,
@@ -490,7 +539,9 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
     kvType: document.getElementById('netKvType').value,
     kvZusatz: kvZusatz,
     kvFlatRate: Number(document.getElementById('netKvFlatRate').value || 0),
-    hasKids: document.getElementById('netKids').value === 'yes',
+    hasKids: childrenCount > 0,
+    childrenStatus,
+    childrenCount,
     age: Number(document.getElementById('netAge').value || 0),
     bavMonthly: Number(document.getElementById('netBav').value || 0),
     pvSurchargeRate: 0.0035,
