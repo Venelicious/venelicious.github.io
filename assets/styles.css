@@ -293,8 +293,19 @@ th[data-sort]::after {
   justify-content: center;
   align-items: center;
   z-index: 2000;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
+.modal-header,
+.modal-footer {
+  flex-shrink: 0;
+}
+
+.modal-body {
+  overflow-y: auto;
+}
 .modal.active {
   display: flex;
 }
