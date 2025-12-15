@@ -293,9 +293,6 @@ th[data-sort]::after {
   justify-content: center;
   align-items: center;
   z-index: 2000;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
 }
 
 .modal-header,
@@ -308,6 +305,8 @@ th[data-sort]::after {
 }
 .modal.active {
   display: flex;
+  max-height: 90vh;
+  flex-direction: column;
 }
 
 .modalContent {
