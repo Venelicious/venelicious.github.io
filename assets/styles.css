@@ -295,18 +295,8 @@ th[data-sort]::after {
   z-index: 2000;
 }
 
-.modal-header,
-.modal-footer {
-  flex-shrink: 0;
-}
-
-.modal-body {
-  overflow-y: auto;
-}
 .modal.active {
   display: flex;
-  max-height: 90vh;
-  flex-direction: column;
 }
 
 .modalContent {
@@ -315,6 +305,8 @@ th[data-sort]::after {
   border-radius: 12px;
   width: 620px;
   max-width: 95%;
+  max-height: 85vh;      /* 👈 entscheidend */
+  overflow-y: auto;     /* 👈 Scrollbar */
   box-shadow: 0 18px 32px rgba(10, 61, 145, 0.25);
 }
 
