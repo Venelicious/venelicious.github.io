@@ -946,11 +946,11 @@ async function renderTours(){
   );
   summary.appendChild(document.createElement('hr'));
   summary.append(
-    createSumRow(heimschlaefer.enabled ? 'Netto (berechnet)' : 'Netto', `€ ${fromCents(nettoFromBruttoCents)}`, { emphasize: true }),
+    createSumRow(heimschlaefer.enabled ? 'Netto' : 'Netto', `€ ${fromCents(nettoFromBruttoCents)}`, { emphasize: true }),
   );
   if(heimschlaefer.enabled){
     summary.append(
-      createSumRow('Heimschläfer-Netto', `€ ${fromCents(heimschlaeferNettoCents)}`, { emphasize: true })
+      createSumRow('Heimschläfer', `€ ${fromCents(heimschlaeferNettoCents)}`, { emphasize: true })
     );
   }
   summary.append(
