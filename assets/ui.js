@@ -900,7 +900,7 @@ async function renderTours(){
   const heimschlaefer = getHeimschlaeferForPeriod(conf, monthFilter);
   const heimschlaeferNettoCents = heimschlaefer.enabled ? toCents(heimschlaefer.netto) : 0;
   const payoutNettoCents = heimschlaefer.enabled ? heimschlaeferNettoCents : nettoFromBruttoCents;
-  const finalPayoutCents = payoutNettoCents + totalSpesenCents;
+  const finalPayoutCents = nettoFromBruttoCents + payoutNettoCents + totalSpesenCents;
 
   const { rv, av, kv, pv, lohnsteuer, soli, kirche, bav } = netResult.breakdown;
 
