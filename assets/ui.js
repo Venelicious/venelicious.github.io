@@ -20,6 +20,8 @@ const selectMonth = document.getElementById('selectMonth');
 const selectYear = document.getElementById('selectYear');
 const paprovMonth = document.getElementById('paprovMonth');
 const lostCustomersMonth = document.getElementById('lostCustomersMonth');
+const baseSalaryMonth = document.getElementById('baseSalaryMonth');
+const heimschlaeferMonth = document.getElementById('heimschlaeferMonth');
 const csvInput = document.getElementById('csvInput');
 const jsonInput = document.getElementById('jsonInput');
 let currentSort = { key:null, dir:'asc' };
@@ -104,7 +106,7 @@ function setActiveSection(sectionId){
   }
   selectYear.value = cy;
 
-  const monthlySelectors = [paprovMonth, lostCustomersMonth].filter(Boolean);
+  const monthlySelectors = [paprovMonth, lostCustomersMonth, baseSalaryMonth, heimschlaeferMonth].filter(Boolean);
   monthlySelectors.forEach(sel => sel.innerHTML = '');
   for(let y=cy-1;y<=cy+1;y++){
     for(let m=1;m<=12;m++){
@@ -217,7 +219,7 @@ async function loadConfObj(){
   const childrenCount = childrenCountForStatus(childrenStatus);
   return {
     // Feste Werte
-    baseSalary: 2500,
+    baseSalary: Number(map.baseSalaryDefault ?? 2500),
     newBase: 30,
     newThreshold: Number(map.newThreshold || 4),
     newHigh: 60,
@@ -235,6 +237,8 @@ async function loadConfObj(){
       return perMonth;
     })(),
     paprovPerMonth: (map.paprovPerMonth || {}),
+    baseSalaryPerMonth: (map.baseSalaryPerMonth || {}),
+    heimschlaeferPerMonth: (map.heimschlaeferPerMonth || {}),
     netConfig: {
       taxClass: map.netConfig?.taxClass || 'I',
       state: map.netConfig?.state || 'NW',
@@ -255,6 +259,13 @@ async function loadConfObj(){
   };
 }
 
+function getBaseSalaryForPeriod(conf, period){
+  if(conf.baseSalaryPerMonth && conf.baseSalaryPerMonth[period] !== undefined){
+    return Number(conf.baseSalaryPerMonth[period]);
+  }
+  return Number(conf.baseSalary || 0);
+}
+
 function getLostCustomersForPeriod(conf, period){
   if(conf.lostCustomersPerMonth && conf.lostCustomersPerMonth[period] !== undefined){
     return Number(conf.lostCustomersPerMonth[period]);
@@ -263,6 +274,15 @@ function getLostCustomersForPeriod(conf, period){
     return Number(conf.lostCustomersAvg);
   }
   return 0;
+}
+
+function getHeimschlaeferForPeriod(conf, period){
+  const entry = conf.heimschlaeferPerMonth?.[period];
+  if(!entry) return { enabled: false, netto: 0 };
+  if(typeof entry === 'number'){
+    return { enabled: entry > 0, netto: Number(entry) };
+  }
+  return { enabled: !!entry.enabled, netto: Number(entry.netto || 0) };
 }
 
 async function populateSettingsSection(){
@@ -276,6 +296,16 @@ async function populateSettingsSection(){
     : 0;
   document.getElementById('lostCustomersMonth').value = curPeriod;
   document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, curPeriod);
+  if(baseSalaryMonth){
+    baseSalaryMonth.value = curPeriod;
+    document.getElementById('baseSalaryValue').value = getBaseSalaryForPeriod(conf, curPeriod);
+  }
+  if(heimschlaeferMonth){
+    const heimschlaefer = getHeimschlaeferForPeriod(conf, curPeriod);
+    heimschlaeferMonth.value = curPeriod;
+    document.getElementById('heimschlaeferEnabled').checked = heimschlaefer.enabled;
+    document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
+  }
   const taxYearInput = document.getElementById('netTaxYear');
   if(taxYearInput) taxYearInput.value = yy || conf.netConfig.taxYear || new Date().getFullYear();
   document.getElementById('netBav').value = conf.netConfig.bavMonthly || 0;
@@ -580,6 +610,90 @@ document.getElementById('saveSettings').addEventListener('click', async ()=>{
   await triggerAutoBackup('settings_saved');
 });
 
+/* Grundgehalt speichern/löschen */
+const saveBaseSalaryBtn = document.getElementById('saveBaseSalary');
+if(saveBaseSalaryBtn){
+  saveBaseSalaryBtn.addEventListener('click', async ()=>{
+    const key = document.getElementById('baseSalaryMonth').value;
+    const v = Number(document.getElementById('baseSalaryValue').value || 0);
+    const conf = await loadConfObj();
+    conf.baseSalaryPerMonth = conf.baseSalaryPerMonth || {};
+    conf.baseSalaryPerMonth[key] = v;
+    await saveConf('baseSalaryPerMonth', conf.baseSalaryPerMonth);
+    alert('Grundgehalt gespeichert.');
+    await renderTours();
+    await triggerAutoBackup('base_salary_saved');
+  });
+}
+
+const clearBaseSalaryBtn = document.getElementById('clearBaseSalary');
+if(clearBaseSalaryBtn){
+  clearBaseSalaryBtn.addEventListener('click', async ()=>{
+    const key = document.getElementById('baseSalaryMonth').value;
+    const conf = await loadConfObj();
+    conf.baseSalaryPerMonth = conf.baseSalaryPerMonth || {};
+    delete conf.baseSalaryPerMonth[key];
+    await saveConf('baseSalaryPerMonth', conf.baseSalaryPerMonth);
+    document.getElementById('baseSalaryValue').value = '';
+    alert('Grundgehalt gelöscht.');
+    await renderTours();
+    await triggerAutoBackup('base_salary_cleared');
+  });
+}
+
+const baseSalaryMonthSelect = document.getElementById('baseSalaryMonth');
+if(baseSalaryMonthSelect){
+  baseSalaryMonthSelect.addEventListener('change', async ()=>{
+    const conf = await loadConfObj();
+    const key = document.getElementById('baseSalaryMonth').value;
+    document.getElementById('baseSalaryValue').value = getBaseSalaryForPeriod(conf, key);
+  });
+}
+
+/* Heimschläfer speichern/löschen */
+const saveHeimschlaeferBtn = document.getElementById('saveHeimschlaefer');
+if(saveHeimschlaeferBtn){
+  saveHeimschlaeferBtn.addEventListener('click', async ()=>{
+    const key = document.getElementById('heimschlaeferMonth').value;
+    const netto = Number(document.getElementById('heimschlaeferNetto').value || 0);
+    const enabled = document.getElementById('heimschlaeferEnabled').checked;
+    const conf = await loadConfObj();
+    conf.heimschlaeferPerMonth = conf.heimschlaeferPerMonth || {};
+    conf.heimschlaeferPerMonth[key] = { enabled, netto };
+    await saveConf('heimschlaeferPerMonth', conf.heimschlaeferPerMonth);
+    alert('Heimschläfer-Wert gespeichert.');
+    await renderTours();
+    await triggerAutoBackup('heimschlaefer_saved');
+  });
+}
+
+const clearHeimschlaeferBtn = document.getElementById('clearHeimschlaefer');
+if(clearHeimschlaeferBtn){
+  clearHeimschlaeferBtn.addEventListener('click', async ()=>{
+    const key = document.getElementById('heimschlaeferMonth').value;
+    const conf = await loadConfObj();
+    conf.heimschlaeferPerMonth = conf.heimschlaeferPerMonth || {};
+    delete conf.heimschlaeferPerMonth[key];
+    await saveConf('heimschlaeferPerMonth', conf.heimschlaeferPerMonth);
+    document.getElementById('heimschlaeferNetto').value = '';
+    document.getElementById('heimschlaeferEnabled').checked = false;
+    alert('Heimschläfer-Wert gelöscht.');
+    await renderTours();
+    await triggerAutoBackup('heimschlaefer_cleared');
+  });
+}
+
+const heimschlaeferMonthSelect = document.getElementById('heimschlaeferMonth');
+if(heimschlaeferMonthSelect){
+  heimschlaeferMonthSelect.addEventListener('change', async ()=>{
+    const conf = await loadConfObj();
+    const key = document.getElementById('heimschlaeferMonth').value;
+    const heimschlaefer = getHeimschlaeferForPeriod(conf, key);
+    document.getElementById('heimschlaeferEnabled').checked = heimschlaefer.enabled;
+    document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
+  });
+}
+
 /* PAPROV speichern/löschen */
 document.getElementById('savePaprov').addEventListener('click', async ()=>{
   const key = document.getElementById('paprovMonth').value;
@@ -778,12 +892,15 @@ async function renderTours(){
   const kmBonusCents = Math.round(rawKm * (totalTours>0 ? (relevant/totalTours) : 0));
 
   const totalProvisionCents = vgProvisionCents + totalNeukCents + totalIntegrationCents + totalActionProvCents + totalPaprovCents + totalExtrasCents + kmBonusCents;
-  const baseSalaryCents = toCents(conf.baseSalary || 0);
+  const baseSalaryCents = toCents(getBaseSalaryForPeriod(conf, monthFilter));
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
   const netResult = computeNetResult(brutto, { ...conf.netConfig, taxYear: Number(selectYear.value) });
   const nettoFromBruttoCents = Math.round(netResult.netto*100);
-  const finalPayoutCents = nettoFromBruttoCents + totalSpesenCents;
+  const heimschlaefer = getHeimschlaeferForPeriod(conf, monthFilter);
+  const heimschlaeferNettoCents = heimschlaefer.enabled ? toCents(heimschlaefer.netto) : 0;
+  const payoutNettoCents = heimschlaefer.enabled ? heimschlaeferNettoCents : nettoFromBruttoCents;
+  const finalPayoutCents = payoutNettoCents + totalSpesenCents;
 
   const { rv, av, kv, pv, lohnsteuer, soli, kirche, bav } = netResult.breakdown;
 
@@ -829,7 +946,14 @@ async function renderTours(){
   );
   summary.appendChild(document.createElement('hr'));
   summary.append(
-    createSumRow('Netto', `€ ${fromCents(nettoFromBruttoCents)}`, { emphasize: true }),
+    createSumRow(heimschlaefer.enabled ? 'Netto (berechnet)' : 'Netto', `€ ${fromCents(nettoFromBruttoCents)}`, { emphasize: true }),
+  );
+  if(heimschlaefer.enabled){
+    summary.append(
+      createSumRow('Heimschläfer-Netto', `€ ${fromCents(heimschlaeferNettoCents)}`, { emphasize: true })
+    );
+  }
+  summary.append(
     createSumRow('+ Spesen', `€ ${fromCents(totalSpesenCents)}`),
     createSumRow('💰 Auszahlung', `€ ${fromCents(finalPayoutCents)}`, { emphasize: true, style: 'margin-top:12px;font-size:1.1rem' }),
   );
@@ -941,12 +1065,15 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
   const relevant = countVGTours + countNeukundentouren;
   const kmBonus = Math.round(rawKm * (totalTours>0 ? (relevant/totalTours) : 0));
   const totalProvisionCents = vgProvisionCents + totalNeukCents + totalIntegrationCents + totalActionProvCents + totalPaprovCents + totalExtrasCents + kmBonus;
-  const baseSalaryCents = toCents(conf.baseSalary||0);
+  const baseSalaryCents = toCents(getBaseSalaryForPeriod(conf, periodKey));
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
   const netResult = computeNetResult(brutto, { ...conf.netConfig, taxYear: Number(selectYear.value) });
   const nettoFromBruttoCents = Math.round(netResult.netto*100);
-  const finalPayoutCents = nettoFromBruttoCents + totalSpesenCents;
+  const heimschlaefer = getHeimschlaeferForPeriod(conf, periodKey);
+  const heimschlaeferNettoCents = heimschlaefer.enabled ? toCents(heimschlaefer.netto) : 0;
+  const payoutNettoCents = heimschlaefer.enabled ? heimschlaeferNettoCents : nettoFromBruttoCents;
+  const finalPayoutCents = payoutNettoCents + totalSpesenCents;
 
   doc.setFillColor(11,37,69); doc.rect(0,0,doc.internal.pageSize.width,70,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(18);
@@ -978,6 +1105,9 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
     ['Netto (ohne Spesen)', `€ ${fromCents(nettoFromBruttoCents)}`],
     ['End-Auszahlung (Netto + Spesen)', `€ ${fromCents(finalPayoutCents)}`]
   ];
+  if(heimschlaefer.enabled){
+    summaryRows.splice(summaryRows.length - 1, 0, ['Heimschläfer-Netto', `€ ${fromCents(heimschlaeferNettoCents)}`]);
+  }
   summaryRows.forEach(([k,v])=>{
     if(y > doc.internal.pageSize.height - 80){ doc.addPage(); y = 40; }
     doc.text(sanitizeForPdf(k), left, y);
@@ -1087,10 +1217,18 @@ export async function init(){
   document.getElementById('date').value = today.toISOString().slice(0,10);
   document.getElementById('paprovMonth').value = `${yy}-${mm}`;
   document.getElementById('lostCustomersMonth').value = `${yy}-${mm}`;
+  if(baseSalaryMonth) baseSalaryMonth.value = `${yy}-${mm}`;
+  if(heimschlaeferMonth) heimschlaeferMonth.value = `${yy}-${mm}`;
 
   const conf = await loadConfObj();
   document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, `${yy}-${mm}`);
   document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[`${yy}-${mm}`]) ? conf.paprovPerMonth[`${yy}-${mm}`] : 0;
+  if(baseSalaryMonth) document.getElementById('baseSalaryValue').value = getBaseSalaryForPeriod(conf, `${yy}-${mm}`);
+  if(heimschlaeferMonth){
+    const heimschlaefer = getHeimschlaeferForPeriod(conf, `${yy}-${mm}`);
+    document.getElementById('heimschlaeferEnabled').checked = heimschlaefer.enabled;
+    document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
+  }
 
   Object.entries(tabTargets).forEach(([tabId, sectionId])=>{
     const tab = document.getElementById(tabId);
