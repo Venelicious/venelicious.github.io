@@ -180,6 +180,29 @@
   <div class="panel">
     <h3>Einstellungen</h3>
     <hr/>
+    <h4>Grundgehalt (Monat)</h4>
+    <div class="row">
+      <select id="baseSalaryMonth"></select>
+      <input id="baseSalaryValue" type="number" step="0.01" value="2500.00" placeholder="Grundgehalt für Monat"/>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button id="saveBaseSalary" class="small">Speichern (Monat)</button>
+      <button id="clearBaseSalary" class="small">Löschen (Monat)</button>
+    </div>
+
+    <hr/>
+    <h4>Heimschläfer</h4>
+    <div class="row">
+      <select id="heimschlaeferMonth"></select>
+      <input id="heimschlaeferNetto" type="number" step="0.01" value="0.00" placeholder="Fixes Netto für Monat"/>
+    </div>
+    <label style="margin-top:8px"><input type="checkbox" id="heimschlaeferEnabled"/> Heimschläfer aktiv (Netto + Spesen)</label>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button id="saveHeimschlaefer" class="small">Speichern (Monat)</button>
+      <button id="clearHeimschlaefer" class="small">Löschen (Monat)</button>
+    </div>
+
+    <hr/>
     <h4>PAPROV</h4>
     <div class="row">
       <select id="paprovMonth"></select>
