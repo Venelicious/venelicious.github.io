@@ -25,6 +25,7 @@ const heimschlaeferMonth = document.getElementById('heimschlaeferMonth');
 const csvInput = document.getElementById('csvInput');
 const jsonInput = document.getElementById('jsonInput');
 const customerNumberInput = document.getElementById('customerNumber');
+const customerNameInput = document.getElementById('customerName');
 const customerLastNameInput = document.getElementById('customerLastName');
 const customerFirstNameInput = document.getElementById('customerFirstName');
 const customerStreetInput = document.getElementById('customerStreet');
@@ -251,6 +252,7 @@ function mapAgreementTypeLabel(type){
 
 function clearCustomerAgreementForm(){
   if(customerNumberInput) customerNumberInput.value = '';
+  if(customerNameInput) customerNameInput.value = '';
   if(customerLastNameInput) customerLastNameInput.value = '';
   if(customerFirstNameInput) customerFirstNameInput.value = '';
   if(customerStreetInput) customerStreetInput.value = '';
@@ -723,19 +725,31 @@ const saveCustomerAgreementBtn = document.getElementById('saveCustomerAgreement'
 if(saveCustomerAgreementBtn){
   saveCustomerAgreementBtn.addEventListener('click', async ()=>{
     const customerNumber = (customerNumberInput?.value || '').trim();
-    const customerLastName = (customerLastNameInput?.value || '').trim();
-    const customerFirstName = (customerFirstNameInput?.value || '').trim();
+    const legacyCustomerName = (customerNameInput?.value || '').trim();
+    let customerLastName = (customerLastNameInput?.value || '').trim();
+    let customerFirstName = (customerFirstNameInput?.value || '').trim();
     const customerStreet = (customerStreetInput?.value || '').trim();
     const customerHouseNumber = (customerHouseNumberInput?.value || '').trim();
     const customerPostalCode = (customerPostalCodeInput?.value || '').trim();
     const customerCity = (customerCityInput?.value || '').trim();
 
-    if(!customerNumber || !customerLastName || !customerFirstName || !customerStreet || !customerHouseNumber || !customerPostalCode || !customerCity){
-      alert('Bitte Kundennummer, Name, Vorname und vollständige Adresse eingeben.');
+    // Kompatibilität mit älteren Formularversionen, die nur ein customerName-Feld hatten.
+    if(!customerLastName && legacyCustomerName) customerLastName = legacyCustomerName;
+
+    const missingFields = [];
+    if(!customerLastName && !customerFirstName) missingFields.push('Kundenname');
+    if(!customerStreet) missingFields.push('Straße');
+    if(!customerHouseNumber) missingFields.push('Hausnummer');
+    if(!customerPostalCode) missingFields.push('PLZ');
+    if(!customerCity) missingFields.push('Ort');
+
+    if(missingFields.length){
+      alert(`Bitte folgende Angaben ergänzen: ${missingFields.join(', ')}.`);
       return;
     }
+
     const agreement = {
-      customerNumber,
+      customerNumber: customerNumber || '—',
       customerLastName,
       customerFirstName,
       customerStreet,
