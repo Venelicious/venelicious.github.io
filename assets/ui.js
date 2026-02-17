@@ -24,7 +24,13 @@ const baseSalaryMonth = document.getElementById('baseSalaryMonth');
 const heimschlaeferMonth = document.getElementById('heimschlaeferMonth');
 const csvInput = document.getElementById('csvInput');
 const jsonInput = document.getElementById('jsonInput');
-const customerNameInput = document.getElementById('customerName');
+const customerNumberInput = document.getElementById('customerNumber');
+const customerLastNameInput = document.getElementById('customerLastName');
+const customerFirstNameInput = document.getElementById('customerFirstName');
+const customerStreetInput = document.getElementById('customerStreet');
+const customerHouseNumberInput = document.getElementById('customerHouseNumber');
+const customerPostalCodeInput = document.getElementById('customerPostalCode');
+const customerCityInput = document.getElementById('customerCity');
 const customerAgreementTypeSelect = document.getElementById('customerAgreementType');
 const customerAgreementSinceInput = document.getElementById('customerAgreementSince');
 const customerAgreementUntilInput = document.getElementById('customerAgreementUntil');
@@ -244,7 +250,13 @@ function mapAgreementTypeLabel(type){
 }
 
 function clearCustomerAgreementForm(){
-  if(customerNameInput) customerNameInput.value = '';
+  if(customerNumberInput) customerNumberInput.value = '';
+  if(customerLastNameInput) customerLastNameInput.value = '';
+  if(customerFirstNameInput) customerFirstNameInput.value = '';
+  if(customerStreetInput) customerStreetInput.value = '';
+  if(customerHouseNumberInput) customerHouseNumberInput.value = '';
+  if(customerPostalCodeInput) customerPostalCodeInput.value = '';
+  if(customerCityInput) customerCityInput.value = '';
   if(customerAgreementTypeSelect) customerAgreementTypeSelect.value = 'rhythmus_geaendert';
   if(customerAgreementSinceInput) customerAgreementSinceInput.value = '';
   if(customerAgreementUntilInput) customerAgreementUntilInput.value = '';
@@ -264,7 +276,7 @@ async function renderCustomerAgreements(){
     const dateB = b.since || '';
     if(dateA < dateB) return 1;
     if(dateA > dateB) return -1;
-    return (a.customerName || '').localeCompare((b.customerName || ''), 'de');
+    return `${a.customerLastName || ''}${a.customerFirstName || ''}`.localeCompare(`${b.customerLastName || ''}${b.customerFirstName || ''}`, 'de');
   });
 
   customerAgreementsList.innerHTML = '';
@@ -274,7 +286,7 @@ async function renderCustomerAgreements(){
 
     const title = document.createElement('div');
     title.className = 'customer-agreement-title';
-    title.textContent = agreement.customerName || '—';
+    title.textContent = `${agreement.customerNumber || '—'} · ${agreement.customerLastName || '—'}, ${agreement.customerFirstName || '—'}`;
 
     const meta = document.createElement('div');
     meta.className = 'customer-agreement-meta';
@@ -284,7 +296,16 @@ async function renderCustomerAgreements(){
 
     const note = document.createElement('div');
     note.className = 'customer-agreement-note';
-    note.textContent = agreement.note || 'Keine Notiz';
+    const addressParts = [
+      agreement.customerStreet || '',
+      agreement.customerHouseNumber || ''
+    ].filter(Boolean);
+    const cityParts = [agreement.customerPostalCode || '', agreement.customerCity || ''].filter(Boolean);
+    note.textContent = [
+      addressParts.join(' '),
+      cityParts.join(' '),
+      agreement.note || 'Keine Notiz'
+    ].filter(Boolean).join(' • ');
 
     const controls = document.createElement('div');
     controls.className = 'customer-agreement-controls';
@@ -701,13 +722,26 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
 const saveCustomerAgreementBtn = document.getElementById('saveCustomerAgreement');
 if(saveCustomerAgreementBtn){
   saveCustomerAgreementBtn.addEventListener('click', async ()=>{
-    const customerName = (customerNameInput?.value || '').trim();
-    if(!customerName){
-      alert('Bitte einen Kundennamen eingeben.');
+    const customerNumber = (customerNumberInput?.value || '').trim();
+    const customerLastName = (customerLastNameInput?.value || '').trim();
+    const customerFirstName = (customerFirstNameInput?.value || '').trim();
+    const customerStreet = (customerStreetInput?.value || '').trim();
+    const customerHouseNumber = (customerHouseNumberInput?.value || '').trim();
+    const customerPostalCode = (customerPostalCodeInput?.value || '').trim();
+    const customerCity = (customerCityInput?.value || '').trim();
+
+    if(!customerNumber || !customerLastName || !customerFirstName || !customerStreet || !customerHouseNumber || !customerPostalCode || !customerCity){
+      alert('Bitte Kundennummer, Name, Vorname und vollständige Adresse eingeben.');
       return;
     }
     const agreement = {
-      customerName,
+      customerNumber,
+      customerLastName,
+      customerFirstName,
+      customerStreet,
+      customerHouseNumber,
+      customerPostalCode,
+      customerCity,
       type: customerAgreementTypeSelect?.value || 'sonstiges',
       since: customerAgreementSinceInput?.value || '',
       until: customerAgreementUntilInput?.value || '',

@@ -187,8 +187,17 @@
     </div>
 
     <div class="row">
-      <label>Kunde
-        <input id="customerName" placeholder="z.B. Familie Muster" />
+      <label>Kundennummer
+        <input id="customerNumber" placeholder="z.B. 4711" />
+      </label>
+      <label>Name
+        <input id="customerLastName" placeholder="z.B. Muster" />
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Vorname
+        <input id="customerFirstName" placeholder="z.B. Max" />
       </label>
       <label>Art
         <select id="customerAgreementType">
@@ -197,6 +206,24 @@
           <option value="urlaub">Urlaub</option>
           <option value="sonstiges">Sonstiges</option>
         </select>
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Straße
+        <input id="customerStreet" placeholder="z.B. Musterstraße" />
+      </label>
+      <label>Hausnummer
+        <input id="customerHouseNumber" placeholder="z.B. 12a" />
+      </label>
+    </div>
+
+    <div class="row">
+      <label>PLZ
+        <input id="customerPostalCode" placeholder="z.B. 12345" />
+      </label>
+      <label>Ort
+        <input id="customerCity" placeholder="z.B. Musterstadt" />
       </label>
     </div>
 
