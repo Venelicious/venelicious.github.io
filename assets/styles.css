@@ -336,3 +336,35 @@ th[data-sort]::after {
     width: 92%;
   }
 }
+
+.customer-agreements-list {
+  display: grid;
+  gap: 10px;
+}
+
+.customer-agreement-card {
+  border: 1px solid #cfe2ff;
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px;
+}
+
+.customer-agreement-title {
+  font-weight: 700;
+}
+
+.customer-agreement-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.customer-agreement-note {
+  margin-top: 8px;
+}
+
+.customer-agreement-controls {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
