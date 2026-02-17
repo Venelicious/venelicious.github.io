@@ -22,6 +22,7 @@
   <button id="tabNewTour" class="tabButton active" aria-label="Neue Tour erfassen" title="Neue Tour erfassen">📝</button>
   <button id="tabTours" class="tabButton" aria-label="Touren" title="Touren">🗺️</button>
   <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">📊</button>
+  <button id="tabCustomers" class="tabButton" aria-label="Kundenabsprachen" title="Kundenabsprachen">🤝</button>
   <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">⚙️</button>
   <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">💾</button>
   <button id="tabExport" class="tabButton" aria-label="Export" title="Export">📤</button>
@@ -173,6 +174,64 @@
       <strong>Zusammenfassung</strong>
       <div id="summaryContent" style="margin-top:8px"></div>
     </div>
+  </div>
+</section>
+
+<section id="sectionCustomers" class="tabSection">
+  <div class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3>Kundenabsprachen</h3>
+        <p class="muted">Lege besondere Absprachen mit Kunden fest (z. B. Rhythmus geändert, Storno, Urlaub).</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Kundennummer
+        <input id="customerNumber" placeholder="z.B. 4711" />
+      </label>
+      <label>Art
+        <select id="customerAgreementType">
+          <option value="rhythmus_geaendert">Rhythmus geändert</option>
+          <option value="komplett_storno">Komplett Storno</option>
+          <option value="urlaub">Urlaub</option>
+          <option value="sonstiges">Sonstiges</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Name
+        <input id="customerLastName" placeholder="z.B. Mustermann" />
+      </label>
+      <label>Vorname
+        <input id="customerFirstName" placeholder="z.B. Erika" />
+      </label>
+    </div>
+
+    <label>Adresse
+      <input id="customerAddress" placeholder="z.B. Musterstraße 1, 12345 Musterstadt" />
+    </label>
+
+    <div class="row">
+      <label>Gültig ab
+        <input id="customerAgreementSince" type="date" />
+      </label>
+      <label>Bis (optional)
+        <input id="customerAgreementUntil" type="date" />
+      </label>
+    </div>
+
+    <label>Notiz
+      <textarea id="customerAgreementNote" rows="2" placeholder="Details zur Absprache"></textarea>
+    </label>
+
+    <div class="controls">
+      <button id="saveCustomerAgreement" class="small">Absprache speichern</button>
+      <button id="clearCustomerAgreementForm" class="small">Formular leeren</button>
+    </div>
+
+    <div id="customerAgreementsList" class="customer-agreements-list" style="margin-top:12px"></div>
   </div>
 </section>
 

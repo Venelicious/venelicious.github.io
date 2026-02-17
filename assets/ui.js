@@ -1,4 +1,4 @@
-import { idbPut, idbAdd, idbGetAll, idbClear, idbDelete } from './db.js';
+import { idbPut, idbAdd, idbGetAll, idbClear, idbDelete, openDb } from './db.js';
 import {
   toCents,
   fromCents,
@@ -24,12 +24,22 @@ const baseSalaryMonth = document.getElementById('baseSalaryMonth');
 const heimschlaeferMonth = document.getElementById('heimschlaeferMonth');
 const csvInput = document.getElementById('csvInput');
 const jsonInput = document.getElementById('jsonInput');
+const customerNumberInput = document.getElementById('customerNumber');
+const customerLastNameInput = document.getElementById('customerLastName');
+const customerFirstNameInput = document.getElementById('customerFirstName');
+const customerAddressInput = document.getElementById('customerAddress');
+const customerAgreementTypeSelect = document.getElementById('customerAgreementType');
+const customerAgreementSinceInput = document.getElementById('customerAgreementSince');
+const customerAgreementUntilInput = document.getElementById('customerAgreementUntil');
+const customerAgreementNoteInput = document.getElementById('customerAgreementNote');
+const customerAgreementsList = document.getElementById('customerAgreementsList');
 let currentSort = { key:null, dir:'asc' };
 
 const tabTargets = {
   tabNewTour: 'sectionNewTour',
   tabTours: 'sectionTours',
   tabSummary: 'sectionSummary',
+  tabCustomers: 'sectionCustomers',
   tabSettings: 'sectionSettings',
   tabBackups: 'sectionBackups',
   tabExport: 'sectionExport'
@@ -93,6 +103,8 @@ function setActiveSection(sectionId){
     populateSettingsSection().catch(err => console.error('Settings laden fehlgeschlagen', err));
   }else if(sectionId === 'sectionBackups'){
     loadBackupsList().catch(err => console.error('Backups laden fehlgeschlagen', err));
+  }else if(sectionId === 'sectionCustomers'){
+    renderCustomerAgreements().catch(err => console.error('Kundenabsprachen laden fehlgeschlagen', err));
   }
 }
 
@@ -187,6 +199,125 @@ document.getElementById('addActionBtn').addEventListener('click', (e)=>{
   document.getElementById('actPrice').value=''; document.getElementById('actQty').value='';
 });
 
+async function ensureCustomerAgreementsStore(){
+  const db = await openDb();
+  if(db.objectStoreNames.contains('customerAgreements')) return;
+
+  db.close();
+  const nextVersion = db.version + 1;
+  await new Promise((resolve, reject)=>{
+    const req = indexedDB.open(db.name, nextVersion);
+    req.onupgradeneeded = (ev)=>{
+      const upgradeDb = ev.target.result;
+      if(!upgradeDb.objectStoreNames.contains('customerAgreements')){
+        upgradeDb.createObjectStore('customerAgreements', { keyPath: 'idAuto', autoIncrement: true });
+      }
+    };
+    req.onsuccess = ()=>{
+      req.result.close();
+      resolve(true);
+    };
+    req.onerror = ()=> reject(req.error);
+  });
+}
+
+async function getAllCustomerAgreements(){
+  await ensureCustomerAgreementsStore();
+  return await idbGetAll('customerAgreements');
+}
+
+async function addCustomerAgreement(agreement){
+  await ensureCustomerAgreementsStore();
+  return await idbAdd('customerAgreements', agreement);
+}
+
+async function deleteCustomerAgreement(idAuto){
+  await ensureCustomerAgreementsStore();
+  return await idbDelete('customerAgreements', idAuto);
+}
+
+function mapAgreementTypeLabel(type){
+  const labels = {
+    rhythmus_geaendert: 'Rhythmus geändert',
+    komplett_storno: 'Komplett Storno',
+    urlaub: 'Urlaub',
+    sonstiges: 'Sonstiges'
+  };
+  return labels[type] || type || '—';
+}
+
+function clearCustomerAgreementForm(){
+  if(customerNumberInput) customerNumberInput.value = '';
+  if(customerLastNameInput) customerLastNameInput.value = '';
+  if(customerFirstNameInput) customerFirstNameInput.value = '';
+  if(customerAddressInput) customerAddressInput.value = '';
+  if(customerAgreementTypeSelect) customerAgreementTypeSelect.value = 'rhythmus_geaendert';
+  if(customerAgreementSinceInput) customerAgreementSinceInput.value = '';
+  if(customerAgreementUntilInput) customerAgreementUntilInput.value = '';
+  if(customerAgreementNoteInput) customerAgreementNoteInput.value = '';
+}
+
+async function renderCustomerAgreements(){
+  if(!customerAgreementsList) return;
+  const agreements = await getAllCustomerAgreements();
+  if(!agreements.length){
+    customerAgreementsList.innerHTML = '<div class="muted">Noch keine Kundenabsprachen gespeichert.</div>';
+    return;
+  }
+
+  agreements.sort((a,b)=>{
+    const dateA = a.since || '';
+    const dateB = b.since || '';
+    if(dateA < dateB) return 1;
+    if(dateA > dateB) return -1;
+    const nameA = `${a.lastName || ''} ${a.firstName || ''}`.trim();
+    const nameB = `${b.lastName || ''} ${b.firstName || ''}`.trim();
+    return nameA.localeCompare(nameB, 'de');
+  });
+
+  customerAgreementsList.innerHTML = '';
+  agreements.forEach(agreement=>{
+    const card = document.createElement('div');
+    card.className = 'customer-agreement-card';
+
+    const title = document.createElement('div');
+    title.className = 'customer-agreement-title';
+    const fullName = `${agreement.lastName || ''}, ${agreement.firstName || ''}`.replace(/^,\s*/, '').trim();
+    title.textContent = `${agreement.customerNumber || '—'} • ${fullName || '—'}`;
+
+    const meta = document.createElement('div');
+    meta.className = 'customer-agreement-meta';
+    const sinceLabel = agreement.since ? new Date(agreement.since).toLocaleDateString('de-DE') : '—';
+    const untilLabel = agreement.until ? new Date(agreement.until).toLocaleDateString('de-DE') : 'offen';
+    meta.textContent = `${mapAgreementTypeLabel(agreement.type)} • ${sinceLabel} bis ${untilLabel}`;
+
+    const note = document.createElement('div');
+    note.className = 'customer-agreement-note';
+    note.textContent = agreement.note || 'Keine Notiz';
+
+    const address = document.createElement('div');
+    address.className = 'customer-agreement-address';
+    address.textContent = agreement.address || 'Keine Adresse';
+
+    const controls = document.createElement('div');
+    controls.className = 'customer-agreement-controls';
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'small';
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = 'Löschen';
+    deleteBtn.addEventListener('click', async ()=>{
+      if(!confirm('Diese Kundenabsprache löschen?')) return;
+      await deleteCustomerAgreement(agreement.idAuto);
+      await renderCustomerAgreements();
+      await triggerAutoBackup('customer_agreement_deleted');
+    });
+    controls.appendChild(deleteBtn);
+
+    card.append(title, meta, address, note, controls);
+    customerAgreementsList.appendChild(card);
+  });
+}
+
 /* ========== Data-Operationen via IndexedDB ========== */
 async function saveTourObj(t){
   if(!t.period){
@@ -203,7 +334,7 @@ async function getAllTours(){
   return await idbGetAll('tours');
 }
 async function clearAllData(){
-  await idbClear('tours'); await idbClear('conf'); await idbClear('backups');
+  await idbClear('tours'); await idbClear('conf'); await idbClear('backups'); await idbClear('customerAgreements');
   localStorage.removeItem('provision_tours_v3');
   localStorage.removeItem('provision_conf_v3');
 }
@@ -370,10 +501,11 @@ async function triggerAutoBackup(reason){
     try{
       const tours = await getAllTours();
       const conf = await loadConfObj();
+      const customerAgreements = await getAllCustomerAgreements();
       const payload = {
         ts: new Date().toISOString(),
         reason: reason || null,
-        data: { tours, conf }
+        data: { tours, conf, customerAgreements }
       };
       await idbAdd('backups', { ts: payload.ts, payload });
       downloadJson(payload, `backup_provision_${payload.ts.replace(/[:.]/g,'-')}.json`);
@@ -426,7 +558,8 @@ async function loadBackupsList(){
 document.getElementById('exportJson').addEventListener('click', async ()=>{
   const tours = await getAllTours();
   const conf = await loadConfObj();
-  const payload = { ts: new Date().toISOString(), data: { tours, conf } };
+  const customerAgreements = await getAllCustomerAgreements();
+  const payload = { ts: new Date().toISOString(), data: { tours, conf, customerAgreements } };
   downloadJson(payload, `provision_export_${payload.ts.replace(/[:.]/g,'-')}.json`);
 });
 document.getElementById('importJson').addEventListener('click', ()=> jsonInput.click());
@@ -436,7 +569,7 @@ jsonInput.addEventListener('change', async (ev)=>{
   try{
     const j = JSON.parse(text);
     if(j && j.data){
-      await idbClear('tours'); await idbClear('conf');
+      await idbClear('tours'); await idbClear('conf'); await idbClear('customerAgreements');
       const confObj = j.data.conf || {};
       for(const k of Object.keys(confObj)){
         await idbPut('conf', { k: k, v: confObj[k] });
@@ -446,7 +579,14 @@ jsonInput.addEventListener('change', async (ev)=>{
         delete t.idAuto;
         await idbAdd('tours', t);
       }
+      const agreements = Array.isArray(j.data.customerAgreements) ? j.data.customerAgreements : [];
+      for(const agreement of agreements){
+        const copy = { ...agreement };
+        delete copy.idAuto;
+        await addCustomerAgreement(copy);
+      }
       await renderTours();
+      await renderCustomerAgreements();
       alert('JSON importiert und wiederhergestellt ✔');
       await triggerAutoBackup('import_json');
     }else alert('Ungültiges JSON-Format');
@@ -570,6 +710,40 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   document.getElementById('note').value=''; renderActionsList([]);
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
 });
+
+const saveCustomerAgreementBtn = document.getElementById('saveCustomerAgreement');
+if(saveCustomerAgreementBtn){
+  saveCustomerAgreementBtn.addEventListener('click', async ()=>{
+    const customerNumber = (customerNumberInput?.value || '').trim();
+    const lastName = (customerLastNameInput?.value || '').trim();
+    const firstName = (customerFirstNameInput?.value || '').trim();
+    const address = (customerAddressInput?.value || '').trim();
+    if(!customerNumber || !lastName || !firstName || !address){
+      alert('Bitte Kundennummer, Name, Vorname und Adresse eingeben.');
+      return;
+    }
+    const agreement = {
+      customerNumber,
+      lastName,
+      firstName,
+      address,
+      type: customerAgreementTypeSelect?.value || 'sonstiges',
+      since: customerAgreementSinceInput?.value || '',
+      until: customerAgreementUntilInput?.value || '',
+      note: (customerAgreementNoteInput?.value || '').trim(),
+      createdAt: new Date().toISOString()
+    };
+    await addCustomerAgreement(agreement);
+    clearCustomerAgreementForm();
+    await renderCustomerAgreements();
+    await triggerAutoBackup('customer_agreement_saved');
+  });
+}
+
+const clearCustomerAgreementFormBtn = document.getElementById('clearCustomerAgreementForm');
+if(clearCustomerAgreementFormBtn){
+  clearCustomerAgreementFormBtn.addEventListener('click', ()=> clearCustomerAgreementForm());
+}
 
 /* Settings speichern (nur verlorene Kunden) */
 const netKvFundSelect = document.getElementById('netKvFund');
@@ -1244,6 +1418,7 @@ export async function init(){
     if(document.getElementById('sectionSettings').classList.contains('active')) populateSettingsSection();
   });
 
+  await renderCustomerAgreements();
   setActiveSection('sectionNewTour');
   await renderTours();
 }
