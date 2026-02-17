@@ -37,6 +37,11 @@ const customerAgreementSinceInput = document.getElementById('customerAgreementSi
 const customerAgreementUntilInput = document.getElementById('customerAgreementUntil');
 const customerAgreementNoteInput = document.getElementById('customerAgreementNote');
 const customerAgreementsList = document.getElementById('customerAgreementsList');
+const customerAddressSearchInput = document.getElementById('customerAddressSearch');
+const customerAddressSuggestions = document.getElementById('customerAddressSuggestions');
+const customerAddressSuggestionMap = new Map();
+let editingCustomerAgreementId = null;
+let saveCustomerAgreementBtn;
 let currentSort = { key:null, dir:'asc' };
 
 const tabTargets = {
@@ -244,13 +249,60 @@ function mapAgreementTypeLabel(type){
   const labels = {
     rhythmus_geaendert: 'Rhythmus geändert',
     komplett_storno: 'Komplett Storno',
+    nur_auf_bestellung: 'Nur auf Bestellung',
     urlaub: 'Urlaub',
     sonstiges: 'Sonstiges'
   };
   return labels[type] || type || '—';
 }
 
+function buildAddressSuggestionLabel(agreement){
+  const address = [agreement.customerStreet || '', agreement.customerHouseNumber || ''].filter(Boolean).join(' ');
+  const city = [agreement.customerPostalCode || '', agreement.customerCity || ''].filter(Boolean).join(' ');
+  const customer = [agreement.customerLastName || '', agreement.customerFirstName || ''].filter(Boolean).join(', ');
+  return [address, city, customer].filter(Boolean).join(' • ');
+}
+
+function fillCustomerAgreementForm(agreement){
+  if(!agreement) return;
+  if(customerNumberInput) customerNumberInput.value = agreement.customerNumber === '—' ? '' : (agreement.customerNumber || '');
+  if(customerNameInput) customerNameInput.value = agreement.customerLastName || '';
+  if(customerLastNameInput) customerLastNameInput.value = agreement.customerLastName || '';
+  if(customerFirstNameInput) customerFirstNameInput.value = agreement.customerFirstName || '';
+  if(customerStreetInput) customerStreetInput.value = agreement.customerStreet || '';
+  if(customerHouseNumberInput) customerHouseNumberInput.value = agreement.customerHouseNumber || '';
+  if(customerPostalCodeInput) customerPostalCodeInput.value = agreement.customerPostalCode || '';
+  if(customerCityInput) customerCityInput.value = agreement.customerCity || '';
+  if(customerAgreementTypeSelect) customerAgreementTypeSelect.value = agreement.type || 'sonstiges';
+  if(customerAgreementSinceInput) customerAgreementSinceInput.value = agreement.since || '';
+  if(customerAgreementUntilInput) customerAgreementUntilInput.value = agreement.until || '';
+  if(customerAgreementNoteInput) customerAgreementNoteInput.value = agreement.note || '';
+}
+
+async function renderCustomerAddressSuggestions(query = ''){
+  if(!customerAddressSuggestions) return;
+  const agreements = await getAllCustomerAgreements();
+  const needle = query.trim().toLowerCase();
+
+  const matched = agreements.filter(agreement => {
+    if(!needle) return true;
+    return buildAddressSuggestionLabel(agreement).toLowerCase().includes(needle);
+  }).slice(0, 20);
+
+  customerAddressSuggestionMap.clear();
+  customerAddressSuggestions.innerHTML = '';
+  matched.forEach(agreement => {
+    const label = buildAddressSuggestionLabel(agreement);
+    if(!label) return;
+    customerAddressSuggestionMap.set(label, agreement);
+    const option = document.createElement('option');
+    option.value = label;
+    customerAddressSuggestions.appendChild(option);
+  });
+}
+
 function clearCustomerAgreementForm(){
+  editingCustomerAgreementId = null;
   if(customerNumberInput) customerNumberInput.value = '';
   if(customerNameInput) customerNameInput.value = '';
   if(customerLastNameInput) customerLastNameInput.value = '';
@@ -263,6 +315,8 @@ function clearCustomerAgreementForm(){
   if(customerAgreementSinceInput) customerAgreementSinceInput.value = '';
   if(customerAgreementUntilInput) customerAgreementUntilInput.value = '';
   if(customerAgreementNoteInput) customerAgreementNoteInput.value = '';
+  if(customerAddressSearchInput) customerAddressSearchInput.value = '';
+  if(saveCustomerAgreementBtn) saveCustomerAgreementBtn.textContent = 'Absprache speichern';
 }
 
 async function renderCustomerAgreements(){
@@ -311,6 +365,18 @@ async function renderCustomerAgreements(){
 
     const controls = document.createElement('div');
     controls.className = 'customer-agreement-controls';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'small';
+    editBtn.type = 'button';
+    editBtn.textContent = 'Bearbeiten';
+    editBtn.addEventListener('click', ()=>{
+      editingCustomerAgreementId = agreement.idAuto;
+      fillCustomerAgreementForm(agreement);
+      if(saveCustomerAgreementBtn) saveCustomerAgreementBtn.textContent = 'Absprache aktualisieren';
+      setActiveSection('sectionCustomers');
+    });
+
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'small';
     deleteBtn.type = 'button';
@@ -319,8 +385,10 @@ async function renderCustomerAgreements(){
       if(!confirm('Diese Kundenabsprache löschen?')) return;
       await deleteCustomerAgreement(agreement.idAuto);
       await renderCustomerAgreements();
+      await renderCustomerAddressSuggestions('');
       await triggerAutoBackup('customer_agreement_deleted');
     });
+    controls.appendChild(editBtn);
     controls.appendChild(deleteBtn);
 
     card.append(title, meta, note, controls);
@@ -721,7 +789,7 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
 });
 
-const saveCustomerAgreementBtn = document.getElementById('saveCustomerAgreement');
+saveCustomerAgreementBtn = document.getElementById('saveCustomerAgreement');
 if(saveCustomerAgreementBtn){
   saveCustomerAgreementBtn.addEventListener('click', async ()=>{
     const customerNumber = (customerNumberInput?.value || '').trim();
@@ -749,6 +817,7 @@ if(saveCustomerAgreementBtn){
     }
 
     const agreement = {
+      idAuto: editingCustomerAgreementId || undefined,
       customerNumber: customerNumber || '—',
       customerLastName,
       customerFirstName,
@@ -762,10 +831,36 @@ if(saveCustomerAgreementBtn){
       note: (customerAgreementNoteInput?.value || '').trim(),
       createdAt: new Date().toISOString()
     };
-    await addCustomerAgreement(agreement);
+
+    if(editingCustomerAgreementId){
+      const previous = (await getAllCustomerAgreements()).find(item => item.idAuto === editingCustomerAgreementId);
+      agreement.createdAt = previous?.createdAt || agreement.createdAt;
+      agreement.updatedAt = new Date().toISOString();
+      await idbPut('customerAgreements', agreement);
+    } else {
+      delete agreement.idAuto;
+      await addCustomerAgreement(agreement);
+    }
+
     clearCustomerAgreementForm();
     await renderCustomerAgreements();
+    await renderCustomerAddressSuggestions('');
     await triggerAutoBackup('customer_agreement_saved');
+  });
+}
+
+
+if(customerAddressSearchInput){
+  customerAddressSearchInput.addEventListener('focus', ()=>{
+    renderCustomerAddressSuggestions(customerAddressSearchInput.value || '').catch(err => console.error('Adressvorschläge laden fehlgeschlagen', err));
+  });
+  customerAddressSearchInput.addEventListener('input', ()=>{
+    renderCustomerAddressSuggestions(customerAddressSearchInput.value || '').catch(err => console.error('Adressvorschläge laden fehlgeschlagen', err));
+  });
+  customerAddressSearchInput.addEventListener('change', ()=>{
+    const agreement = customerAddressSuggestionMap.get(customerAddressSearchInput.value || '');
+    if(!agreement) return;
+    fillCustomerAgreementForm(agreement);
   });
 }
 
@@ -1448,6 +1543,7 @@ export async function init(){
   });
 
   await renderCustomerAgreements();
+  await renderCustomerAddressSuggestions('');
   setActiveSection('sectionNewTour');
   await renderTours();
 }

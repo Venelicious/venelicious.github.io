@@ -204,10 +204,17 @@
           <option value="rhythmus_geaendert">Rhythmus geändert</option>
           <option value="komplett_storno">Komplett Storno</option>
           <option value="urlaub">Urlaub</option>
+          <option value="nur_auf_bestellung">Nur auf Bestellung</option>
           <option value="sonstiges">Sonstiges</option>
         </select>
       </label>
     </div>
+
+
+    <label>Adresse suchen (Vorschläge aus gespeicherten Kunden)
+      <input id="customerAddressSearch" list="customerAddressSuggestions" placeholder="z.B. Musterstraße 12a, 12345 Musterstadt" />
+      <datalist id="customerAddressSuggestions"></datalist>
+    </label>
 
     <div class="row">
       <label>Straße
