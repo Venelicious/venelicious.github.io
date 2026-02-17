@@ -1,5 +1,5 @@
 const DB_NAME = 'provisionDB_v1';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let dbPromise = null;
 
 export function openDb() {
@@ -11,6 +11,7 @@ export function openDb() {
       if (!db.objectStoreNames.contains('tours')) db.createObjectStore('tours', { keyPath: 'idAuto', autoIncrement: true });
       if (!db.objectStoreNames.contains('conf')) db.createObjectStore('conf', { keyPath: 'k' });
       if (!db.objectStoreNames.contains('backups')) db.createObjectStore('backups', { keyPath: 'ts' });
+      if (!db.objectStoreNames.contains('customerAgreements')) db.createObjectStore('customerAgreements', { keyPath: 'idAuto', autoIncrement: true });
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
