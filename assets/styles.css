@@ -330,6 +330,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .tour-bubble-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .tour-bubble-title { font-weight: 700; }
 .tour-bubble-details { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+.tour-bubble-detail-line + .tour-bubble-detail-line { margin-top: 2px; }
 .tour-bubble-controls { margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px; }
 
 .tour-type-badge {
