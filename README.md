@@ -151,30 +151,6 @@
       </div>
     </div>
 
-    <div class="tableCard">
-      <table id="toursTable">
-        <thead>
-          <tr>
-            <th data-sort="date">Datum</th>
-            <th data-sort="id">Tour</th>
-            <th data-sort="tourType">Art</th>
-            <th data-sort="total">Umsatz</th>
-            <th data-sort="rekl">Rekl.</th>
-            <th data-sort="gs">GS</th>
-            <th data-sort="newC">NK</th>
-            <th data-sort="integrations">Int.</th>
-            <th>Spesen</th>
-            <th data-sort="actionsCount">Akt.</th>
-            <th data-sort="actionsEuro">Akt. (€)</th>
-            <th>Vert.</th>
-            <th>Entf.</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
     <div id="toursBubbleList" class="tours-bubble-list" style="margin-top:12px"></div>
 
   </div>

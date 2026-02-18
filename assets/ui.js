@@ -1121,7 +1121,8 @@ function mapTourTypeClass(type){
 
 /* ========== Render Tours + Summary (mit Sortierung) ========== */
 async function renderTours(){
-  const tbody = document.querySelector('#toursTable tbody'); tbody.innerHTML = '';
+  const tbody = document.querySelector('#toursTable tbody');
+  if(tbody) tbody.innerHTML = '';
   const toursBubbleList = document.getElementById('toursBubbleList');
   if(toursBubbleList) toursBubbleList.innerHTML = '';
   const allTours = await getAllTours();
@@ -1222,7 +1223,7 @@ async function renderTours(){
         <button class="small" data-i="${t.idAuto||''}" data-action="edit">Bearbeiten</button>
       </td>
     `;
-    tbody.appendChild(tr);
+    if(tbody) tbody.appendChild(tr);
 
     if(toursBubbleList){
       const bubble = document.createElement('div');
@@ -1255,7 +1256,12 @@ async function renderTours(){
         `Vertretung: ${t.vertretung ? 'Ja' : 'Nein'}`,
         `Entfernung >45 Min: ${t.fahrt45 ? 'Ja' : 'Nein'}`
       ];
-      details.textContent = detailParts.join(' • ');
+      detailParts.forEach(line=>{
+        const detailLine = document.createElement('div');
+        detailLine.className = 'tour-bubble-detail-line';
+        detailLine.textContent = line;
+        details.appendChild(detailLine);
+      });
 
       const controls = document.createElement('div');
       controls.className = 'tour-bubble-controls';
@@ -1281,23 +1287,25 @@ async function renderTours(){
   }
 
   // Buttons löschen/bearbeiten
-  tbody.querySelectorAll('button[data-action]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const action = btn.dataset.action;
-      const key = Number(btn.dataset.i);
-      if(action === 'delete'){
-        if(!confirm('Tour löschen?')) return;
-        await idbDelete('tours', key);
-        await renderTours();
-        await triggerAutoBackup('tour_deleted');
-      } else if(action === 'edit'){
-        const all = await idbGetAll('tours');
-        const entry = all.find(x=> x.idAuto === key);
-        if(!entry) return;
-        openEditModalFor(entry, key);
-      }
+  if(tbody){
+    tbody.querySelectorAll('button[data-action]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const action = btn.dataset.action;
+        const key = Number(btn.dataset.i);
+        if(action === 'delete'){
+          if(!confirm('Tour löschen?')) return;
+          await idbDelete('tours', key);
+          await renderTours();
+          await triggerAutoBackup('tour_deleted');
+        } else if(action === 'edit'){
+          const all = await idbGetAll('tours');
+          const entry = all.find(x=> x.idAuto === key);
+          if(!entry) return;
+          openEditModalFor(entry, key);
+        }
+      });
     });
-  });
+  }
 
   if(toursBubbleList){
     if(!tours.length){
