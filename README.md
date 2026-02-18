@@ -175,6 +175,8 @@
       </table>
     </div>
 
+    <div id="toursBubbleList" class="tours-bubble-list" style="margin-top:12px"></div>
+
   </div>
 </section>
 
