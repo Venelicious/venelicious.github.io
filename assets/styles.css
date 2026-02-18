@@ -349,8 +349,57 @@ th[data-sort]::after {
   padding: 10px;
 }
 
+.customer-agreement-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .customer-agreement-title {
   font-weight: 700;
+}
+
+.agreement-type-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.agreement-type-rhythmus-geaendert {
+  background: #e8f1ff;
+  color: #174ea6;
+  border-color: #b6d1ff;
+}
+
+.agreement-type-komplett-storno {
+  background: #ffecec;
+  color: #a21515;
+  border-color: #ffc7c7;
+}
+
+.agreement-type-nur-auf-bestellung {
+  background: #fff4e5;
+  color: #8a4b00;
+  border-color: #ffd8ab;
+}
+
+.agreement-type-urlaub {
+  background: #e9f9f0;
+  color: #0d6b3f;
+  border-color: #bce8cd;
+}
+
+.agreement-type-sonstiges {
+  background: #f1f3f5;
+  color: #495057;
+  border-color: #d7dce1;
 }
 
 .customer-agreement-meta {
@@ -367,4 +416,11 @@ th[data-sort]::after {
   margin-top: 8px;
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 520px) {
+  .customer-agreement-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

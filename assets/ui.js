@@ -256,6 +256,17 @@ function mapAgreementTypeLabel(type){
   return labels[type] || type || '—';
 }
 
+function mapAgreementTypeClass(type){
+  const classes = {
+    rhythmus_geaendert: 'agreement-type-rhythmus-geaendert',
+    komplett_storno: 'agreement-type-komplett-storno',
+    nur_auf_bestellung: 'agreement-type-nur-auf-bestellung',
+    urlaub: 'agreement-type-urlaub',
+    sonstiges: 'agreement-type-sonstiges'
+  };
+  return classes[type] || 'agreement-type-sonstiges';
+}
+
 function buildAddressSuggestionLabel(agreement){
   const address = [agreement.customerStreet || '', agreement.customerHouseNumber || ''].filter(Boolean).join(' ');
   const city = [agreement.customerPostalCode || '', agreement.customerCity || ''].filter(Boolean).join(' ');
@@ -340,15 +351,24 @@ async function renderCustomerAgreements(){
     const card = document.createElement('div');
     card.className = 'customer-agreement-card';
 
+    const topRow = document.createElement('div');
+    topRow.className = 'customer-agreement-top-row';
+
     const title = document.createElement('div');
     title.className = 'customer-agreement-title';
     title.textContent = `${agreement.customerNumber || '—'} · ${agreement.customerLastName || '—'}, ${agreement.customerFirstName || '—'}`;
+
+    const typeBadge = document.createElement('span');
+    typeBadge.className = `agreement-type-badge ${mapAgreementTypeClass(agreement.type)}`;
+    typeBadge.textContent = mapAgreementTypeLabel(agreement.type);
+
+    topRow.append(title, typeBadge);
 
     const meta = document.createElement('div');
     meta.className = 'customer-agreement-meta';
     const sinceLabel = agreement.since ? new Date(agreement.since).toLocaleDateString('de-DE') : '—';
     const untilLabel = agreement.until ? new Date(agreement.until).toLocaleDateString('de-DE') : 'offen';
-    meta.textContent = `${mapAgreementTypeLabel(agreement.type)} • ${sinceLabel} bis ${untilLabel}`;
+    meta.textContent = `${sinceLabel} bis ${untilLabel}`;
 
     const note = document.createElement('div');
     note.className = 'customer-agreement-note';
@@ -391,7 +411,7 @@ async function renderCustomerAgreements(){
     controls.appendChild(editBtn);
     controls.appendChild(deleteBtn);
 
-    card.append(title, meta, note, controls);
+    card.append(topRow, meta, note, controls);
     customerAgreementsList.appendChild(card);
   });
 }
