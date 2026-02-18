@@ -245,6 +245,7 @@
     <div class="controls">
       <button id="saveCustomerAgreement" class="small">Absprache speichern</button>
       <button id="clearCustomerAgreementForm" class="small">Formular leeren</button>
+      <button id="printCustomerList" class="small">Kundenliste drucken</button>
     </div>
 
     <div id="customerAgreementsList" class="customer-agreements-list" style="margin-top:12px"></div>

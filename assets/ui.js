@@ -42,6 +42,7 @@ const customerAddressSuggestions = document.getElementById('customerAddressSugge
 const customerAddressSuggestionMap = new Map();
 let editingCustomerAgreementId = null;
 let saveCustomerAgreementBtn;
+let printCustomerListBtn;
 let currentSort = { key:null, dir:'asc' };
 
 const tabTargets = {
@@ -351,6 +352,85 @@ function clearCustomerAgreementForm(){
   if(saveCustomerAgreementBtn) saveCustomerAgreementBtn.textContent = 'Absprache speichern';
 }
 
+async function printCustomerAgreements(){
+  const agreements = await getAllCustomerAgreements();
+  agreements.sort((a,b)=>{
+    const lastNameCompare = (a.customerLastName || '').localeCompare((b.customerLastName || ''), 'de', { sensitivity: 'base' });
+    if(lastNameCompare !== 0) return lastNameCompare;
+
+    const firstNameCompare = (a.customerFirstName || '').localeCompare((b.customerFirstName || ''), 'de', { sensitivity: 'base' });
+    if(firstNameCompare !== 0) return firstNameCompare;
+
+    const numberCompare = String(a.customerNumber || '').localeCompare(String(b.customerNumber || ''), 'de', { numeric: true, sensitivity: 'base' });
+    if(numberCompare !== 0) return numberCompare;
+
+    return (a.since || '').localeCompare((b.since || ''));
+  });
+
+  const printWindow = window.open('', '_blank');
+  if(!printWindow){
+    alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
+    return;
+  }
+
+  const rows = agreements.map(agreement => {
+    const fullName = `${agreement.customerLastName || '—'}, ${agreement.customerFirstName || '—'}`;
+    const address = [
+      [agreement.customerStreet || '', agreement.customerHouseNumber || ''].filter(Boolean).join(' '),
+      [agreement.customerPostalCode || '', agreement.customerCity || ''].filter(Boolean).join(' ')
+    ].filter(Boolean).join(', ') || '—';
+
+    return `<tr>
+      <td>${sanitizeForPdf(agreement.customerNumber || '—')}</td>
+      <td>${sanitizeForPdf(fullName)}</td>
+      <td>${sanitizeForPdf(address)}</td>
+      <td>${sanitizeForPdf(mapAgreementTypeLabel(agreement.type))}</td>
+      <td>${sanitizeForPdf(agreement.since ? new Date(agreement.since).toLocaleDateString('de-DE') : '—')}</td>
+      <td>${sanitizeForPdf(agreement.until ? new Date(agreement.until).toLocaleDateString('de-DE') : 'offen')}</td>
+      <td>${sanitizeForPdf(agreement.note || '')}</td>
+    </tr>`;
+  }).join('');
+
+  printWindow.document.write(`<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>Kundenliste</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; color: #111; }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    p { margin: 0 0 16px; color: #555; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #bbb; padding: 6px; text-align: left; vertical-align: top; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1>Kundenliste</h1>
+  <p>Stand: ${new Date().toLocaleString('de-DE')}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Kundennr.</th>
+        <th>Name</th>
+        <th>Adresse</th>
+        <th>Absprache</th>
+        <th>Gültig ab</th>
+        <th>Bis</th>
+        <th>Notiz</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows || '<tr><td colspan="7">Keine Kundenabsprachen vorhanden.</td></tr>'}
+    </tbody>
+  </table>
+</body>
+</html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
 async function renderCustomerAgreements(){
   if(!customerAgreementsList) return;
   const agreements = await getAllCustomerAgreements();
@@ -360,11 +440,16 @@ async function renderCustomerAgreements(){
   }
 
   agreements.sort((a,b)=>{
-    const dateA = a.since || '';
-    const dateB = b.since || '';
-    if(dateA < dateB) return 1;
-    if(dateA > dateB) return -1;
-    return `${a.customerLastName || ''}${a.customerFirstName || ''}`.localeCompare(`${b.customerLastName || ''}${b.customerFirstName || ''}`, 'de');
+    const lastNameCompare = (a.customerLastName || '').localeCompare((b.customerLastName || ''), 'de', { sensitivity: 'base' });
+    if(lastNameCompare !== 0) return lastNameCompare;
+
+    const firstNameCompare = (a.customerFirstName || '').localeCompare((b.customerFirstName || ''), 'de', { sensitivity: 'base' });
+    if(firstNameCompare !== 0) return firstNameCompare;
+
+    const numberCompare = String(a.customerNumber || '').localeCompare(String(b.customerNumber || ''), 'de', { numeric: true, sensitivity: 'base' });
+    if(numberCompare !== 0) return numberCompare;
+
+    return (a.since || '').localeCompare((b.since || ''));
   });
 
   customerAgreementsList.innerHTML = '';
@@ -908,6 +993,16 @@ if(customerAddressSearchInput){
 const clearCustomerAgreementFormBtn = document.getElementById('clearCustomerAgreementForm');
 if(clearCustomerAgreementFormBtn){
   clearCustomerAgreementFormBtn.addEventListener('click', ()=> clearCustomerAgreementForm());
+}
+
+printCustomerListBtn = document.getElementById('printCustomerList');
+if(printCustomerListBtn){
+  printCustomerListBtn.addEventListener('click', ()=>{
+    printCustomerAgreements().catch(err => {
+      console.error('Kundenliste drucken fehlgeschlagen', err);
+      alert('Kundenliste konnte nicht gedruckt werden.');
+    });
+  });
 }
 
 /* Settings speichern (nur verlorene Kunden) */
