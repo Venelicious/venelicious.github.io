@@ -28,14 +28,21 @@
     <p class="headerLead">Hallo Bastian, hier findest du alle Infos rund um deine Touren.</p>
   </header>
 
-<nav class="tabNav">
-  <button id="tabNewTour" class="tabButton active" aria-label="Neue Tour erfassen" title="Neue Tour erfassen">Neue Tour</button>
-  <button id="tabTours" class="tabButton" aria-label="Touren" title="Touren">Touren</button>
-  <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">Übersicht</button>
-  <button id="tabCustomers" class="tabButton" aria-label="Kundenabsprachen" title="Kundenabsprachen">Kunden</button>
-  <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">Einstellungen</button>
-  <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">Backups</button>
-  <button id="tabExport" class="tabButton" aria-label="Export" title="Export">Export</button>
+<div id="menuOverlay" class="menuOverlay" aria-hidden="true"></div>
+<nav id="sideMenu" class="sideMenu" aria-label="Seitenmenü" aria-hidden="true">
+  <div class="sideMenuHeader">
+    <strong>Navigation</strong>
+    <button id="closeMenu" class="menuClose" type="button" aria-label="Menü schließen">✕</button>
+  </div>
+  <div class="sideMenuBody">
+    <button id="tabNewTour" class="tabButton active" aria-label="Neue Tour erfassen" title="Neue Tour erfassen">Neue Tour</button>
+    <button id="tabTours" class="tabButton" aria-label="Touren" title="Touren">Touren</button>
+    <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">Übersicht</button>
+    <button id="tabCustomers" class="tabButton" aria-label="Kundenabsprachen" title="Kundenabsprachen">Kunden</button>
+    <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">Einstellungen</button>
+    <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">Backups</button>
+    <button id="tabExport" class="tabButton" aria-label="Export" title="Export">Export</button>
+  </div>
 </nav>
 
 <section id="sectionNewTour" class="tabSection active">
