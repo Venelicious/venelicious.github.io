@@ -325,6 +325,29 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .customer-agreement-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .customer-agreement-title { font-weight: 700; }
 
+.tours-bubble-list { display: grid; gap: 10px; }
+.tour-bubble-card { border: 1px solid #cfe2ff; border-radius: 10px; background: #fff; padding: 10px; }
+.tour-bubble-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tour-bubble-title { font-weight: 700; }
+.tour-bubble-details { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+.tour-bubble-controls { margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px; }
+
+.tour-type-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.tour-type-tourentag { background: #e8f1ff; color: #174ea6; border-color: #b6d1ff; }
+.tour-type-werbetag { background: #fff4e5; color: #8a4b00; border-color: #ffd8ab; }
+.tour-type-neukundentour { background: #e9f9f0; color: #0d6b3f; border-color: #bce8cd; }
+.tour-type-krank { background: #ffecec; color: #a21515; border-color: #ffc7c7; }
+.tour-type-urlaub { background: #f1f3f5; color: #495057; border-color: #d7dce1; }
+
 .agreement-type-badge {
   display: inline-flex;
   align-items: center;
@@ -356,4 +379,5 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   .headerLead { font-size: 0.88rem; }
   .tabButton { font-size: 0.82rem; padding: 8px 10px; }
   .customer-agreement-top-row { flex-direction: column; align-items: flex-start; }
+  .tour-bubble-top-row { flex-direction: column; align-items: flex-start; }
 }

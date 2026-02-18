@@ -1097,9 +1097,33 @@ function gutscheineDisplay(val){
   return v > 0 ? fromCents(toCents(v)) : '–';
 }
 
+function mapTourTypeLabel(type){
+  const labels = {
+    tourentag: 'Tourentag',
+    werbetag: 'Werbetag',
+    neukundentour: 'Neukundentour',
+    krank: 'Krank',
+    urlaub: 'Urlaub'
+  };
+  return labels[type] || type || '—';
+}
+
+function mapTourTypeClass(type){
+  const classes = {
+    tourentag: 'tour-type-tourentag',
+    werbetag: 'tour-type-werbetag',
+    neukundentour: 'tour-type-neukundentour',
+    krank: 'tour-type-krank',
+    urlaub: 'tour-type-urlaub'
+  };
+  return classes[type] || 'tour-type-tourentag';
+}
+
 /* ========== Render Tours + Summary (mit Sortierung) ========== */
 async function renderTours(){
   const tbody = document.querySelector('#toursTable tbody'); tbody.innerHTML = '';
+  const toursBubbleList = document.getElementById('toursBubbleList');
+  if(toursBubbleList) toursBubbleList.innerHTML = '';
   const allTours = await getAllTours();
   const conf = await loadConfObj();
   const monthFilter = `${selectYear.value}-${selectMonth.value}`;
@@ -1199,6 +1223,61 @@ async function renderTours(){
       </td>
     `;
     tbody.appendChild(tr);
+
+    if(toursBubbleList){
+      const bubble = document.createElement('div');
+      bubble.className = 'tour-bubble-card';
+
+      const topRow = document.createElement('div');
+      topRow.className = 'tour-bubble-top-row';
+
+      const dateLabel = t.date ? new Date(t.date).toLocaleDateString('de-DE') : 'Kein Datum';
+      const title = document.createElement('div');
+      title.className = 'tour-bubble-title';
+      title.textContent = `${dateLabel} · ${t.id || '—'}`;
+
+      const typeBadge = document.createElement('span');
+      typeBadge.className = `tour-type-badge ${mapTourTypeClass(t.tourType)}`;
+      typeBadge.textContent = mapTourTypeLabel(t.tourType);
+
+      topRow.append(title, typeBadge);
+
+      const details = document.createElement('div');
+      details.className = 'tour-bubble-details';
+      const detailParts = [
+        `Umsatz: ${fromCents(tourTotalCents)}`,
+        `Rekl.: ${fromCents(reklCents)}`,
+        `GS: ${gutscheineDisplay(t.gutscheine)}`,
+        `NK: ${t.newC || 0}`,
+        `Int.: ${t.integrations || 0}`,
+        `Spesen: ${fromCents(spC)}`,
+        `Akt.: ${actionsPieceCount} (${fromCents(actionsSumCents)})`,
+        `Vertretung: ${t.vertretung ? 'Ja' : 'Nein'}`,
+        `Entfernung >45 Min: ${t.fahrt45 ? 'Ja' : 'Nein'}`
+      ];
+      details.textContent = detailParts.join(' • ');
+
+      const controls = document.createElement('div');
+      controls.className = 'tour-bubble-controls';
+
+      const bubbleDeleteBtn = document.createElement('button');
+      bubbleDeleteBtn.className = 'small';
+      bubbleDeleteBtn.type = 'button';
+      bubbleDeleteBtn.textContent = 'Löschen';
+      bubbleDeleteBtn.dataset.i = `${t.idAuto || ''}`;
+      bubbleDeleteBtn.dataset.action = 'delete';
+
+      const bubbleEditBtn = document.createElement('button');
+      bubbleEditBtn.className = 'small';
+      bubbleEditBtn.type = 'button';
+      bubbleEditBtn.textContent = 'Bearbeiten';
+      bubbleEditBtn.dataset.i = `${t.idAuto || ''}`;
+      bubbleEditBtn.dataset.action = 'edit';
+
+      controls.append(bubbleDeleteBtn, bubbleEditBtn);
+      bubble.append(topRow, details, controls);
+      toursBubbleList.appendChild(bubble);
+    }
   }
 
   // Buttons löschen/bearbeiten
@@ -1219,6 +1298,30 @@ async function renderTours(){
       }
     });
   });
+
+  if(toursBubbleList){
+    if(!tours.length){
+      toursBubbleList.innerHTML = '<div class="muted">Noch keine Touren für diesen Monat gespeichert.</div>';
+    }
+
+    toursBubbleList.querySelectorAll('button[data-action]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const action = btn.dataset.action;
+        const key = Number(btn.dataset.i);
+        if(action === 'delete'){
+          if(!confirm('Tour löschen?')) return;
+          await idbDelete('tours', key);
+          await renderTours();
+          await triggerAutoBackup('tour_deleted');
+        } else if(action === 'edit'){
+          const all = await idbGetAll('tours');
+          const entry = all.find(x=> x.idAuto === key);
+          if(!entry) return;
+          openEditModalFor(entry, key);
+        }
+      });
+    });
+  }
 
   // Zusammenfassung
   const avgVGEuros = (countVGTours>0) ? (totalVGRevenueCents/100/countVGTours) : 0;
