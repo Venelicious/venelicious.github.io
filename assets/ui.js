@@ -387,7 +387,7 @@ async function printCustomerAgreements(){
       <td>${sanitizeForPdf(mapAgreementTypeLabel(agreement.type))}</td>
       <td>${sanitizeForPdf(agreement.since ? new Date(agreement.since).toLocaleDateString('de-DE') : '—')}</td>
       <td>${sanitizeForPdf(agreement.until ? new Date(agreement.until).toLocaleDateString('de-DE') : 'offen')}</td>
-      <td>${sanitizeForPdf(agreement.note || '')}</td>
+      <td class="note-cell">${sanitizeForPdf(agreement.note || '')}</td>
     </tr>`;
   }).join('');
 
@@ -400,8 +400,18 @@ async function printCustomerAgreements(){
     body { font-family: Arial, sans-serif; padding: 16px; color: #111; }
     h1 { margin: 0 0 8px; font-size: 20px; }
     p { margin: 0 0 16px; color: #555; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { border: 1px solid #bbb; padding: 6px; text-align: left; vertical-align: top; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td {
+      border: 1px solid #bbb;
+      padding: 6px;
+      text-align: left;
+      vertical-align: top;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    tr { page-break-inside: avoid; }
+    .note-cell { white-space: pre-wrap; }
     th { background: #f0f0f0; }
   </style>
 </head>
