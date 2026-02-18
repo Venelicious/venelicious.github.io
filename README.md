@@ -16,34 +16,26 @@
 </head>
 <body>
 <div class="pageShell">
-  <header class="heroBanner">
-    <div class="heroText">
-      <p class="eyebrow">Frisch wie bei bofrost*</p>
-      <h1>Provisionstool</h1>
-      <p class="heroLead">Touren planen, Provisionen berechnen und Kundeninfos im gleichen, klaren Shop-Look verwalten.</p>
-      <div class="heroActions">
-        <button class="heroCta" type="button">Neue Tour starten</button>
-        <span class="heroHint">Mobil optimiert für die tägliche Route</span>
+  <header class="topHeader">
+    <div class="topHeaderBar">
+      <button class="menuTrigger" type="button" aria-label="Menü öffnen">☰</button>
+      <div class="brandWrap">
+        <strong class="brandName">bofrost*</strong>
+        <span class="brandSubline">TOUREN &amp; PROVISIONEN</span>
       </div>
+      <div class="headerIcons" aria-hidden="true">★</div>
     </div>
-    <div class="heroBadge" aria-hidden="true">🚚</div>
+    <p class="headerLead">Hallo Bastian, hier findest du alle Infos rund um deine Touren.</p>
   </header>
 
-  <div class="quickTiles">
-    <div class="quickTile orange">Touren sofort erfassen</div>
-    <div class="quickTile blue">Tagesumsatz im Blick</div>
-    <div class="quickTile green">Kundenabsprachen sicher speichern</div>
-    <div class="quickTile navy">Export &amp; Backup mit 1 Klick</div>
-  </div>
-
 <nav class="tabNav">
-  <button id="tabNewTour" class="tabButton active" aria-label="Neue Tour erfassen" title="Neue Tour erfassen">📝 Neue Tour</button>
-  <button id="tabTours" class="tabButton" aria-label="Touren" title="Touren">🗺️ Touren</button>
-  <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">📊 Übersicht</button>
-  <button id="tabCustomers" class="tabButton" aria-label="Kundenabsprachen" title="Kundenabsprachen">🤝 Kunden</button>
-  <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">⚙️ Einstellungen</button>
-  <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">💾 Backups</button>
-  <button id="tabExport" class="tabButton" aria-label="Export" title="Export">📤 Export</button>
+  <button id="tabNewTour" class="tabButton active" aria-label="Neue Tour erfassen" title="Neue Tour erfassen">Neue Tour</button>
+  <button id="tabTours" class="tabButton" aria-label="Touren" title="Touren">Touren</button>
+  <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">Übersicht</button>
+  <button id="tabCustomers" class="tabButton" aria-label="Kundenabsprachen" title="Kundenabsprachen">Kunden</button>
+  <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">Einstellungen</button>
+  <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">Backups</button>
+  <button id="tabExport" class="tabButton" aria-label="Export" title="Export">Export</button>
 </nav>
 
 <section id="sectionNewTour" class="tabSection active">
