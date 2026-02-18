@@ -48,6 +48,7 @@ body {
   font-size: 1.35rem;
   padding: 0;
   line-height: 1;
+  cursor: pointer;
 }
 
 .brandWrap {
@@ -98,12 +99,64 @@ body {
   margin-bottom: 6px;
 }
 
-.tabNav {
+.menuOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 20, 56, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+  z-index: 1800;
+}
+
+.menuOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sideMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(290px, 82vw);
+  background: #fff;
+  box-shadow: 12px 0 28px rgba(8, 22, 66, 0.22);
+  transform: translateX(-104%);
+  transition: transform 160ms ease;
+  z-index: 1900;
   display: flex;
-  gap: 8px;
-  margin: 12px 0 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+.sideMenu.active {
+  transform: translateX(0);
+}
+
+.sideMenuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-bottom: 1px solid #dbe7ff;
+}
+
+.menuClose {
+  width: auto;
+  margin: 0;
+  border: none;
   background: transparent;
+  color: #173070;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sideMenuBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
 }
 
 .tabButton {
@@ -114,11 +167,11 @@ body {
   color: #1b2f67;
   cursor: pointer;
   font-weight: 600;
-  width: auto;
+  width: 100%;
   min-width: 70px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   transition: background 120ms ease, border-color 120ms ease;
 }
 

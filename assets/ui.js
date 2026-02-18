@@ -54,6 +54,27 @@ const tabTargets = {
   tabExport: 'sectionExport'
 };
 
+const menuTriggerBtn = document.querySelector('.menuTrigger');
+const sideMenu = document.getElementById('sideMenu');
+const menuOverlay = document.getElementById('menuOverlay');
+const closeMenuBtn = document.getElementById('closeMenu');
+
+function closeSideMenu(){
+  if(!sideMenu || !menuOverlay) return;
+  sideMenu.classList.remove('active');
+  menuOverlay.classList.remove('active');
+  sideMenu.setAttribute('aria-hidden', 'true');
+  menuOverlay.setAttribute('aria-hidden', 'true');
+}
+
+function openSideMenu(){
+  if(!sideMenu || !menuOverlay) return;
+  sideMenu.classList.add('active');
+  menuOverlay.classList.add('active');
+  sideMenu.setAttribute('aria-hidden', 'false');
+  menuOverlay.setAttribute('aria-hidden', 'false');
+}
+
 function childrenCountForStatus(status){
   switch(status){
     case 'childless_over_23':
@@ -1548,9 +1569,19 @@ export async function init(){
     document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
   }
 
+  if(menuTriggerBtn) menuTriggerBtn.addEventListener('click', openSideMenu);
+  if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeSideMenu);
+  if(menuOverlay) menuOverlay.addEventListener('click', closeSideMenu);
+  document.addEventListener('keydown', (event)=>{
+    if(event.key === 'Escape') closeSideMenu();
+  });
+
   Object.entries(tabTargets).forEach(([tabId, sectionId])=>{
     const tab = document.getElementById(tabId);
-    if(tab) tab.addEventListener('click', ()=> setActiveSection(sectionId));
+    if(tab) tab.addEventListener('click', ()=> {
+      setActiveSection(sectionId);
+      closeSideMenu();
+    });
   });
 
   selectMonth.addEventListener('change', ()=> {
