@@ -136,8 +136,8 @@
     </label>
 
     <div class="controls">
-      <button id="addBtn" class="small">🔺 Tour speichern</button>
-      <button id="clearBtn" class="small">✖ Leeren</button>
+      <button id="addBtn" class="small" aria-label="Tour speichern" title="Tour speichern">💾</button>
+      <button id="clearBtn" class="small" aria-label="Formular leeren" title="Formular leeren">🧹</button>
     </div>
   </div>
 </section>
@@ -243,9 +243,9 @@
     </label>
 
     <div class="controls">
-      <button id="saveCustomerAgreement" class="small">Absprache speichern</button>
-      <button id="clearCustomerAgreementForm" class="small">Formular leeren</button>
-      <button id="printCustomerList" class="small">Kundenliste drucken</button>
+      <button id="saveCustomerAgreement" class="small" aria-label="Absprache speichern" title="Absprache speichern">💾</button>
+      <button id="clearCustomerAgreementForm" class="small" aria-label="Formular leeren" title="Formular leeren">🧹</button>
+      <button id="printCustomerList" class="small" aria-label="Kundenliste drucken" title="Kundenliste drucken">🖨️</button>
     </div>
 
     <div id="customerAgreementsList" class="customer-agreements-list" style="margin-top:12px"></div>
@@ -262,8 +262,8 @@
       <input id="baseSalaryValue" type="number" step="0.01" value="2500.00" placeholder="Grundgehalt für Monat"/>
     </div>
     <div style="display:flex;gap:8px;margin-top:6px">
-      <button id="saveBaseSalary" class="small">Speichern (Monat)</button>
-      <button id="clearBaseSalary" class="small">Löschen (Monat)</button>
+      <button id="saveBaseSalary" class="small" aria-label="Monatswert speichern" title="Monatswert speichern">💾</button>
+      <button id="clearBaseSalary" class="small" aria-label="Monatswert löschen" title="Monatswert löschen">🗑️</button>
     </div>
 
     <hr/>
@@ -274,8 +274,8 @@
     </div>
     <label style="margin-top:8px"><input type="checkbox" id="heimschlaeferEnabled"/> Heimschläfer aktiv (Netto + Spesen)</label>
     <div style="display:flex;gap:8px;margin-top:6px">
-      <button id="saveHeimschlaefer" class="small">Speichern (Monat)</button>
-      <button id="clearHeimschlaefer" class="small">Löschen (Monat)</button>
+      <button id="saveHeimschlaefer" class="small" aria-label="Monatswert speichern" title="Monatswert speichern">💾</button>
+      <button id="clearHeimschlaefer" class="small" aria-label="Monatswert löschen" title="Monatswert löschen">🗑️</button>
     </div>
 
     <hr/>
@@ -285,8 +285,8 @@
       <input id="paprovValue" type="number" step="0.01" value="0.00" placeholder="PAPROV für Monat"/>
     </div>
     <div style="display:flex;gap:8px;margin-top:6px">
-      <button id="savePaprov" class="small">Speichern (Monat)</button>
-      <button id="clearPaprov" class="small">Löschen (Monat)</button>
+      <button id="savePaprov" class="small" aria-label="Monatswert speichern" title="Monatswert speichern">💾</button>
+      <button id="clearPaprov" class="small" aria-label="Monatswert löschen" title="Monatswert löschen">🗑️</button>
     </div>
 
     <hr/>
@@ -452,13 +452,13 @@
       <input id="lostCustomersValue" type="number" step="1" value="0" placeholder="Verlorene Kunden im Monat" />
     </div>
     <div style="display:flex;gap:8px;margin-top:6px">
-      <button id="saveLostCustomers" class="small">Speichern (Monat)</button>
-      <button id="clearLostCustomers" class="small">Löschen (Monat)</button>
+      <button id="saveLostCustomers" class="small" aria-label="Monatswert speichern" title="Monatswert speichern">💾</button>
+      <button id="clearLostCustomers" class="small" aria-label="Monatswert löschen" title="Monatswert löschen">🗑️</button>
     </div>
 
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button id="openBackups" class="small">Backups verwalten</button>
-      <button id="saveSettings" class="small">Einstellungen speichern</button>
+      <button id="saveSettings" class="small" aria-label="Einstellungen speichern" title="Einstellungen speichern">💾</button>
     </div>
   </div>
 </section>
@@ -469,7 +469,7 @@
     <div id="backupsList" style="max-height:50vh;overflow:auto"></div>
     <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
       <button id="closeBackups" class="small">Zurück zu Touren</button>
-      <button id="clearBackups" class="small">Backups löschen</button>
+      <button id="clearBackups" class="small" aria-label="Backups löschen" title="Backups löschen">🗑️</button>
     </div>
   </div>
 </section>
@@ -484,8 +484,8 @@
       <button id="importCsv" class="small">CSV importieren</button>
       <button id="exportJson" class="small">JSON exportieren</button>
       <button id="importJson" class="small">JSON importieren</button>
-      <button id="printReport" class="small">Drucken</button>
-      <button id="resetAll" class="small">Alle Daten löschen</button>
+      <button id="printReport" class="small" aria-label="Bericht drucken" title="Bericht drucken">🖨️</button>
+      <button id="resetAll" class="small" aria-label="Alle Daten löschen" title="Alle Daten löschen">🗑️</button>
     </div>
     <input type="file" id="csvInput" accept=".csv" style="display:none" />
     <input type="file" id="jsonInput" accept=".json" style="display:none" />
@@ -521,7 +521,7 @@
 
     <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
       <button id="cancelEdit" class="small">Abbrechen</button>
-      <button id="saveEdit" class="small">Speichern</button>
+      <button id="saveEdit" class="small" aria-label="Änderungen speichern" title="Änderungen speichern">💾</button>
     </div>
   </form>
 </div></div>
