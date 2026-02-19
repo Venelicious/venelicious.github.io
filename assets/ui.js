@@ -349,7 +349,11 @@ function clearCustomerAgreementForm(){
   if(customerAgreementUntilInput) customerAgreementUntilInput.value = '';
   if(customerAgreementNoteInput) customerAgreementNoteInput.value = '';
   if(customerAddressSearchInput) customerAddressSearchInput.value = '';
-  if(saveCustomerAgreementBtn) saveCustomerAgreementBtn.textContent = 'Absprache speichern';
+  if(saveCustomerAgreementBtn){
+    saveCustomerAgreementBtn.textContent = '💾';
+    saveCustomerAgreementBtn.setAttribute('aria-label', 'Absprache speichern');
+    saveCustomerAgreementBtn.setAttribute('title', 'Absprache speichern');
+  }
 }
 
 async function printCustomerAgreements(){
@@ -532,18 +536,26 @@ async function renderCustomerAgreements(){
     const editBtn = document.createElement('button');
     editBtn.className = 'small';
     editBtn.type = 'button';
-    editBtn.textContent = 'Bearbeiten';
+    editBtn.textContent = '✏️';
+    editBtn.setAttribute('aria-label', 'Bearbeiten');
+    editBtn.setAttribute('title', 'Bearbeiten');
     editBtn.addEventListener('click', ()=>{
       editingCustomerAgreementId = agreement.idAuto;
       fillCustomerAgreementForm(agreement);
-      if(saveCustomerAgreementBtn) saveCustomerAgreementBtn.textContent = 'Absprache aktualisieren';
+      if(saveCustomerAgreementBtn){
+        saveCustomerAgreementBtn.textContent = '💾';
+        saveCustomerAgreementBtn.setAttribute('aria-label', 'Absprache aktualisieren');
+        saveCustomerAgreementBtn.setAttribute('title', 'Absprache aktualisieren');
+      }
       setActiveSection('sectionCustomers');
     });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'small';
     deleteBtn.type = 'button';
-    deleteBtn.textContent = 'Löschen';
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.setAttribute('aria-label', 'Löschen');
+    deleteBtn.setAttribute('title', 'Löschen');
     deleteBtn.addEventListener('click', async ()=>{
       if(!confirm('Diese Kundenabsprache löschen?')) return;
       await deleteCustomerAgreement(agreement.idAuto);
@@ -1351,8 +1363,8 @@ async function renderTours(){
       <td>${t.vertretung ? "✔" : "✖"}</td>
       <td>${t.fahrt45 ? "✔" : "✖"}</td>
       <td>
-        <button class="small" data-i="${t.idAuto||''}" data-action="delete">Löschen</button>
-        <button class="small" data-i="${t.idAuto||''}" data-action="edit">Bearbeiten</button>
+        <button class="small" data-i="${t.idAuto||''}" data-action="delete" aria-label="Löschen" title="Löschen">🗑️</button>
+        <button class="small" data-i="${t.idAuto||''}" data-action="edit" aria-label="Bearbeiten" title="Bearbeiten">✏️</button>
       </td>
     `;
     if(tbody) tbody.appendChild(tr);
@@ -1401,14 +1413,18 @@ async function renderTours(){
       const bubbleDeleteBtn = document.createElement('button');
       bubbleDeleteBtn.className = 'small';
       bubbleDeleteBtn.type = 'button';
-      bubbleDeleteBtn.textContent = 'Löschen';
+      bubbleDeleteBtn.textContent = '🗑️';
+      bubbleDeleteBtn.setAttribute('aria-label', 'Löschen');
+      bubbleDeleteBtn.setAttribute('title', 'Löschen');
       bubbleDeleteBtn.dataset.i = `${t.idAuto || ''}`;
       bubbleDeleteBtn.dataset.action = 'delete';
 
       const bubbleEditBtn = document.createElement('button');
       bubbleEditBtn.className = 'small';
       bubbleEditBtn.type = 'button';
-      bubbleEditBtn.textContent = 'Bearbeiten';
+      bubbleEditBtn.textContent = '✏️';
+      bubbleEditBtn.setAttribute('aria-label', 'Bearbeiten');
+      bubbleEditBtn.setAttribute('title', 'Bearbeiten');
       bubbleEditBtn.dataset.i = `${t.idAuto || ''}`;
       bubbleEditBtn.dataset.action = 'edit';
 
