@@ -234,6 +234,23 @@ input, select, textarea {
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  line-height: 1.2;
+  min-width: 0;
+  padding-right: 34px;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.72;
+}
+
 button {
   margin-top: 5px;
   padding: 9px 14px;
@@ -412,6 +429,31 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 @media (max-width: 840px) {
   .row, .flexRow { flex-direction: column; }
   .modalContent { width: 92%; }
+
+  .menuOverlay {
+    background: transparent;
+  }
+
+  .sideMenu {
+    top: var(--menu-top, 68px);
+    left: var(--menu-left, 14px);
+    bottom: auto;
+    width: min(260px, calc(100vw - 28px));
+    max-height: calc(100vh - 84px);
+    border-radius: 12px;
+    border: 1px solid #cfe0fb;
+    box-shadow: 0 14px 28px rgba(8, 22, 66, 0.22);
+    transform: translate(-10px, -14px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 180ms ease, opacity 160ms ease;
+  }
+
+  .sideMenu.active {
+    transform: translate(0, 0);
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 @media (max-width: 520px) {
