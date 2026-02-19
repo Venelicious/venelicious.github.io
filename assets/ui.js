@@ -389,7 +389,40 @@ async function printCustomerAgreements(){
       <td>${sanitizeForPdf(agreement.until ? new Date(agreement.until).toLocaleDateString('de-DE') : 'offen')}</td>
       <td class="note-cell">${sanitizeForPdf(agreement.note || '')}</td>
     </tr>`;
-  }).join('');
+  });
+
+  const rowsPerPage = 24;
+  const rowChunks = [];
+  for(let i = 0; i < rows.length; i += rowsPerPage){
+    rowChunks.push(rows.slice(i, i + rowsPerPage));
+  }
+
+  if(!rowChunks.length){
+    rowChunks.push(['<tr><td colspan="7">Keine Kundenabsprachen vorhanden.</td></tr>']);
+  }
+
+  const totalPages = rowChunks.length;
+  const pagedTables = rowChunks.map((chunk, index) => `
+    <section class="print-page">
+      <table>
+        <thead>
+          <tr>
+            <th>Kundennr.</th>
+            <th>Name</th>
+            <th>Adresse</th>
+            <th>Absprache</th>
+            <th>Gültig ab</th>
+            <th>Bis</th>
+            <th>Notiz</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${chunk.join('')}
+        </tbody>
+      </table>
+      <footer>Seite ${index + 1} von ${totalPages}</footer>
+    </section>
+  `).join('');
 
   printWindow.document.write(`<!doctype html>
 <html lang="de">
@@ -397,6 +430,7 @@ async function printCustomerAgreements(){
   <meta charset="utf-8" />
   <title>Kundenliste</title>
   <style>
+    @page { size: A4 portrait; margin: 12mm; }
     body { font-family: Arial, sans-serif; padding: 16px; color: #111; }
     h1 { margin: 0 0 8px; font-size: 20px; }
     p { margin: 0 0 16px; color: #555; }
@@ -410,30 +444,23 @@ async function printCustomerAgreements(){
       overflow-wrap: anywhere;
       word-break: break-word;
     }
-    tr { page-break-inside: avoid; }
+    tr { break-inside: avoid-page; page-break-inside: avoid; }
     .note-cell { white-space: pre-wrap; }
     th { background: #f0f0f0; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    .print-page { break-after: page; page-break-after: always; }
+    .print-page:last-of-type { break-after: auto; page-break-after: auto; }
+    footer { margin-top: 6px; text-align: right; color: #666; font-size: 11px; }
+    @media print {
+      body { padding: 0; }
+    }
   </style>
 </head>
 <body>
   <h1>Kundenliste</h1>
   <p>Stand: ${new Date().toLocaleString('de-DE')}</p>
-  <table>
-    <thead>
-      <tr>
-        <th>Kundennr.</th>
-        <th>Name</th>
-        <th>Adresse</th>
-        <th>Absprache</th>
-        <th>Gültig ab</th>
-        <th>Bis</th>
-        <th>Notiz</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows || '<tr><td colspan="7">Keine Kundenabsprachen vorhanden.</td></tr>'}
-    </tbody>
-  </table>
+  ${pagedTables}
 </body>
 </html>`);
   printWindow.document.close();
