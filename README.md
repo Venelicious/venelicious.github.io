@@ -26,6 +26,18 @@
       <div class="headerIcons" aria-hidden="true">★</div>
     </div>
     <p class="headerLead">Hallo Bastian, hier findest du alle Infos rund um deine Touren.</p>
+    <div class="headerPeriodSwitch">
+      <label for="selectMonth">Monat / Jahr</label>
+      <div class="headerPeriodFields">
+        <select id="selectMonth">
+          <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
+          <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
+          <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
+          <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
+        </select>
+        <select id="selectYear"></select>
+      </div>
+    </div>
   </header>
 
 <div id="menuOverlay" class="menuOverlay" aria-hidden="true"></div>
@@ -53,18 +65,6 @@
         <p class="muted">Lege eine Tour mit allen Details an und speichere sie im gewünschten Zeitraum.</p>
       </div>
     </div>
-
-    <label>Monat / Jahr
-      <div class="row">
-        <select id="selectMonth" style="width:50%">
-          <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
-          <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
-          <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
-          <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
-        </select>
-        <select id="selectYear" style="width:50%"></select>
-      </div>
-    </label>
 
     <label>Tour-Nr. / Bezeichnung
       <input id="tourId" placeholder="z.B. Tour 101"/>

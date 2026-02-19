@@ -83,6 +83,35 @@ body {
   color: rgba(255, 255, 255, 0.9);
 }
 
+.headerPeriodSwitch {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.headerPeriodSwitch label {
+  margin: 0;
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.headerPeriodFields {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.headerPeriodFields > * {
+  flex: 1;
+}
+
+.headerPeriodFields select {
+  margin-top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--accent);
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
 .panel {
   background: #fff;
   border: 1px solid #cfe0fb;
@@ -378,6 +407,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   .topHeader { border-radius: 0 0 4px 4px; }
   .brandName { font-size: 1.35rem; }
   .headerLead { font-size: 0.88rem; }
+  .headerPeriodFields { flex-direction: column; }
   .tabButton { font-size: 0.82rem; padding: 8px 10px; }
   .customer-agreement-top-row { flex-direction: column; align-items: flex-start; }
   .tour-bubble-top-row { flex-direction: column; align-items: flex-start; }
