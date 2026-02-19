@@ -68,12 +68,34 @@ function closeSideMenu(){
   menuOverlay.setAttribute('aria-hidden', 'true');
 }
 
+function positionSideMenuNearTrigger(){
+  if(!sideMenu || !menuTriggerBtn) return;
+  if(window.matchMedia('(max-width: 840px)').matches){
+    const rect = menuTriggerBtn.getBoundingClientRect();
+    sideMenu.style.setProperty('--menu-top', `${Math.max(rect.bottom + 8, 12)}px`);
+    sideMenu.style.setProperty('--menu-left', `${Math.max(rect.left - 2, 10)}px`);
+  } else {
+    sideMenu.style.removeProperty('--menu-top');
+    sideMenu.style.removeProperty('--menu-left');
+  }
+}
+
 function openSideMenu(){
   if(!sideMenu || !menuOverlay) return;
+  positionSideMenuNearTrigger();
   sideMenu.classList.add('active');
   menuOverlay.classList.add('active');
   sideMenu.setAttribute('aria-hidden', 'false');
   menuOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function toggleSideMenu(){
+  if(!sideMenu) return;
+  if(sideMenu.classList.contains('active')){
+    closeSideMenu();
+  } else {
+    openSideMenu();
+  }
 }
 
 function childrenCountForStatus(status){
@@ -1828,11 +1850,14 @@ export async function init(){
     document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
   }
 
-  if(menuTriggerBtn) menuTriggerBtn.addEventListener('click', openSideMenu);
+  if(menuTriggerBtn) menuTriggerBtn.addEventListener('click', toggleSideMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeSideMenu);
   if(menuOverlay) menuOverlay.addEventListener('click', closeSideMenu);
   document.addEventListener('keydown', (event)=>{
     if(event.key === 'Escape') closeSideMenu();
+  });
+  window.addEventListener('resize', ()=>{
+    if(sideMenu && sideMenu.classList.contains('active')) positionSideMenuNearTrigger();
   });
 
   Object.entries(tabTargets).forEach(([tabId, sectionId])=>{
