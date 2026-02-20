@@ -33,13 +33,18 @@ body {
 }
 
 .topHeaderBar {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 10px;
+  min-height: 52px;
 }
 
 .menuTrigger {
+  position: absolute;
+  left: 0;
+  top: 4px;
   width: auto;
   margin: 0;
   border: none;
@@ -71,6 +76,9 @@ body {
 }
 
 .headerCompactPeriod {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -453,7 +461,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   .topHeader { border-radius: 0 0 4px 4px; }
   .brandName { font-size: 1.35rem; }
   .headerLead { font-size: 0.88rem; }
-  .headerCompactPeriod { align-items: flex-end; }
+  .headerCompactPeriod { top: 0; right: 0; align-items: flex-end; }
   .headerCompactPeriod label { font-size: 0.62rem; }
   .headerCompactPeriodFields { gap: 4px; }
   .headerCompactPeriodFields select { min-width: 21px; font-size: 0.18rem; padding: 1px 2px; }
