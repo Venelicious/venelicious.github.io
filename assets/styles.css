@@ -341,75 +341,90 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 
 
 .statsBoard {
-  margin-top: 8px;
-  border: 1px solid #cfe0fb;
-  border-radius: 12px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
-  box-shadow: 0 12px 22px rgba(8, 56, 132, 0.08);
+  margin-top: 10px;
+  border: 1px solid #d7e6ff;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f3f8ff 100%);
+  box-shadow: 0 14px 28px rgba(8, 56, 132, 0.08);
+  padding: 14px;
 }
 
-.statsBoardRow {
+.statsDashboard {
   display: grid;
-  grid-template-columns: 1.1fr 1fr 1fr;
-  min-height: 46px;
-  border-top: 1px solid rgba(20, 115, 209, 0.14);
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.statsBoardRow:first-child {
-  border-top: none;
+.statsCard {
+  border-radius: 12px;
+  border: 1px solid #d8e6ff;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(16, 60, 128, 0.08);
+  overflow: hidden;
 }
 
-
-.statsBoardRowHeader {
-  background: linear-gradient(180deg, #e7f1ff 0%, #d9eaff 100%);
-}
-
-.statsBoardRowHeader .statsBoardCell {
-  font-weight: 800;
-  color: #0d3f86;
-}
-
-.statsBoardCell {
+.statsCardHeader {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(20, 115, 209, 0.15);
+}
+
+.statsCardHeader h4 {
+  margin: 0;
   font-size: 1rem;
-  color: #1d2d59;
+  color: #123d84;
 }
 
-.statsBoardCell + .statsBoardCell {
-  border-left: 1px dashed rgba(20, 115, 209, 0.2);
-}
-
-.statsBoardCellLabel {
+.statsCardTotal {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
   font-weight: 700;
+  font-size: 0.9rem;
+  background: rgba(20, 115, 209, 0.14);
+  color: #0f4da6;
 }
 
-.statsBoardCellValue {
-  font-weight: 700;
-  color: #0b4aa3;
+.statsCardBody { padding: 8px 12px 10px; }
+
+.statsMetricRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 0;
+  border-top: 1px dashed rgba(20, 115, 209, 0.18);
 }
 
-.statsBoardCellSuffix {
-  color: #35518d;
+.statsMetricRow:first-child { border-top: none; }
+
+.statsMetricLabel { color: #324d83; font-weight: 600; }
+.statsMetricValue { color: #0b4aa3; font-weight: 700; }
+.statsMetricPercent { color: #5a71a1; font-size: 0.9rem; }
+
+.statsCard--primary .statsCardHeader { background: linear-gradient(180deg, #e8f2ff 0%, #dcecff 100%); }
+.statsCard--secondary .statsCardHeader { background: linear-gradient(180deg, #eff3ff 0%, #e5ebff 100%); }
+.statsCard--success .statsCardHeader { background: linear-gradient(180deg, #ebf9f2 0%, #def3e9 100%); }
+.statsCard--warning .statsCardHeader { background: linear-gradient(180deg, #fff7ea 0%, #fff0d8 100%); }
+
+.statsOrderValueCard {
+  grid-column: 1 / -1;
+  border-radius: 12px;
+  border: 1px solid #cde2ff;
+  background: linear-gradient(120deg, #e8f2ff 0%, #d6e8ff 100%);
+  padding: 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.statsBoardCellValue,
-.statsBoardCellSuffix {
-  justify-content: flex-start;
-}
+.statsOrderValueCard span { color: #204c95; font-weight: 700; }
+.statsOrderValueCard strong { color: #07387f; font-size: 1.35rem; }
 
-.statsBoardRowSeparator .statsBoardCellLabel {
-  font-size: 1.3rem;
-  line-height: 1;
-  color: #7d91bd;
-}
-
-.statsBoardRowSeparator .statsBoardCellValue,
-.statsBoardRowSeparator .statsBoardCellSuffix {
-  color: transparent;
-}
 .summary {
   background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
   border: 1px solid #cde2ff;

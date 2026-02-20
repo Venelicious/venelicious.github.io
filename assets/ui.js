@@ -963,9 +963,14 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
     integrations: Number(document.getElementById('integrations').value || 0),
     schooldayCustomers: Number(document.getElementById('schooldayCustomers').value || 0),
     prevDayUnreachable: Number(document.getElementById('prevDayUnreachable').value || 0),
+    prevDayBought: Number(document.getElementById('prevDayBought').value || 0),
+    prevDayNi: Number(document.getElementById('prevDayNi').value || 0),
+    prevDayKb: Number(document.getElementById('prevDayKb').value || 0),
     buyingCustomers: Number(document.getElementById('buyingCustomers').value || 0),
     tourdayNi: Number(document.getElementById('tourdayNi').value || 0),
     tourdayKb: Number(document.getElementById('tourdayKb').value || 0),
+    tourdayCancelled: Number(document.getElementById('tourdayCancelled').value || 0),
+    tourdayReserved: Number(document.getElementById('tourdayReserved').value || 0),
     integrationBought: Number(document.getElementById('integrationBought').value || 0),
     integrationUnreachable: Number(document.getElementById('integrationUnreachable').value || 0),
     integrationNoNeed: Number(document.getElementById('integrationNoNeed').value || 0),
@@ -989,7 +994,8 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
-  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('integrationBought').value=0;
+  document.getElementById('prevDayBought').value=0; document.getElementById('prevDayNi').value=0; document.getElementById('prevDayKb').value=0;
+  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('tourdayCancelled').value=0; document.getElementById('tourdayReserved').value=0; document.getElementById('integrationBought').value=0;
   document.getElementById('integrationUnreachable').value=0; document.getElementById('integrationNoNeed').value=0;
   document.getElementById('integrationCancelled').value=0; document.getElementById('integrationPreordered').value=0;
   document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
@@ -1006,7 +1012,8 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
-  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('integrationBought').value=0;
+  document.getElementById('prevDayBought').value=0; document.getElementById('prevDayNi').value=0; document.getElementById('prevDayKb').value=0;
+  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('tourdayCancelled').value=0; document.getElementById('tourdayReserved').value=0; document.getElementById('integrationBought').value=0;
   document.getElementById('integrationUnreachable').value=0; document.getElementById('integrationNoNeed').value=0;
   document.getElementById('integrationCancelled').value=0; document.getElementById('integrationPreordered').value=0;
   document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
@@ -1449,7 +1456,8 @@ async function renderTours(){
         `Kunden Schultag: ${t.schooldayCustomers || 0}`,
         `Nicht erreicht Vortag: ${t.prevDayUnreachable || 0}`,
         `Kaufende Kunden: ${t.buyingCustomers || 0}`,
-        `Tourentag NE/KB: ${t.tourdayNi || 0}/${t.tourdayKb || 0}`,
+        `Tourentag K/NE/KB/A/R: ${t.buyingCustomers || 0}/${t.tourdayNi || 0}/${t.tourdayKb || 0}/${t.tourdayCancelled || 0}/${t.tourdayReserved || 0}`,
+        `Vortag K/NE/KB: ${t.prevDayBought || 0}/${t.prevDayNi || 0}/${t.prevDayKb || 0}`,
         `Int.-Status K/NE/KB/A/VB: ${t.integrationBought || 0}/${t.integrationUnreachable || 0}/${t.integrationNoNeed || 0}/${t.integrationCancelled || 0}/${t.integrationPreordered || 0}`,
         `3 Kunden G/K/NE/KB/A/VB: ${t.threeCustomersTotal || 0}/${t.threeCustomersBought || 0}/${t.threeCustomersNi || 0}/${t.threeCustomersKb || 0}/${t.threeCustomersCancelled || 0}/${t.threeCustomersPreordered || 0}`,
         `Spesen: ${fromCents(spC)}`,
@@ -1626,6 +1634,10 @@ function collectTourdayStats(t){
   const absage = Number(t.tourdayCancelled || 0);
   const reserviert = Number(t.tourdayReserved || 0);
 
+  const vortagKauf = Number(t.prevDayBought || 0);
+  const vortagNeStatus = Number(t.prevDayNi || 0);
+  const vortagKb = Number(t.prevDayKb || 0);
+
   const integrationAnzahl = Number(t.integrations || 0);
   const integrationKauf = Number(t.integrationBought || 0);
   const integrationNe = Number(t.integrationUnreachable || 0);
@@ -1648,6 +1660,9 @@ function collectTourdayStats(t){
     kb,
     absage,
     reserviert,
+    vortagKauf,
+    vortagNeStatus,
+    vortagKb,
     integrationAnzahl,
     integrationKauf,
     integrationNe,
@@ -1663,58 +1678,43 @@ function collectTourdayStats(t){
   };
 }
 
-function createStatsBoardRow(label, value, suffix = '', { separator = false } = {}){
+function createStatsMetricRow(label, value, total){
+  const percent = `${calculatePercent(value, total)} %`;
   const row = document.createElement('div');
-  row.className = 'statsBoardRow';
-  if(separator) row.classList.add('statsBoardRowSeparator');
+  row.className = 'statsMetricRow';
 
-  const labelCell = document.createElement('span');
-  const valueCell = document.createElement('span');
-  const suffixCell = document.createElement('span');
+  const labelEl = document.createElement('span');
+  labelEl.className = 'statsMetricLabel';
+  labelEl.textContent = label;
 
-  labelCell.className = 'statsBoardCell statsBoardCellLabel';
-  valueCell.className = 'statsBoardCell statsBoardCellValue';
-  suffixCell.className = 'statsBoardCell statsBoardCellSuffix';
+  const valueEl = document.createElement('span');
+  valueEl.className = 'statsMetricValue';
+  valueEl.textContent = formatStatsCount(value);
 
-  labelCell.textContent = label;
-  valueCell.textContent = value;
-  suffixCell.textContent = suffix;
+  const percentEl = document.createElement('span');
+  percentEl.className = 'statsMetricPercent';
+  percentEl.textContent = percent;
 
-  row.append(labelCell, valueCell, suffixCell);
+  row.append(labelEl, valueEl, percentEl);
   return row;
 }
 
-function createStatsBoardHeaderRow(){
-  const header = createStatsBoardRow('Bezeichnung', 'Anzahl', 'Prozent');
-  header.classList.add('statsBoardRowHeader');
-  return header;
-}
+function createStatsCard(title, total, metrics, accentClass = ''){
+  const card = document.createElement('article');
+  card.className = `statsCard ${accentClass}`.trim();
 
-function formatStatsCount(value){
-  return Number(value || 0).toLocaleString('de-DE');
-}
+  const header = document.createElement('div');
+  header.className = 'statsCardHeader';
+  header.innerHTML = `<h4>${title}</h4><span class="statsCardTotal">${formatStatsCount(total)}</span>`;
 
-function calculatePercent(value, total){
-  const base = Number(total || 0);
-  if(base <= 0) return '0,00';
-  return ((Number(value || 0) / base) * 100).toFixed(2).replace('.', ',');
-}
+  const body = document.createElement('div');
+  body.className = 'statsCardBody';
+  metrics.forEach(metric => {
+    body.appendChild(createStatsMetricRow(metric.label, metric.value, total));
+  });
 
-function appendStatsSectionRows(container, title, stats, { showAbsageAndReserviert = true } = {}){
-  const total = Number(stats.kundenAnzahl || 0);
-  const rows = [
-    createStatsBoardRow(title, formatStatsCount(total), `${calculatePercent(total, total)} %`),
-    createStatsBoardRow('Kauf', formatStatsCount(stats.kauf), `${calculatePercent(stats.kauf, total)} %`),
-    createStatsBoardRow('NE', formatStatsCount(stats.ne), `${calculatePercent(stats.ne, total)} %`),
-    createStatsBoardRow('KB', formatStatsCount(stats.kb), `${calculatePercent(stats.kb, total)} %`),
-  ];
-  if(showAbsageAndReserviert){
-    rows.push(
-      createStatsBoardRow('Absage', formatStatsCount(stats.absage), `${calculatePercent(stats.absage, total)} %`),
-      createStatsBoardRow('Reserviert', formatStatsCount(stats.reserviert), `${calculatePercent(stats.reserviert, total)} %`),
-    );
-  }
-  container.append(...rows);
+  card.append(header, body);
+  return card;
 }
 
 function renderStatsSummary(tours){
@@ -1727,6 +1727,9 @@ function renderStatsSummary(tours){
     const stats = collectTourdayStats(t);
     acc.kundenAnzahl += stats.kundenAnzahl;
     acc.vortagNe += stats.vortagNe;
+    acc.vortagKauf += stats.vortagKauf;
+    acc.vortagNeStatus += stats.vortagNeStatus;
+    acc.vortagKb += stats.vortagKb;
     acc.kauf += stats.kauf;
     acc.ne += stats.ne;
     acc.kb += stats.kb;
@@ -1750,6 +1753,9 @@ function renderStatsSummary(tours){
   }, {
     kundenAnzahl: 0,
     vortagNe: 0,
+    vortagKauf: 0,
+    vortagNeStatus: 0,
+    vortagKb: 0,
     kauf: 0,
     ne: 0,
     kb: 0,
@@ -1777,35 +1783,44 @@ function renderStatsSummary(tours){
   }, 0);
 
   statsContent.innerHTML = '';
-  statsContent.appendChild(createStatsBoardHeaderRow());
-  appendStatsSectionRows(statsContent, 'Anzahl Kunden', totals);
+  statsContent.className = 'statsDashboard';
 
-  appendStatsSectionRows(statsContent, 'Vortag NE', {
-    kundenAnzahl: totals.vortagNe,
-    kauf: totals.kauf,
-    ne: totals.ne,
-    kb: totals.kb,
-  }, { showAbsageAndReserviert: false });
+  statsContent.append(
+    createStatsCard('Anzahl Kunden', totals.kundenAnzahl, [
+      { label: 'Kauf', value: totals.kauf },
+      { label: 'NE', value: totals.ne },
+      { label: 'KB', value: totals.kb },
+      { label: 'Absage', value: totals.absage },
+      { label: 'Reserviert', value: totals.reserviert },
+    ], 'statsCard--primary'),
+    createStatsCard('Vortag NE', totals.vortagNe, [
+      { label: 'Kauf', value: totals.vortagKauf },
+      { label: 'NE', value: totals.vortagNeStatus },
+      { label: 'KB', value: totals.vortagKb },
+    ], 'statsCard--secondary'),
+    createStatsCard('Integrationen', totals.integrationAnzahl, [
+      { label: 'Kauf', value: totals.integrationKauf },
+      { label: 'NE', value: totals.integrationNe },
+      { label: 'KB', value: totals.integrationKb },
+      { label: 'Absage', value: totals.integrationAbsage },
+      { label: 'Reserviert', value: totals.integrationReserviert },
+    ], 'statsCard--success'),
+    createStatsCard('D3', totals.d3Anzahl, [
+      { label: 'Kauf', value: totals.d3Kauf },
+      { label: 'NE', value: totals.d3Ne },
+      { label: 'KB', value: totals.d3Kb },
+      { label: 'Absage', value: totals.d3Absage },
+      { label: 'Reserviert', value: totals.d3Reserviert },
+    ], 'statsCard--warning'),
+  );
 
-  appendStatsSectionRows(statsContent, 'Integrationen', {
-    kundenAnzahl: totals.integrationAnzahl,
-    kauf: totals.integrationKauf,
-    ne: totals.integrationNe,
-    kb: totals.integrationKb,
-    absage: totals.integrationAbsage,
-    reserviert: totals.integrationReserviert,
-  });
-
-  appendStatsSectionRows(statsContent, 'D3', {
-    kundenAnzahl: totals.d3Anzahl,
-    kauf: totals.d3Kauf,
-    ne: totals.d3Ne,
-    kb: totals.d3Kb,
-    absage: totals.d3Absage,
-    reserviert: totals.d3Reserviert,
-  });
-
-  statsContent.appendChild(createStatsBoardRow('Auftragswert', `${totalOrderValue.toFixed(2).replace('.', ',')} €`, '—'));
+  const orderCard = document.createElement('article');
+  orderCard.className = 'statsOrderValueCard';
+  orderCard.innerHTML = `
+    <span>Auftragswert</span>
+    <strong>${totalOrderValue.toFixed(2).replace('.', ',')} €</strong>
+  `;
+  statsContent.appendChild(orderCard);
 }
 
 
@@ -1823,9 +1838,14 @@ function openEditModalFor(entry, key){
   document.getElementById('editIntegrations').value = entry.integrations || 0;
   document.getElementById('editSchooldayCustomers').value = entry.schooldayCustomers || 0;
   document.getElementById('editPrevDayUnreachable').value = entry.prevDayUnreachable || 0;
+  document.getElementById('editPrevDayBought').value = entry.prevDayBought || 0;
+  document.getElementById('editPrevDayNi').value = entry.prevDayNi || 0;
+  document.getElementById('editPrevDayKb').value = entry.prevDayKb || 0;
   document.getElementById('editBuyingCustomers').value = entry.buyingCustomers || 0;
   document.getElementById('editTourdayNi').value = entry.tourdayNi || 0;
   document.getElementById('editTourdayKb').value = entry.tourdayKb || 0;
+  document.getElementById('editTourdayCancelled').value = entry.tourdayCancelled || 0;
+  document.getElementById('editTourdayReserved').value = entry.tourdayReserved || 0;
   document.getElementById('editIntegrationBought').value = entry.integrationBought || 0;
   document.getElementById('editIntegrationUnreachable').value = entry.integrationUnreachable || 0;
   document.getElementById('editIntegrationNoNeed').value = entry.integrationNoNeed || 0;
@@ -1860,9 +1880,14 @@ document.getElementById('saveEdit').addEventListener('click', async ()=>{
   t.integrations = Number(document.getElementById('editIntegrations').value || 0);
   t.schooldayCustomers = Number(document.getElementById('editSchooldayCustomers').value || 0);
   t.prevDayUnreachable = Number(document.getElementById('editPrevDayUnreachable').value || 0);
+  t.prevDayBought = Number(document.getElementById('editPrevDayBought').value || 0);
+  t.prevDayNi = Number(document.getElementById('editPrevDayNi').value || 0);
+  t.prevDayKb = Number(document.getElementById('editPrevDayKb').value || 0);
   t.buyingCustomers = Number(document.getElementById('editBuyingCustomers').value || 0);
   t.tourdayNi = Number(document.getElementById('editTourdayNi').value || 0);
   t.tourdayKb = Number(document.getElementById('editTourdayKb').value || 0);
+  t.tourdayCancelled = Number(document.getElementById('editTourdayCancelled').value || 0);
+  t.tourdayReserved = Number(document.getElementById('editTourdayReserved').value || 0);
   t.integrationBought = Number(document.getElementById('editIntegrationBought').value || 0);
   t.integrationUnreachable = Number(document.getElementById('editIntegrationUnreachable').value || 0);
   t.integrationNoNeed = Number(document.getElementById('editIntegrationNoNeed').value || 0);
