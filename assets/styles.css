@@ -486,7 +486,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 
 .statsMetricRow {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(2ch, 3ch) minmax(6ch, 7ch);
   gap: 8px;
   align-items: center;
   padding: 7px 0;
@@ -495,9 +495,19 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 
 .statsMetricRow:first-child { border-top: none; }
 
-.statsMetricLabel { color: #324d83; font-weight: 600; }
-.statsMetricValue { color: #0b4aa3; font-weight: 700; }
-.statsMetricPercent { color: #5a71a1; font-size: 0.9rem; }
+.statsMetricLabel { color: #324d83; font-weight: 600; text-align: left; }
+.statsMetricValue {
+  color: #0b4aa3;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.statsMetricPercent {
+  color: #5a71a1;
+  font-size: 0.9rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 
 .statsMetric--kauf .statsMetricLabel,
 .statsMetric--kauf .statsMetricValue { color: #2f9a43; }
