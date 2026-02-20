@@ -2164,18 +2164,54 @@ async function printTourStats(mode = 'cumulative'){
         .meta { margin: 0 0 10px; color: #4d6ea6; font-size: 0.92rem; }
         .print-page { margin-bottom: 22px; break-after: page; page-break-after: always; }
         .print-page:last-of-type { break-after: auto; page-break-after: auto; }
-        .statsDashboard { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .statsDashboard { display: grid; gap: 10px; grid-template-columns: 1fr; }
         .statsCard { border: 1px solid #d8e6ff; border-radius: 10px; background: #fff; overflow: hidden; }
         .statsCardHeader { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e3edff; font-weight: 700; }
+        .statsCardHeader h4 { margin: 0; }
+        .statsCardTotal { color: #284f9c; }
         .statsCardBody { padding: 6px 10px 8px; }
         .statsMetricRow { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px dashed #e8efff; }
         .statsMetricRow:first-child { border-top: none; }
+        .statsMetricLabel { color: #324d83; font-weight: 600; text-align: left; }
+        .statsMetricValue { color: #12336a; font-weight: 700; }
         .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; }
+        .statsMetric--kauf .statsMetricLabel,
+        .statsMetric--kauf .statsMetricValue { color: #2f9a43; }
+        .statsMetric--ne .statsMetricLabel,
+        .statsMetric--ne .statsMetricValue { color: #f57c00; }
+        .statsMetric--kb .statsMetricLabel,
+        .statsMetric--kb .statsMetricValue { color: #6b7280; }
+        .statsMetric--absage .statsMetricLabel,
+        .statsMetric--absage .statsMetricValue { color: #cf233d; }
+        .statsMetric--reservierung .statsMetricLabel,
+        .statsMetric--reservierung .statsMetricValue { color: #b58900; }
+        .statsCard--primary .statsCardHeader { background: linear-gradient(180deg, #e8f2ff 0%, #dcecff 100%); }
+        .statsCard--secondary .statsCardHeader { background: linear-gradient(180deg, #eff3ff 0%, #e5ebff 100%); }
+        .statsCard--success .statsCardHeader { background: linear-gradient(180deg, #ebf9f2 0%, #def3e9 100%); }
+        .statsCard--warning .statsCardHeader { background: linear-gradient(180deg, #fff7ea 0%, #fff0d8 100%); }
+        .statsHighlightMetrics {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 8px;
+          margin-top: 6px;
+        }
+        .statsHighlightBubble {
+          border: 1px solid #d7e4ff;
+          border-radius: 10px;
+          background: #f7faff;
+          padding: 10px;
+        }
+        .statsHighlightBubble span { color: #204c95; font-weight: 700; }
+        .statsHighlightBubble strong { color: #07387f; font-size: 1.2rem; }
         .statsOrderValueCard { border: 1px solid #d8e6ff; border-radius: 10px; padding: 10px; }
         .statsOrderValueCard strong { display:block; margin-top: 4px; font-size: 1.2rem; }
         @media print {
           body { margin: 0.4cm; }
           .print-page { margin-bottom: 0; }
+          * {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
         }
       </style>
     </head>
@@ -2227,17 +2263,53 @@ async function printSingleTourStatsByDate(dateKey){
         h2 { margin: 0 0 8px; font-size: 1.05rem; color: #123d84; }
         .meta { margin: 0 0 10px; color: #4d6ea6; font-size: 0.92rem; }
         .print-page { margin-bottom: 22px; }
-        .statsDashboard { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .statsDashboard { display: grid; gap: 10px; grid-template-columns: 1fr; }
         .statsCard { border: 1px solid #d8e6ff; border-radius: 10px; background: #fff; overflow: hidden; }
         .statsCardHeader { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e3edff; font-weight: 700; }
+        .statsCardHeader h4 { margin: 0; }
+        .statsCardTotal { color: #284f9c; }
         .statsCardBody { padding: 6px 10px 8px; }
         .statsMetricRow { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px dashed #e8efff; }
         .statsMetricRow:first-child { border-top: none; }
+        .statsMetricLabel { color: #324d83; font-weight: 600; text-align: left; }
+        .statsMetricValue { color: #12336a; font-weight: 700; }
         .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; }
+        .statsMetric--kauf .statsMetricLabel,
+        .statsMetric--kauf .statsMetricValue { color: #2f9a43; }
+        .statsMetric--ne .statsMetricLabel,
+        .statsMetric--ne .statsMetricValue { color: #f57c00; }
+        .statsMetric--kb .statsMetricLabel,
+        .statsMetric--kb .statsMetricValue { color: #6b7280; }
+        .statsMetric--absage .statsMetricLabel,
+        .statsMetric--absage .statsMetricValue { color: #cf233d; }
+        .statsMetric--reservierung .statsMetricLabel,
+        .statsMetric--reservierung .statsMetricValue { color: #b58900; }
+        .statsCard--primary .statsCardHeader { background: linear-gradient(180deg, #e8f2ff 0%, #dcecff 100%); }
+        .statsCard--secondary .statsCardHeader { background: linear-gradient(180deg, #eff3ff 0%, #e5ebff 100%); }
+        .statsCard--success .statsCardHeader { background: linear-gradient(180deg, #ebf9f2 0%, #def3e9 100%); }
+        .statsCard--warning .statsCardHeader { background: linear-gradient(180deg, #fff7ea 0%, #fff0d8 100%); }
+        .statsHighlightMetrics {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 8px;
+          margin-top: 6px;
+        }
+        .statsHighlightBubble {
+          border: 1px solid #d7e4ff;
+          border-radius: 10px;
+          background: #f7faff;
+          padding: 10px;
+        }
+        .statsHighlightBubble span { color: #204c95; font-weight: 700; }
+        .statsHighlightBubble strong { color: #07387f; font-size: 1.2rem; }
         .statsOrderValueCard { border: 1px solid #d8e6ff; border-radius: 10px; padding: 10px; }
         .statsOrderValueCard strong { display:block; margin-top: 4px; font-size: 1.2rem; }
         @media print {
           body { margin: 0.4cm; }
+          * {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
         }
       </style>
     </head>
