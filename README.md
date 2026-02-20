@@ -23,21 +23,20 @@
         <strong class="brandName">bofrost*</strong>
         <span class="brandSubline">TOUREN &amp; PROVISIONEN</span>
       </div>
-      <div class="headerIcons" aria-hidden="true">★</div>
-    </div>
-    <p class="headerLead">Hallo Bastian, hier findest du alle Infos rund um deine Touren.</p>
-    <div class="headerPeriodSwitch">
-      <label for="selectMonth">Monat / Jahr</label>
-      <div class="headerPeriodFields">
-        <select id="selectMonth">
-          <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
-          <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
-          <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
-          <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
-        </select>
-        <select id="selectYear"></select>
+      <div class="headerCompactPeriod">
+        <label for="selectMonth">Monat / Jahr</label>
+        <div class="headerCompactPeriodFields">
+          <select id="selectMonth">
+            <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option>
+            <option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option>
+            <option value="07">Juli</option><option value="08">August</option><option value="09">September</option>
+            <option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option>
+          </select>
+          <select id="selectYear"></select>
+        </div>
       </div>
     </div>
+    <p class="headerLead">Hallo Bastian, hier findest du alle Infos rund um deine Touren.</p>
   </header>
 
 <div id="menuOverlay" class="menuOverlay" aria-hidden="true"></div>
