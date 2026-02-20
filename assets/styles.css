@@ -360,6 +360,16 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   border-top: none;
 }
 
+
+.statsBoardRowHeader {
+  background: linear-gradient(180deg, #e7f1ff 0%, #d9eaff 100%);
+}
+
+.statsBoardRowHeader .statsBoardCell {
+  font-weight: 800;
+  color: #0d3f86;
+}
+
 .statsBoardCell {
   display: flex;
   align-items: center;

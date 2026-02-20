@@ -1682,6 +1682,16 @@ function createStatsBoardRow(label, value, suffix = '', { separator = false } = 
   return row;
 }
 
+function createStatsBoardHeaderRow(){
+  const header = createStatsBoardRow('Bezeichnung', 'Anzahl', 'Prozent');
+  header.classList.add('statsBoardRowHeader');
+  return header;
+}
+
+function formatStatsCount(value){
+  return Number(value || 0).toLocaleString('de-DE');
+}
+
 function calculatePercent(value, total){
   const base = Number(total || 0);
   if(base <= 0) return '0,00';
@@ -1691,12 +1701,12 @@ function calculatePercent(value, total){
 function appendStatsSectionRows(container, title, stats){
   const total = Number(stats.kundenAnzahl || 0);
   container.append(
-    createStatsBoardRow(title, calculatePercent(total, total), '%'),
-    createStatsBoardRow('Kauf', calculatePercent(stats.kauf, total), '%'),
-    createStatsBoardRow('NE', calculatePercent(stats.ne, total), '%'),
-    createStatsBoardRow('KB', calculatePercent(stats.kb, total), '%'),
-    createStatsBoardRow('Absage', calculatePercent(stats.absage, total), '%'),
-    createStatsBoardRow('Reserviert', calculatePercent(stats.reserviert, total), '%'),
+    createStatsBoardRow(title, formatStatsCount(total), `${calculatePercent(total, total)} %`),
+    createStatsBoardRow('Kauf', formatStatsCount(stats.kauf), `${calculatePercent(stats.kauf, total)} %`),
+    createStatsBoardRow('NE', formatStatsCount(stats.ne), `${calculatePercent(stats.ne, total)} %`),
+    createStatsBoardRow('KB', formatStatsCount(stats.kb), `${calculatePercent(stats.kb, total)} %`),
+    createStatsBoardRow('Absage', formatStatsCount(stats.absage), `${calculatePercent(stats.absage, total)} %`),
+    createStatsBoardRow('Reserviert', formatStatsCount(stats.reserviert), `${calculatePercent(stats.reserviert, total)} %`),
   );
 }
 
@@ -1758,6 +1768,7 @@ function renderStatsSummary(tours){
   }, 0);
 
   statsContent.innerHTML = '';
+  statsContent.appendChild(createStatsBoardHeaderRow());
   appendStatsSectionRows(statsContent, 'Anzahl Kunden', totals);
 
   appendStatsSectionRows(statsContent, 'Integrationen', {
@@ -1778,7 +1789,7 @@ function renderStatsSummary(tours){
     reserviert: totals.d3Reserviert,
   });
 
-  statsContent.appendChild(createStatsBoardRow('Auftragswert', '', `${totalOrderValue.toFixed(2).replace('.', ',')} €`));
+  statsContent.appendChild(createStatsBoardRow('Auftragswert', `${totalOrderValue.toFixed(2).replace('.', ',')} €`, '—'));
 }
 
 
