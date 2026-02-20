@@ -43,6 +43,7 @@ const customerAddressSuggestionMap = new Map();
 let editingCustomerAgreementId = null;
 let saveCustomerAgreementBtn;
 let printCustomerListBtn;
+let customerEditModal;
 let currentSort = { key:null, dir:'asc' };
 
 function compareToursByDateDesc(a, b){
@@ -385,6 +386,159 @@ function clearCustomerAgreementForm(){
   }
 }
 
+function createCustomerEditModal(){
+  if(customerEditModal) return customerEditModal;
+
+  customerEditModal = document.createElement('div');
+  customerEditModal.id = 'customerEditModal';
+  customerEditModal.className = 'modal';
+  customerEditModal.innerHTML = `
+    <div class="modalContent">
+      <h3>Kundenabsprache bearbeiten</h3>
+      <form onsubmit="return false;">
+        <div class="row">
+          <label>Kundennummer
+            <input id="customerEditNumber" placeholder="z.B. 4711" />
+          </label>
+          <label>Name
+            <input id="customerEditLastName" placeholder="z.B. Muster" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>Vorname
+            <input id="customerEditFirstName" placeholder="z.B. Max" />
+          </label>
+          <label>Art
+            <select id="customerEditAgreementType">
+              <option value="rhythmus_geaendert">Rhythmus geändert</option>
+              <option value="komplett_storno">Komplett Storno</option>
+              <option value="urlaub">Urlaub</option>
+              <option value="nur_auf_bestellung">Nur auf Bestellung</option>
+              <option value="sonstiges">Sonstiges</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row">
+          <label>Straße
+            <input id="customerEditStreet" placeholder="z.B. Musterstraße" />
+          </label>
+          <label>Hausnummer
+            <input id="customerEditHouseNumber" placeholder="z.B. 12a" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>PLZ
+            <input id="customerEditPostalCode" placeholder="z.B. 12345" />
+          </label>
+          <label>Ort
+            <input id="customerEditCity" placeholder="z.B. Musterstadt" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>Gültig ab
+            <input id="customerEditSince" type="date" />
+          </label>
+          <label>Bis (optional)
+            <input id="customerEditUntil" type="date" />
+          </label>
+        </div>
+
+        <label>Notiz
+          <textarea id="customerEditNote" rows="2" placeholder="Details zur Absprache"></textarea>
+        </label>
+
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+          <button id="cancelCustomerEdit" class="small">Abbrechen</button>
+          <button id="saveCustomerEdit" class="small" aria-label="Änderungen speichern" title="Änderungen speichern">💾</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(customerEditModal);
+
+  document.getElementById('cancelCustomerEdit').addEventListener('click', ()=>{
+    customerEditModal.classList.remove('active');
+    editingCustomerAgreementId = null;
+  });
+
+  document.getElementById('saveCustomerEdit').addEventListener('click', async ()=>{
+    if(!editingCustomerAgreementId) return;
+
+    const customerLastName = (document.getElementById('customerEditLastName').value || '').trim();
+    const customerFirstName = (document.getElementById('customerEditFirstName').value || '').trim();
+    const customerStreet = (document.getElementById('customerEditStreet').value || '').trim();
+    const customerHouseNumber = (document.getElementById('customerEditHouseNumber').value || '').trim();
+    const customerPostalCode = (document.getElementById('customerEditPostalCode').value || '').trim();
+    const customerCity = (document.getElementById('customerEditCity').value || '').trim();
+
+    const missingFields = [];
+    if(!customerLastName && !customerFirstName) missingFields.push('Kundenname');
+    if(!customerStreet) missingFields.push('Straße');
+    if(!customerHouseNumber) missingFields.push('Hausnummer');
+    if(!customerPostalCode) missingFields.push('PLZ');
+    if(!customerCity) missingFields.push('Ort');
+    if(missingFields.length){
+      alert(`Bitte folgende Angaben ergänzen: ${missingFields.join(', ')}.`);
+      return;
+    }
+
+    const all = await getAllCustomerAgreements();
+    const previous = all.find(item => item.idAuto === editingCustomerAgreementId);
+    if(!previous) return;
+
+    const agreement = {
+      ...previous,
+      idAuto: editingCustomerAgreementId,
+      customerNumber: (document.getElementById('customerEditNumber').value || '').trim() || '—',
+      customerLastName,
+      customerFirstName,
+      customerStreet,
+      customerHouseNumber,
+      customerPostalCode,
+      customerCity,
+      type: document.getElementById('customerEditAgreementType').value || 'sonstiges',
+      since: document.getElementById('customerEditSince').value || '',
+      until: document.getElementById('customerEditUntil').value || '',
+      note: (document.getElementById('customerEditNote').value || '').trim(),
+      updatedAt: new Date().toISOString()
+    };
+
+    await idbPut('customerAgreements', agreement);
+    customerEditModal.classList.remove('active');
+    editingCustomerAgreementId = null;
+    await renderCustomerAgreements();
+    await renderCustomerAddressSuggestions('');
+    await triggerAutoBackup('customer_agreement_saved');
+  });
+
+  return customerEditModal;
+}
+
+function openCustomerAgreementEditModal(agreement){
+  const modal = createCustomerEditModal();
+  if(!agreement) return;
+  editingCustomerAgreementId = agreement.idAuto;
+
+  document.getElementById('customerEditNumber').value = agreement.customerNumber === '—' ? '' : (agreement.customerNumber || '');
+  document.getElementById('customerEditLastName').value = agreement.customerLastName || '';
+  document.getElementById('customerEditFirstName').value = agreement.customerFirstName || '';
+  document.getElementById('customerEditStreet').value = agreement.customerStreet || '';
+  document.getElementById('customerEditHouseNumber').value = agreement.customerHouseNumber || '';
+  document.getElementById('customerEditPostalCode').value = agreement.customerPostalCode || '';
+  document.getElementById('customerEditCity').value = agreement.customerCity || '';
+  document.getElementById('customerEditAgreementType').value = agreement.type || 'sonstiges';
+  document.getElementById('customerEditSince').value = agreement.since || '';
+  document.getElementById('customerEditUntil').value = agreement.until || '';
+  document.getElementById('customerEditNote').value = agreement.note || '';
+
+  modal.classList.add('active');
+}
+
 async function printCustomerAgreements(){
   const agreements = await getAllCustomerAgreements();
   agreements.sort((a,b)=>{
@@ -569,14 +723,7 @@ async function renderCustomerAgreements(){
     editBtn.setAttribute('aria-label', 'Bearbeiten');
     editBtn.setAttribute('title', 'Bearbeiten');
     editBtn.addEventListener('click', ()=>{
-      editingCustomerAgreementId = agreement.idAuto;
-      fillCustomerAgreementForm(agreement);
-      if(saveCustomerAgreementBtn){
-        saveCustomerAgreementBtn.textContent = '💾';
-        saveCustomerAgreementBtn.setAttribute('aria-label', 'Absprache aktualisieren');
-        saveCustomerAgreementBtn.setAttribute('title', 'Absprache aktualisieren');
-      }
-      setActiveSection('sectionCustomers');
+      openCustomerAgreementEditModal(agreement);
     });
 
     const deleteBtn = document.createElement('button');
