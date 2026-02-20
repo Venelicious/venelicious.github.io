@@ -1428,8 +1428,11 @@ async function renderTours(){
     if(tbody) tbody.appendChild(tr);
 
     if(toursBubbleList){
-      const bubble = document.createElement('div');
+      const bubble = document.createElement('details');
       bubble.className = 'tour-bubble-card';
+
+      const summary = document.createElement('summary');
+      summary.className = 'tour-bubble-summary';
 
       const topRow = document.createElement('div');
       topRow.className = 'tour-bubble-top-row';
@@ -1444,9 +1447,10 @@ async function renderTours(){
       typeBadge.textContent = mapTourTypeLabel(t.tourType);
 
       topRow.append(title, typeBadge);
+      summary.appendChild(topRow);
 
-      const details = document.createElement('div');
-      details.className = 'tour-bubble-details';
+      const detailContainer = document.createElement('div');
+      detailContainer.className = 'tour-bubble-details';
       const detailParts = [
         `Umsatz: ${fromCents(tourTotalCents)}`,
         `Rekl.: ${fromCents(reklCents)}`,
@@ -1469,8 +1473,11 @@ async function renderTours(){
         const detailLine = document.createElement('div');
         detailLine.className = 'tour-bubble-detail-line';
         detailLine.textContent = line;
-        details.appendChild(detailLine);
+        detailContainer.appendChild(detailLine);
       });
+
+      const body = document.createElement('div');
+      body.className = 'tour-bubble-body';
 
       const controls = document.createElement('div');
       controls.className = 'tour-bubble-controls';
@@ -1494,7 +1501,8 @@ async function renderTours(){
       bubbleEditBtn.dataset.action = 'edit';
 
       controls.append(bubbleDeleteBtn, bubbleEditBtn);
-      bubble.append(topRow, details, controls);
+      body.append(detailContainer, controls);
+      bubble.append(summary, body);
       toursBubbleList.appendChild(bubble);
     }
   }
@@ -1697,6 +1705,17 @@ function createStatsMetricRow(label, value, total){
   const percent = `${calculatePercent(value, total)} %`;
   const row = document.createElement('div');
   row.className = 'statsMetricRow';
+
+  const normalizedLabel = String(label || '').trim().toLowerCase();
+  const statusColorClass = {
+    kauf: 'statsMetric--kauf',
+    ne: 'statsMetric--ne',
+    kb: 'statsMetric--kb',
+    absage: 'statsMetric--absage',
+    reserviert: 'statsMetric--reservierung',
+    reservierung: 'statsMetric--reservierung'
+  }[normalizedLabel] || '';
+  if(statusColorClass) row.classList.add(statusColorClass);
 
   const labelEl = document.createElement('span');
   labelEl.className = 'statsMetricLabel';

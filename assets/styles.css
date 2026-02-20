@@ -462,6 +462,21 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .statsMetricValue { color: #0b4aa3; font-weight: 700; }
 .statsMetricPercent { color: #5a71a1; font-size: 0.9rem; }
 
+.statsMetric--kauf .statsMetricLabel,
+.statsMetric--kauf .statsMetricValue { color: #2f9a43; }
+
+.statsMetric--ne .statsMetricLabel,
+.statsMetric--ne .statsMetricValue { color: #f57c00; }
+
+.statsMetric--kb .statsMetricLabel,
+.statsMetric--kb .statsMetricValue { color: #6b7280; }
+
+.statsMetric--absage .statsMetricLabel,
+.statsMetric--absage .statsMetricValue { color: #cf233d; }
+
+.statsMetric--reservierung .statsMetricLabel,
+.statsMetric--reservierung .statsMetricValue { color: #b58900; }
+
 .statsCard--primary .statsCardHeader { background: linear-gradient(180deg, #e8f2ff 0%, #dcecff 100%); }
 .statsCard--secondary .statsCardHeader { background: linear-gradient(180deg, #eff3ff 0%, #e5ebff 100%); }
 .statsCard--success .statsCardHeader { background: linear-gradient(180deg, #ebf9f2 0%, #def3e9 100%); }
@@ -606,9 +621,14 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .customer-agreement-title { font-weight: 700; }
 
 .tours-bubble-list { display: grid; gap: 10px; }
-.tour-bubble-card { border: 1px solid #cfe2ff; border-radius: 4px; background: #fff; padding: 10px; }
-.tour-bubble-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tour-bubble-card { border: 1px solid #cfe2ff; border-radius: 4px; background: #fff; overflow: hidden; }
+.tour-bubble-summary { cursor: pointer; list-style: none; padding: 10px; background: #f8fbff; }
+.tour-bubble-summary::-webkit-details-marker { display: none; }
+.tour-bubble-summary::after { content: '▾'; color: #1f5fb7; font-size: 0.9rem; float: right; transition: transform 0.2s ease; }
+.tour-bubble-card[open] .tour-bubble-summary::after { transform: rotate(180deg); }
+.tour-bubble-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding-right: 14px; }
 .tour-bubble-title { font-weight: 700; }
+.tour-bubble-body { padding: 0 10px 10px; }
 .tour-bubble-details { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
 .tour-bubble-detail-line + .tour-bubble-detail-line { margin-top: 2px; }
 .tour-bubble-controls { margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px; }
