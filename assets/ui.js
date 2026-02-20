@@ -1873,9 +1873,9 @@ function renderStatsSummary(tours){
     return sum + base + rekl + guts;
   }, 0);
 
-  const totalCustomersForOrderValue = totals.kundenAnzahl + totals.vortagNeStatus;
-  const averageOrderValue = totalCustomersForOrderValue > 0
-    ? totalOrderValue / totalCustomersForOrderValue
+  const totalBuyingCustomersForOrderValue = totals.kauf;
+  const averageOrderValue = totalBuyingCustomersForOrderValue > 0
+    ? totalOrderValue / totalBuyingCustomersForOrderValue
     : 0;
 
   statsContent.innerHTML = '';
