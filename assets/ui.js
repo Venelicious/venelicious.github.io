@@ -2170,11 +2170,18 @@ async function printTourStats(mode = 'cumulative'){
         .statsCardHeader h4 { margin: 0; }
         .statsCardTotal { color: #284f9c; }
         .statsCardBody { padding: 6px 10px 8px; }
-        .statsMetricRow { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px dashed #e8efff; }
+        .statsMetricRow {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(70px, auto) minmax(60px, auto);
+          align-items: baseline;
+          column-gap: 10px;
+          padding: 4px 0;
+          border-top: 1px dashed #e8efff;
+        }
         .statsMetricRow:first-child { border-top: none; }
         .statsMetricLabel { color: #324d83; font-weight: 600; text-align: left; }
-        .statsMetricValue { color: #12336a; font-weight: 700; }
-        .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; }
+        .statsMetricValue { color: #12336a; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+        .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; text-align: right; font-variant-numeric: tabular-nums; }
         .statsMetric--kauf .statsMetricLabel,
         .statsMetric--kauf .statsMetricValue { color: #2f9a43; }
         .statsMetric--ne .statsMetricLabel,
@@ -2269,11 +2276,18 @@ async function printSingleTourStatsByDate(dateKey){
         .statsCardHeader h4 { margin: 0; }
         .statsCardTotal { color: #284f9c; }
         .statsCardBody { padding: 6px 10px 8px; }
-        .statsMetricRow { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px dashed #e8efff; }
+        .statsMetricRow {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(70px, auto) minmax(60px, auto);
+          align-items: baseline;
+          column-gap: 10px;
+          padding: 4px 0;
+          border-top: 1px dashed #e8efff;
+        }
         .statsMetricRow:first-child { border-top: none; }
         .statsMetricLabel { color: #324d83; font-weight: 600; text-align: left; }
-        .statsMetricValue { color: #12336a; font-weight: 700; }
-        .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; }
+        .statsMetricValue { color: #12336a; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+        .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; text-align: right; font-variant-numeric: tabular-nums; }
         .statsMetric--kauf .statsMetricLabel,
         .statsMetric--kauf .statsMetricValue { color: #2f9a43; }
         .statsMetric--ne .statsMetricLabel,
