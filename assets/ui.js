@@ -45,6 +45,12 @@ let saveCustomerAgreementBtn;
 let printCustomerListBtn;
 let currentSort = { key:null, dir:'asc' };
 
+function compareToursByDateDesc(a, b){
+  const da = a?.date || '';
+  const db = b?.date || '';
+  return db.localeCompare(da);
+}
+
 const tabTargets = {
   tabNewTour: 'sectionNewTour',
   tabTours: 'sectionTours',
@@ -1336,7 +1342,7 @@ async function renderTours(){
   const totalNKThisMonth = tours.reduce((s,t)=> s + Number(t.newC || 0), 0);
   const totalNeukCents = computeMonthlyNeukundenBonusCents(totalNKThisMonth, conf);
 
-  // Sortierung anwenden
+  // Sortierung anwenden (immer zusätzlich nach Datum)
   if(currentSort.key){
     const dir = currentSort.dir === 'asc' ? 1 : -1;
     const key = currentSort.key;
@@ -1365,8 +1371,10 @@ async function renderTours(){
       const va = val(a), vb = val(b);
       if(va < vb) return -1*dir;
       if(va > vb) return 1*dir;
-      return 0;
+      return compareToursByDateDesc(a, b);
     });
+  } else {
+    tours.sort(compareToursByDateDesc);
   }
 
   // Totals
