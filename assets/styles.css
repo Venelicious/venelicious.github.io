@@ -399,6 +399,34 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   background: linear-gradient(180deg, #edf4ff 0%, #e4efff 100%);
 }
 
+.statsDaySummaryMain {
+  display: grid;
+  gap: 2px;
+}
+
+.statsDaySummaryActions {
+  display: inline-flex;
+  align-items: center;
+}
+
+.statsIconButton {
+  border: 1px solid #b6cef9;
+  background: #fff;
+  color: #194c9a;
+  border-radius: 8px;
+  min-width: 34px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(25, 76, 154, 0.14);
+}
+
+.statsIconButton:hover {
+  background: #f3f8ff;
+}
+
 .statsDaySummary::-webkit-details-marker { display: none; }
 
 .statsDaySummary::after {

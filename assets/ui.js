@@ -2148,6 +2148,68 @@ async function printTourStats(mode = 'cumulative'){
   printWindow.print();
 }
 
+async function printSingleTourStatsByDate(dateKey){
+  const allTours = await getAllTours();
+  const monthFilter = `${selectYear.value}-${selectMonth.value}`;
+  const monthTours = allTours.filter(t => t.period === monthFilter);
+  const statsModel = buildTourdayStatsModels(monthTours);
+  const day = statsModel.perDay.find(entry => entry.dateKey === dateKey);
+
+  if(!day){
+    alert('Für diesen Tourtag wurden keine Daten gefunden.');
+    return;
+  }
+
+  const printWindow = window.open('', '_blank');
+  if(!printWindow){
+    alert('Druckfenster konnte nicht geöffnet werden.');
+    return;
+  }
+
+  const monthLabel = `${selectMonth.options[selectMonth.selectedIndex].text} ${selectYear.value}`;
+  const sectionHtml = `
+    <section class="print-page">
+      <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
+      <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
+      ${createStatsDashboard(day.totals, day.averageOrderValue).outerHTML}
+    </section>
+  `;
+
+  printWindow.document.write(`<!doctype html>
+  <html lang="de">
+    <head>
+      <meta charset="utf-8" />
+      <title>Tourstatistik drucken</title>
+      <style>
+        body { font-family: Inter, Arial, sans-serif; margin: 18px; color: #0b2f6b; }
+        h1 { margin: 0 0 14px; font-size: 1.2rem; }
+        h2 { margin: 0 0 8px; font-size: 1.05rem; color: #123d84; }
+        .meta { margin: 0 0 10px; color: #4d6ea6; font-size: 0.92rem; }
+        .print-page { margin-bottom: 22px; }
+        .statsDashboard { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .statsCard { border: 1px solid #d8e6ff; border-radius: 10px; background: #fff; overflow: hidden; }
+        .statsCardHeader { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e3edff; font-weight: 700; }
+        .statsCardBody { padding: 6px 10px 8px; }
+        .statsMetricRow { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px dashed #e8efff; }
+        .statsMetricRow:first-child { border-top: none; }
+        .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; }
+        .statsOrderValueCard { border: 1px solid #d8e6ff; border-radius: 10px; padding: 10px; }
+        .statsOrderValueCard strong { display:block; margin-top: 4px; font-size: 1.2rem; }
+        @media print {
+          body { margin: 0.4cm; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Tourenstatistik</h1>
+      ${sectionHtml}
+    </body>
+  </html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
 function renderStatsSummary(tours){
   const statsContent = document.getElementById('statsContent');
   if(!statsContent) return;
@@ -2176,7 +2238,31 @@ function renderStatsSummary(tours){
 
     const summary = document.createElement('summary');
     summary.className = 'statsDaySummary';
-    summary.innerHTML = `<span>${formatStatsDate(day.dateKey)}</span><small>${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'}</small>`;
+
+    const summaryMain = document.createElement('span');
+    summaryMain.className = 'statsDaySummaryMain';
+    summaryMain.innerHTML = `<span>${formatStatsDate(day.dateKey)}</span><small>${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'}</small>`;
+
+    const summaryActions = document.createElement('span');
+    summaryActions.className = 'statsDaySummaryActions';
+
+    const printBtn = document.createElement('button');
+    printBtn.type = 'button';
+    printBtn.className = 'statsIconButton';
+    printBtn.textContent = '🖨️';
+    printBtn.title = `Tour vom ${formatStatsDate(day.dateKey)} drucken`;
+    printBtn.setAttribute('aria-label', printBtn.title);
+    printBtn.addEventListener('click', (evt)=>{
+      evt.preventDefault();
+      evt.stopPropagation();
+      printSingleTourStatsByDate(day.dateKey).catch(err => {
+        console.error('Tourstatistik drucken fehlgeschlagen', err);
+        alert('Tourstatistik konnte nicht gedruckt werden.');
+      });
+    });
+
+    summaryActions.appendChild(printBtn);
+    summary.append(summaryMain, summaryActions);
 
     details.append(summary, createStatsDashboard(day.totals, day.averageOrderValue));
     perDayWrapper.appendChild(details);
@@ -2458,6 +2544,8 @@ document.getElementById('resetAll').addEventListener('click', async ()=>{
 });
 const printStatsCumulativeBtn = document.getElementById('printStatsCumulative');
 if(printStatsCumulativeBtn){
+  printStatsCumulativeBtn.textContent = '🖨️';
+  printStatsCumulativeBtn.title = 'Kumulierte Statistik drucken';
   printStatsCumulativeBtn.addEventListener('click', ()=>{
     printTourStats('cumulative').catch(err => {
       console.error('Statistik (kumuliert) drucken fehlgeschlagen', err);
@@ -2468,12 +2556,7 @@ if(printStatsCumulativeBtn){
 
 const printStatsPerTourBtn = document.getElementById('printStatsPerTour');
 if(printStatsPerTourBtn){
-  printStatsPerTourBtn.addEventListener('click', ()=>{
-    printTourStats('perTour').catch(err => {
-      console.error('Statistik (je Tour) drucken fehlgeschlagen', err);
-      alert('Statistik konnte nicht gedruckt werden.');
-    });
-  });
+  printStatsPerTourBtn.remove();
 }
 
 document.getElementById('printReport').addEventListener('click', ()=> window.print());
