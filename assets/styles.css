@@ -89,9 +89,9 @@ body {
 
 .headerCompactPeriodFields select {
   margin-top: 0;
-  min-width: 96px;
-  padding: 5px 8px;
-  font-size: 0.78rem;
+  min-width: 24px;
+  padding: 1px 2px;
+  font-size: 0.2rem;
   background: rgba(255, 255, 255, 0.95);
   color: var(--accent);
   border-color: rgba(255, 255, 255, 0.7);
@@ -456,7 +456,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   .headerCompactPeriod { align-items: flex-end; }
   .headerCompactPeriod label { font-size: 0.62rem; }
   .headerCompactPeriodFields { gap: 4px; }
-  .headerCompactPeriodFields select { min-width: 82px; font-size: 0.72rem; padding: 4px 6px; }
+  .headerCompactPeriodFields select { min-width: 21px; font-size: 0.18rem; padding: 1px 2px; }
   .tabButton { font-size: 0.82rem; padding: 8px 10px; }
   .customer-agreement-top-row { flex-direction: column; align-items: flex-start; }
   .tour-bubble-top-row { flex-direction: column; align-items: flex-start; }
