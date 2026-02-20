@@ -1797,6 +1797,11 @@ function renderStatsSummary(tours){
     return sum + base + rekl + guts;
   }, 0);
 
+  const totalCustomersForOrderValue = totals.kundenAnzahl + totals.vortagNeStatus;
+  const averageOrderValue = totalCustomersForOrderValue > 0
+    ? totalOrderValue / totalCustomersForOrderValue
+    : 0;
+
   statsContent.innerHTML = '';
   statsContent.className = 'statsDashboard';
 
@@ -1833,7 +1838,7 @@ function renderStatsSummary(tours){
   orderCard.className = 'statsOrderValueCard';
   orderCard.innerHTML = `
     <span>Auftragswert</span>
-    <strong>${totalOrderValue.toFixed(2).replace('.', ',')} €</strong>
+    <strong>${averageOrderValue.toFixed(2).replace('.', ',')} €</strong>
   `;
   statsContent.appendChild(orderCard);
 }
