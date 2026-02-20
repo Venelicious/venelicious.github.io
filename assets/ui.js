@@ -2013,7 +2013,7 @@ function renderStatsSummary(tours){
   const totals = createEmptyTourdayTotals();
   tourdays.forEach(t => mergeTourdayTotals(totals, collectTourdayStats(t)));
 
-  const totalOrderValue = tours.reduce((sum, t) => {
+  const totalOrderValue = tourdays.reduce((sum, t) => {
     const base = Number(t.amount || 0);
     const rekl = Number(t.reklamation || 0);
     const guts = Number(t.gutscheine || 0);
@@ -2059,8 +2059,8 @@ function renderStatsSummary(tours){
       const guts = Number(t.gutscheine || 0);
       return sum + base + rekl + guts;
     }, 0);
-    const dayCustomerBase = dayTotals.kundenAnzahl + dayTotals.vortagNeStatus;
-    const dayAverageOrderValue = dayCustomerBase > 0 ? dayOrderValue / dayCustomerBase : 0;
+    const dayBuyingCustomers = dayTotals.kauf;
+    const dayAverageOrderValue = dayBuyingCustomers > 0 ? dayOrderValue / dayBuyingCustomers : 0;
 
     const details = document.createElement('details');
     details.className = 'statsDayDetails';
