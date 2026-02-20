@@ -964,11 +964,19 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
     schooldayCustomers: Number(document.getElementById('schooldayCustomers').value || 0),
     prevDayUnreachable: Number(document.getElementById('prevDayUnreachable').value || 0),
     buyingCustomers: Number(document.getElementById('buyingCustomers').value || 0),
+    tourdayNi: Number(document.getElementById('tourdayNi').value || 0),
+    tourdayKb: Number(document.getElementById('tourdayKb').value || 0),
     integrationBought: Number(document.getElementById('integrationBought').value || 0),
     integrationUnreachable: Number(document.getElementById('integrationUnreachable').value || 0),
     integrationNoNeed: Number(document.getElementById('integrationNoNeed').value || 0),
     integrationCancelled: Number(document.getElementById('integrationCancelled').value || 0),
     integrationPreordered: Number(document.getElementById('integrationPreordered').value || 0),
+    threeCustomersTotal: Number(document.getElementById('threeCustomersTotal').value || 0),
+    threeCustomersBought: Number(document.getElementById('threeCustomersBought').value || 0),
+    threeCustomersNi: Number(document.getElementById('threeCustomersNi').value || 0),
+    threeCustomersKb: Number(document.getElementById('threeCustomersKb').value || 0),
+    threeCustomersCancelled: Number(document.getElementById('threeCustomersCancelled').value || 0),
+    threeCustomersPreordered: Number(document.getElementById('threeCustomersPreordered').value || 0),
     tourType: document.getElementById('tourType').value,
     vertretung: document.getElementById('vertretung').checked,
     fahrt45: document.getElementById('fahrt45').checked,
@@ -981,9 +989,11 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
-  document.getElementById('buyingCustomers').value=0; document.getElementById('integrationBought').value=0;
+  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('integrationBought').value=0;
   document.getElementById('integrationUnreachable').value=0; document.getElementById('integrationNoNeed').value=0;
   document.getElementById('integrationCancelled').value=0; document.getElementById('integrationPreordered').value=0;
+  document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
+  document.getElementById('threeCustomersKb').value=0; document.getElementById('threeCustomersCancelled').value=0; document.getElementById('threeCustomersPreordered').value=0;
   document.getElementById('note').value=''; renderActionsList([]);
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
   await renderTours();
@@ -996,9 +1006,11 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
-  document.getElementById('buyingCustomers').value=0; document.getElementById('integrationBought').value=0;
+  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('integrationBought').value=0;
   document.getElementById('integrationUnreachable').value=0; document.getElementById('integrationNoNeed').value=0;
   document.getElementById('integrationCancelled').value=0; document.getElementById('integrationPreordered').value=0;
+  document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
+  document.getElementById('threeCustomersKb').value=0; document.getElementById('threeCustomersCancelled').value=0; document.getElementById('threeCustomersPreordered').value=0;
   document.getElementById('note').value=''; renderActionsList([]);
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
 });
@@ -1437,7 +1449,9 @@ async function renderTours(){
         `Kunden Schultag: ${t.schooldayCustomers || 0}`,
         `Nicht erreicht Vortag: ${t.prevDayUnreachable || 0}`,
         `Kaufende Kunden: ${t.buyingCustomers || 0}`,
-        `Int.-Status K/N/NB/A/V: ${t.integrationBought || 0}/${t.integrationUnreachable || 0}/${t.integrationNoNeed || 0}/${t.integrationCancelled || 0}/${t.integrationPreordered || 0}`,
+        `Tourentag NI/KB: ${t.tourdayNi || 0}/${t.tourdayKb || 0}`,
+        `Int.-Status K/NE/KB/A/VB: ${t.integrationBought || 0}/${t.integrationUnreachable || 0}/${t.integrationNoNeed || 0}/${t.integrationCancelled || 0}/${t.integrationPreordered || 0}`,
+        `3 Kunden G/K/NI/KB/A/VB: ${t.threeCustomersTotal || 0}/${t.threeCustomersBought || 0}/${t.threeCustomersNi || 0}/${t.threeCustomersKb || 0}/${t.threeCustomersCancelled || 0}/${t.threeCustomersPreordered || 0}`,
         `Spesen: ${fromCents(spC)}`,
         `Akt.: ${actionsPieceCount} (${fromCents(actionsSumCents)})`,
         `Vertretung: ${t.vertretung ? 'Ja' : 'Nein'}`,
@@ -1621,6 +1635,8 @@ function renderStatsSummary(tours){
     acc.prevDayUnreachable += prevDayUnreachable;
     acc.customerBase += schooldayCustomers + prevDayUnreachable;
     acc.buyingCustomers += buyingCustomers;
+    acc.tourdayNi += Number(t.tourdayNi || 0);
+    acc.tourdayKb += Number(t.tourdayKb || 0);
 
     acc.integrations += Number(t.integrations || 0);
     acc.integrationBought += Number(t.integrationBought || 0);
@@ -1628,6 +1644,13 @@ function renderStatsSummary(tours){
     acc.integrationNoNeed += Number(t.integrationNoNeed || 0);
     acc.integrationCancelled += Number(t.integrationCancelled || 0);
     acc.integrationPreordered += Number(t.integrationPreordered || 0);
+
+    acc.threeCustomersTotal += Number(t.threeCustomersTotal || 0);
+    acc.threeCustomersBought += Number(t.threeCustomersBought || 0);
+    acc.threeCustomersNi += Number(t.threeCustomersNi || 0);
+    acc.threeCustomersKb += Number(t.threeCustomersKb || 0);
+    acc.threeCustomersCancelled += Number(t.threeCustomersCancelled || 0);
+    acc.threeCustomersPreordered += Number(t.threeCustomersPreordered || 0);
 
     const tourRevenueCents = toCents(t.amount || 0) + toCents(t.reklamation || 0) + toCents(t.gutscheine || 0);
     acc.totalRevenueCents += tourRevenueCents;
@@ -1637,12 +1660,20 @@ function renderStatsSummary(tours){
     prevDayUnreachable: 0,
     customerBase: 0,
     buyingCustomers: 0,
+    tourdayNi: 0,
+    tourdayKb: 0,
     integrations: 0,
     integrationBought: 0,
     integrationUnreachable: 0,
     integrationNoNeed: 0,
     integrationCancelled: 0,
     integrationPreordered: 0,
+    threeCustomersTotal: 0,
+    threeCustomersBought: 0,
+    threeCustomersNi: 0,
+    threeCustomersKb: 0,
+    threeCustomersCancelled: 0,
+    threeCustomersPreordered: 0,
     totalRevenueCents: 0
   });
 
@@ -1655,16 +1686,27 @@ function renderStatsSummary(tours){
     createSumRow('❯ Nicht erreicht vom Vortag', totals.prevDayUnreachable),
     createSumRow('❯ Kundenbasis (Schultag + Vortag nicht erreicht)', totals.customerBase),
     createSumRow('❯ Kaufende Kunden gesamt', totals.buyingCustomers),
+    createSumRow('❯ Davon NI', totals.tourdayNi),
+    createSumRow('❯ Davon KB', totals.tourdayKb),
     createSumRow('❯ Serviceerfolg', formatPercent(serviceSuccessRate)),
   );
   statsContent.appendChild(document.createElement('hr'));
   statsContent.append(
     createSumRow('❯ Integrationen gesamt', totals.integrations),
     createSumRow('❯ Davon gekauft', totals.integrationBought),
-    createSumRow('❯ Davon nicht erreichbar', totals.integrationUnreachable),
+    createSumRow('❯ Davon NE', totals.integrationUnreachable),
     createSumRow('❯ Davon kein Bedarf', totals.integrationNoNeed),
     createSumRow('❯ Davon abgesagt', totals.integrationCancelled),
     createSumRow('❯ Davon vorbestellt', totals.integrationPreordered),
+  );
+  statsContent.appendChild(document.createElement('hr'));
+  statsContent.append(
+    createSumRow('❯ 3 Kunden gesamt', totals.threeCustomersTotal),
+    createSumRow('❯ Davon Kauf', totals.threeCustomersBought),
+    createSumRow('❯ Davon NI', totals.threeCustomersNi),
+    createSumRow('❯ Davon KB', totals.threeCustomersKb),
+    createSumRow('❯ Davon Absagen', totals.threeCustomersCancelled),
+    createSumRow('❯ Davon Vorbestellung', totals.threeCustomersPreordered),
   );
   statsContent.appendChild(document.createElement('hr'));
   statsContent.append(
@@ -1689,11 +1731,19 @@ function openEditModalFor(entry, key){
   document.getElementById('editSchooldayCustomers').value = entry.schooldayCustomers || 0;
   document.getElementById('editPrevDayUnreachable').value = entry.prevDayUnreachable || 0;
   document.getElementById('editBuyingCustomers').value = entry.buyingCustomers || 0;
+  document.getElementById('editTourdayNi').value = entry.tourdayNi || 0;
+  document.getElementById('editTourdayKb').value = entry.tourdayKb || 0;
   document.getElementById('editIntegrationBought').value = entry.integrationBought || 0;
   document.getElementById('editIntegrationUnreachable').value = entry.integrationUnreachable || 0;
   document.getElementById('editIntegrationNoNeed').value = entry.integrationNoNeed || 0;
   document.getElementById('editIntegrationCancelled').value = entry.integrationCancelled || 0;
   document.getElementById('editIntegrationPreordered').value = entry.integrationPreordered || 0;
+  document.getElementById('editThreeCustomersTotal').value = entry.threeCustomersTotal || 0;
+  document.getElementById('editThreeCustomersBought').value = entry.threeCustomersBought || 0;
+  document.getElementById('editThreeCustomersNi').value = entry.threeCustomersNi || 0;
+  document.getElementById('editThreeCustomersKb').value = entry.threeCustomersKb || 0;
+  document.getElementById('editThreeCustomersCancelled').value = entry.threeCustomersCancelled || 0;
+  document.getElementById('editThreeCustomersPreordered').value = entry.threeCustomersPreordered || 0;
   document.getElementById('editVertretung').checked = !!entry.vertretung;
   document.getElementById('editFahrt45').checked = !!entry.fahrt45;
   document.getElementById('editActionsDetail').value = (entry.actions && entry.actions.length) ? JSON.stringify(entry.actions) : '';
@@ -1718,11 +1768,19 @@ document.getElementById('saveEdit').addEventListener('click', async ()=>{
   t.schooldayCustomers = Number(document.getElementById('editSchooldayCustomers').value || 0);
   t.prevDayUnreachable = Number(document.getElementById('editPrevDayUnreachable').value || 0);
   t.buyingCustomers = Number(document.getElementById('editBuyingCustomers').value || 0);
+  t.tourdayNi = Number(document.getElementById('editTourdayNi').value || 0);
+  t.tourdayKb = Number(document.getElementById('editTourdayKb').value || 0);
   t.integrationBought = Number(document.getElementById('editIntegrationBought').value || 0);
   t.integrationUnreachable = Number(document.getElementById('editIntegrationUnreachable').value || 0);
   t.integrationNoNeed = Number(document.getElementById('editIntegrationNoNeed').value || 0);
   t.integrationCancelled = Number(document.getElementById('editIntegrationCancelled').value || 0);
   t.integrationPreordered = Number(document.getElementById('editIntegrationPreordered').value || 0);
+  t.threeCustomersTotal = Number(document.getElementById('editThreeCustomersTotal').value || 0);
+  t.threeCustomersBought = Number(document.getElementById('editThreeCustomersBought').value || 0);
+  t.threeCustomersNi = Number(document.getElementById('editThreeCustomersNi').value || 0);
+  t.threeCustomersKb = Number(document.getElementById('editThreeCustomersKb').value || 0);
+  t.threeCustomersCancelled = Number(document.getElementById('editThreeCustomersCancelled').value || 0);
+  t.threeCustomersPreordered = Number(document.getElementById('editThreeCustomersPreordered').value || 0);
   t.vertretung = document.getElementById('editVertretung').checked;
   t.fahrt45 = document.getElementById('editFahrt45').checked;
   t.note = document.getElementById('editNote').value || '';
