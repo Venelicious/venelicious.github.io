@@ -368,6 +368,35 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   color: var(--muted);
 }
 
+.compact-entry-block {
+  padding: 10px 10px 8px;
+}
+
+.compact-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(82px, 1fr));
+  gap: 8px;
+  align-items: end;
+}
+
+.compact-metrics-row--five {
+  grid-template-columns: repeat(5, minmax(82px, 1fr));
+}
+
+.compact-metrics-row label {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--muted);
+  display: grid;
+  gap: 4px;
+}
+
+.compact-metrics-row input {
+  min-width: 0;
+  padding: 7px 8px;
+  text-align: center;
+}
+
 .actions-list {
   margin-top: 8px;
   border: 1px dashed #c4dbff;
@@ -508,4 +537,14 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   .tabButton { font-size: 0.82rem; padding: 8px 10px; }
   .customer-agreement-top-row { flex-direction: column; align-items: flex-start; }
   .tour-bubble-top-row { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 900px) {
+  .compact-metrics-row,
+  .compact-metrics-row--five { grid-template-columns: repeat(3, minmax(80px, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .compact-metrics-row,
+  .compact-metrics-row--five { grid-template-columns: repeat(2, minmax(80px, 1fr)); }
 }
