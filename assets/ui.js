@@ -1814,6 +1814,9 @@ function collectTourdayStats(t){
   const d3Kb = Number(t.threeCustomersKb || 0);
   const d3Absage = Number(t.threeCustomersCancelled || 0);
   const d3Reserviert = Number(t.threeCustomersPreordered || 0);
+  const verkaufteAktionen = (t.actions && t.actions.length)
+    ? t.actions.reduce((sum, action) => sum + Number(action.qty || 0), 0)
+    : 0;
 
   return {
     kundenAnzahl,
@@ -1838,6 +1841,7 @@ function collectTourdayStats(t){
     d3Kb,
     d3Absage,
     d3Reserviert,
+    verkaufteAktionen,
   };
 }
 
@@ -1854,6 +1858,15 @@ function calculatePercent(value, total){
     return '0,0';
   }
   return ((numericValue / numericTotal) * 100).toFixed(1).replace('.', ',');
+}
+
+function calculateActionRatePercent(soldActions, customers){
+  const numericSoldActions = Number(soldActions || 0);
+  const numericCustomers = Number(customers || 0);
+  if(!Number.isFinite(numericSoldActions) || !Number.isFinite(numericCustomers) || numericCustomers <= 0){
+    return '0,0';
+  }
+  return ((numericSoldActions / numericCustomers) * 100).toFixed(1).replace('.', ',');
 }
 
 function createStatsMetricRow(label, value, total){
@@ -1930,6 +1943,7 @@ function createEmptyTourdayTotals(){
     d3Kb: 0,
     d3Absage: 0,
     d3Reserviert: 0,
+    verkaufteAktionen: 0,
   };
 }
 
@@ -1958,6 +1972,7 @@ function mergeTourdayTotals(target, stats){
   target.d3Kb += stats.d3Kb;
   target.d3Absage += stats.d3Absage;
   target.d3Reserviert += stats.d3Reserviert;
+  target.verkaufteAktionen += stats.verkaufteAktionen;
 }
 
 function createStatsDashboard(totals, averageOrderValue){
@@ -1995,9 +2010,12 @@ function createStatsDashboard(totals, averageOrderValue){
 
   const orderCard = document.createElement('article');
   orderCard.className = 'statsOrderValueCard';
+  const aktionsquote = calculateActionRatePercent(totals.verkaufteAktionen, totals.kundenAnzahl);
   orderCard.innerHTML = `
     <span>Auftragswert</span>
     <strong>${averageOrderValue.toFixed(2).replace('.', ',')} €</strong>
+    <span>Aktionsquote</span>
+    <strong>${aktionsquote} %</strong>
   `;
   dashboard.appendChild(orderCard);
 
