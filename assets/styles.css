@@ -289,17 +289,19 @@ input:focus, select:focus, textarea:focus {
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin-top: 12px;
   font-size: 0.95rem;
-  background: #fff;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 10px 20px rgba(10, 48, 112, 0.08);
 }
 
 th, td {
-  padding: 8px;
-  border: 1px solid #dce9ff;
+  padding: 9px 10px;
+  border: none;
   text-align: left;
   vertical-align: middle;
 }
@@ -307,7 +309,15 @@ th, td {
 th {
   background: linear-gradient(90deg, var(--brand-navy) 0%, #0b58b5 60%, var(--brand-blue) 100%);
   color: #fff;
-  border-color: #0a3d91;
+  border-bottom: 1px solid rgba(255,255,255,0.16);
+}
+
+tbody tr:nth-child(even) {
+  background: rgba(20, 115, 209, 0.06);
+}
+
+tbody tr:hover {
+  background: rgba(20, 115, 209, 0.13);
 }
 
 th[data-sort] { cursor: pointer; }
@@ -332,17 +342,18 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 
 .statsBoard {
   margin-top: 8px;
-  border: 1px solid #d7dce8;
-  border-radius: 2px;
+  border: 1px solid #cfe0fb;
+  border-radius: 12px;
   overflow: hidden;
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+  box-shadow: 0 12px 22px rgba(8, 56, 132, 0.08);
 }
 
 .statsBoardRow {
   display: grid;
   grid-template-columns: 1.1fr 1fr 1fr;
-  min-height: 44px;
-  border-top: 1px solid #e0e4ec;
+  min-height: 46px;
+  border-top: 1px solid rgba(20, 115, 209, 0.14);
 }
 
 .statsBoardRow:first-child {
@@ -352,13 +363,26 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .statsBoardCell {
   display: flex;
   align-items: center;
-  padding: 6px 10px;
-  font-size: 1.05rem;
-  color: #2f3440;
+  padding: 8px 12px;
+  font-size: 1rem;
+  color: #1d2d59;
 }
 
 .statsBoardCell + .statsBoardCell {
-  border-left: 1px solid #e0e4ec;
+  border-left: 1px dashed rgba(20, 115, 209, 0.2);
+}
+
+.statsBoardCellLabel {
+  font-weight: 700;
+}
+
+.statsBoardCellValue {
+  font-weight: 700;
+  color: #0b4aa3;
+}
+
+.statsBoardCellSuffix {
+  color: #35518d;
 }
 
 .statsBoardCellValue,
@@ -367,8 +391,9 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 }
 
 .statsBoardRowSeparator .statsBoardCellLabel {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   line-height: 1;
+  color: #7d91bd;
 }
 
 .statsBoardRowSeparator .statsBoardCellValue,
