@@ -49,6 +49,7 @@
     <button id="tabNewTour" class="tabButton active" aria-label="Neue Tour erfassen" title="Neue Tour erfassen">Neue Tour</button>
     <button id="tabTours" class="tabButton" aria-label="Touren" title="Touren">Touren</button>
     <button id="tabSummary" class="tabButton" aria-label="Zusammenfassung" title="Zusammenfassung">Übersicht</button>
+    <button id="tabStats" class="tabButton" aria-label="Statistik" title="Statistik">Statistik</button>
     <button id="tabCustomers" class="tabButton" aria-label="Kundenabsprachen" title="Kundenabsprachen">Kunden</button>
     <button id="tabSettings" class="tabButton" aria-label="Einstellungen" title="Einstellungen">Einstellungen</button>
     <button id="tabBackups" class="tabButton" aria-label="Backups" title="Backups">Backups</button>
@@ -108,6 +109,62 @@
       </div>
     </div>
 
+    <div class="row">
+      <div>
+        <label>Kunden am Schultag
+          <input id="schooldayCustomers" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+      <div>
+        <label>Nicht erreicht (Vortag)
+          <input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Kaufende Kunden
+          <input id="buyingCustomers" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+      <div></div>
+    </div>
+
+    <h4 style="margin-top:12px">Integrationen-Status</h4>
+    <div class="row">
+      <div>
+        <label>Integration gekauft
+          <input id="integrationBought" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+      <div>
+        <label>Integration nicht erreichbar
+          <input id="integrationUnreachable" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Integration kein Bedarf
+          <input id="integrationNoNeed" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+      <div>
+        <label>Integration abgesagt
+          <input id="integrationCancelled" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Integration vorbestellt
+          <input id="integrationPreordered" type="number" step="1" min="0" value="0"/>
+        </label>
+      </div>
+      <div></div>
+    </div>
+
     <label>Tourenart
       <select id="tourType">
         <option value="tourentag">Tourentag</option>
@@ -137,6 +194,22 @@
     <div class="controls">
       <button id="addBtn" class="small" aria-label="Tour speichern" title="Tour speichern">💾</button>
       <button id="clearBtn" class="small" aria-label="Formular leeren" title="Formular leeren">🧹</button>
+    </div>
+  </div>
+</section>
+
+<section id="sectionStats" class="tabSection">
+  <div class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3>Statistik</h3>
+        <p class="muted">Auswertung zu Kundenbasis, Serviceerfolg, Integrationen und Auftragswert für den ausgewählten Zeitraum.</p>
+      </div>
+    </div>
+
+    <div class="summary" id="statsSummary">
+      <strong>Tab-Statistik</strong>
+      <div id="statsContent" style="margin-top:8px"></div>
     </div>
   </div>
 </section>
@@ -511,6 +584,14 @@
     <label>Gutscheine<input type="number" step="0.01" id="editGutscheine"/></label>
     <label>Neukunden<input type="number" id="editNewC"/></label>
     <label>Integrationen<input type="number" id="editIntegrations"/></label>
+    <label>Kunden am Schultag<input type="number" id="editSchooldayCustomers"/></label>
+    <label>Nicht erreicht (Vortag)<input type="number" id="editPrevDayUnreachable"/></label>
+    <label>Kaufende Kunden<input type="number" id="editBuyingCustomers"/></label>
+    <label>Integration gekauft<input type="number" id="editIntegrationBought"/></label>
+    <label>Integration nicht erreichbar<input type="number" id="editIntegrationUnreachable"/></label>
+    <label>Integration kein Bedarf<input type="number" id="editIntegrationNoNeed"/></label>
+    <label>Integration abgesagt<input type="number" id="editIntegrationCancelled"/></label>
+    <label>Integration vorbestellt<input type="number" id="editIntegrationPreordered"/></label>
     <label><input type="checkbox" id="editVertretung"/> Vertretung (+2%)</label>
     <label><input type="checkbox" id="editFahrt45"/> Entfernung &gt;45min (+0,25%)</label>
     <label>Aktionen-Details
