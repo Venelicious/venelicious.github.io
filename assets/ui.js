@@ -2164,7 +2164,7 @@ async function printTourStats(mode = 'cumulative'){
         .meta { margin: 0 0 10px; color: #4d6ea6; font-size: 0.92rem; }
         .print-page { margin-bottom: 22px; break-after: page; page-break-after: always; }
         .print-page:last-of-type { break-after: auto; page-break-after: auto; }
-        .statsDashboard { display: grid; gap: 10px; grid-template-columns: 1fr; }
+        .statsDashboard { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .statsCard { border: 1px solid #d8e6ff; border-radius: 10px; background: #fff; overflow: hidden; }
         .statsCardHeader { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e3edff; font-weight: 700; }
         .statsCardHeader h4 { margin: 0; }
@@ -2198,7 +2198,7 @@ async function printTourStats(mode = 'cumulative'){
         .statsCard--warning .statsCardHeader { background: linear-gradient(180deg, #fff7ea 0%, #fff0d8 100%); }
         .statsHighlightMetrics {
           display: grid;
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 8px;
           margin-top: 6px;
         }
@@ -2270,7 +2270,7 @@ async function printSingleTourStatsByDate(dateKey){
         h2 { margin: 0 0 8px; font-size: 1.05rem; color: #123d84; }
         .meta { margin: 0 0 10px; color: #4d6ea6; font-size: 0.92rem; }
         .print-page { margin-bottom: 22px; }
-        .statsDashboard { display: grid; gap: 10px; grid-template-columns: 1fr; }
+        .statsDashboard { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .statsCard { border: 1px solid #d8e6ff; border-radius: 10px; background: #fff; overflow: hidden; }
         .statsCardHeader { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e3edff; font-weight: 700; }
         .statsCardHeader h4 { margin: 0; }
@@ -2304,7 +2304,7 @@ async function printSingleTourStatsByDate(dateKey){
         .statsCard--warning .statsCardHeader { background: linear-gradient(180deg, #fff7ea 0%, #fff0d8 100%); }
         .statsHighlightMetrics {
           display: grid;
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 8px;
           margin-top: 6px;
         }
