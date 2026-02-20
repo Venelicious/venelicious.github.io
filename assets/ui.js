@@ -2004,10 +2004,8 @@ function createStatsDashboard(totals, averageOrderValue){
   return dashboard;
 }
 
-function renderStatsSummary(tours){
-  const statsContent = document.getElementById('statsContent');
-  if(!statsContent) return;
 
+function buildTourdayStatsModels(tours = []){
   const tourdays = tours.filter(t => t.tourType === 'tourentag');
 
   const totals = createEmptyTourdayTotals();
@@ -2025,18 +2023,6 @@ function renderStatsSummary(tours){
     ? totalOrderValue / totalBuyingCustomersForOrderValue
     : 0;
 
-  statsContent.innerHTML = '';
-  statsContent.className = 'statsContentStack';
-
-  const cumulativeSection = document.createElement('div');
-  cumulativeSection.className = 'statsSection';
-  cumulativeSection.appendChild(createStatsDashboard(totals, averageOrderValue));
-  statsContent.appendChild(cumulativeSection);
-
-  if(!tourdays.length){
-    return;
-  }
-
   const byDate = new Map();
   tourdays.forEach(t => {
     const key = t.date || 'ohne-datum';
@@ -2044,41 +2030,161 @@ function renderStatsSummary(tours){
     byDate.get(key).push(t);
   });
 
+  const perDay = [...byDate.keys()]
+    .sort((a,b)=> b.localeCompare(a))
+    .map(dateKey => {
+      const entries = byDate.get(dateKey) || [];
+      const dayTotals = createEmptyTourdayTotals();
+      entries.forEach(t => mergeTourdayTotals(dayTotals, collectTourdayStats(t)));
+
+      const dayOrderValue = entries.reduce((sum, t) => {
+        const base = Number(t.amount || 0);
+        const rekl = Number(t.reklamation || 0);
+        const guts = Number(t.gutscheine || 0);
+        return sum + base + rekl + guts;
+      }, 0);
+      const dayBuyingCustomers = dayTotals.kauf;
+      const dayAverageOrderValue = dayBuyingCustomers > 0 ? dayOrderValue / dayBuyingCustomers : 0;
+
+      return {
+        dateKey,
+        entries,
+        totals: dayTotals,
+        averageOrderValue: dayAverageOrderValue,
+      };
+    });
+
+  return {
+    tourdays,
+    cumulative: {
+      totals,
+      averageOrderValue,
+    },
+    perDay,
+  };
+}
+
+function formatStatsDate(dateKey){
+  if(dateKey === 'ohne-datum') return 'Ohne Datum';
+  const parsed = new Date(dateKey);
+  if(Number.isNaN(parsed.getTime())) return dateKey;
+  return parsed.toLocaleDateString('de-DE');
+}
+
+async function printTourStats(mode = 'cumulative'){
+  const allTours = await getAllTours();
+  const monthFilter = `${selectYear.value}-${selectMonth.value}`;
+  const monthTours = allTours.filter(t => t.period === monthFilter);
+  const statsModel = buildTourdayStatsModels(monthTours);
+
+  if(!statsModel.tourdays.length){
+    alert('Keine Tourentage für die Statistik im ausgewählten Monat vorhanden.');
+    return;
+  }
+
+  const printWindow = window.open('', '_blank');
+  if(!printWindow){
+    alert('Druckfenster konnte nicht geöffnet werden.');
+    return;
+  }
+
+  const monthLabel = `${selectMonth.options[selectMonth.selectedIndex].text} ${selectYear.value}`;
+
+  const sections = [];
+  if(mode === 'perTour'){
+    statsModel.perDay.forEach(day => {
+      sections.push(`
+        <section class="print-page">
+          <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
+          <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
+          ${createStatsDashboard(day.totals, day.averageOrderValue).outerHTML}
+        </section>
+      `);
+    });
+  } else {
+    sections.push(`
+      <section class="print-page">
+        <h2>Kumulierte Statistik</h2>
+        <p class="meta">Zeitraum: ${monthLabel}</p>
+        ${createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue).outerHTML}
+      </section>
+    `);
+  }
+
+  printWindow.document.write(`<!doctype html>
+  <html lang="de">
+    <head>
+      <meta charset="utf-8" />
+      <title>Statistik drucken</title>
+      <style>
+        body { font-family: Inter, Arial, sans-serif; margin: 18px; color: #0b2f6b; }
+        h1 { margin: 0 0 14px; font-size: 1.2rem; }
+        h2 { margin: 0 0 8px; font-size: 1.05rem; color: #123d84; }
+        .meta { margin: 0 0 10px; color: #4d6ea6; font-size: 0.92rem; }
+        .print-page { margin-bottom: 22px; break-after: page; page-break-after: always; }
+        .print-page:last-of-type { break-after: auto; page-break-after: auto; }
+        .statsDashboard { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .statsCard { border: 1px solid #d8e6ff; border-radius: 10px; background: #fff; overflow: hidden; }
+        .statsCardHeader { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e3edff; font-weight: 700; }
+        .statsCardBody { padding: 6px 10px 8px; }
+        .statsMetricRow { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px dashed #e8efff; }
+        .statsMetricRow:first-child { border-top: none; }
+        .statsMetricPercent { color: #5a71a1; font-size: 0.88rem; }
+        .statsOrderValueCard { border: 1px solid #d8e6ff; border-radius: 10px; padding: 10px; }
+        .statsOrderValueCard strong { display:block; margin-top: 4px; font-size: 1.2rem; }
+        @media print {
+          body { margin: 0.4cm; }
+          .print-page { margin-bottom: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Tourenstatistik</h1>
+      ${sections.join('')}
+    </body>
+  </html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
+function renderStatsSummary(tours){
+  const statsContent = document.getElementById('statsContent');
+  if(!statsContent) return;
+
+  const statsModel = buildTourdayStatsModels(tours);
+
+  statsContent.innerHTML = '';
+  statsContent.className = 'statsContentStack';
+
+  const cumulativeSection = document.createElement('div');
+  cumulativeSection.className = 'statsSection';
+  cumulativeSection.appendChild(createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue));
+  statsContent.appendChild(cumulativeSection);
+
+  if(!statsModel.tourdays.length){
+    return;
+  }
+
   const perDayWrapper = document.createElement('div');
   perDayWrapper.className = 'statsPerDayList';
 
-  const sortedDates = [...byDate.keys()].sort((a,b)=> b.localeCompare(a));
-  sortedDates.forEach((dateKey, idx) => {
-    const entries = byDate.get(dateKey) || [];
-    const dayTotals = createEmptyTourdayTotals();
-    entries.forEach(t => mergeTourdayTotals(dayTotals, collectTourdayStats(t)));
-
-    const dayOrderValue = entries.reduce((sum, t) => {
-      const base = Number(t.amount || 0);
-      const rekl = Number(t.reklamation || 0);
-      const guts = Number(t.gutscheine || 0);
-      return sum + base + rekl + guts;
-    }, 0);
-    const dayBuyingCustomers = dayTotals.kauf;
-    const dayAverageOrderValue = dayBuyingCustomers > 0 ? dayOrderValue / dayBuyingCustomers : 0;
-
+  statsModel.perDay.forEach((day, idx) => {
     const details = document.createElement('details');
     details.className = 'statsDayDetails';
     if(idx === 0) details.open = true;
 
     const summary = document.createElement('summary');
     summary.className = 'statsDaySummary';
-    const formattedDate = dateKey === 'ohne-datum'
-      ? 'Ohne Datum'
-      : new Date(dateKey).toLocaleDateString('de-DE');
-    summary.innerHTML = `<span>${formattedDate}</span><small>${entries.length} Tour${entries.length === 1 ? '' : 'en'}</small>`;
+    summary.innerHTML = `<span>${formatStatsDate(day.dateKey)}</span><small>${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'}</small>`;
 
-    details.append(summary, createStatsDashboard(dayTotals, dayAverageOrderValue));
+    details.append(summary, createStatsDashboard(day.totals, day.averageOrderValue));
     perDayWrapper.appendChild(details);
   });
 
   statsContent.appendChild(perDayWrapper);
 }
+
 
 
 /* ========== Edit-Modal ========== */
@@ -2350,6 +2456,26 @@ document.getElementById('resetAll').addEventListener('click', async ()=>{
   await clearAllData();
   await renderTours();
 });
+const printStatsCumulativeBtn = document.getElementById('printStatsCumulative');
+if(printStatsCumulativeBtn){
+  printStatsCumulativeBtn.addEventListener('click', ()=>{
+    printTourStats('cumulative').catch(err => {
+      console.error('Statistik (kumuliert) drucken fehlgeschlagen', err);
+      alert('Statistik konnte nicht gedruckt werden.');
+    });
+  });
+}
+
+const printStatsPerTourBtn = document.getElementById('printStatsPerTour');
+if(printStatsPerTourBtn){
+  printStatsPerTourBtn.addEventListener('click', ()=>{
+    printTourStats('perTour').catch(err => {
+      console.error('Statistik (je Tour) drucken fehlgeschlagen', err);
+      alert('Statistik konnte nicht gedruckt werden.');
+    });
+  });
+}
+
 document.getElementById('printReport').addEventListener('click', ()=> window.print());
 
 
