@@ -1622,97 +1622,130 @@ function formatPercent(value){
   return `${value.toFixed(2).replace('.', ',')} %`;
 }
 
+function safeDivide(numerator, denominator){
+  if(!Number.isFinite(denominator) || denominator === 0) return 0;
+  return numerator / denominator;
+}
+
+function collectTourdayStats(t){
+  const kundenAnzahl = Number(t.schooldayCustomers || 0);
+  const vortagNe = Number(t.prevDayUnreachable || 0);
+  const kauf = Number(t.buyingCustomers || 0);
+
+  const integrationAnzahl = Number(t.integrations || 0);
+  const integrationNe = Number(t.integrationUnreachable || 0);
+  const integrationKauf = Number(t.integrationBought || 0);
+
+  const d3Anzahl = Number(t.threeCustomersTotal || 0);
+  const d3Ne = Number(t.threeCustomersNi || 0);
+  const d3Kauf = Number(t.threeCustomersBought || 0);
+
+  const serviceSuccessCount = kundenAnzahl + vortagNe;
+  const serviceSuccessRate = safeDivide(serviceSuccessCount, kauf) * 100;
+
+  const integrationsCount = integrationAnzahl - integrationNe;
+  const integrationsRate = safeDivide(integrationsCount, integrationKauf) * 100;
+
+  const d3Count = d3Anzahl - d3Ne;
+  const d3Rate = safeDivide(d3Count, d3Kauf) * 100;
+
+  return {
+    kundenAnzahl,
+    vortagNe,
+    kauf,
+    integrationAnzahl,
+    integrationNe,
+    integrationKauf,
+    d3Anzahl,
+    d3Ne,
+    d3Kauf,
+    serviceSuccessCount,
+    serviceSuccessRate,
+    integrationsCount,
+    integrationsRate,
+    d3Count,
+    d3Rate,
+  };
+}
+
+function createStatsGroupTitle(label){
+  const title = document.createElement('h4');
+  title.textContent = label;
+  title.style.margin = '14px 0 8px';
+  return title;
+}
+
 function renderStatsSummary(tours){
   const statsContent = document.getElementById('statsContent');
   if(!statsContent) return;
 
-  const totals = tours.reduce((acc, t)=>{
-    const schooldayCustomers = Number(t.schooldayCustomers || 0);
-    const prevDayUnreachable = Number(t.prevDayUnreachable || 0);
-    const buyingCustomers = Number(t.buyingCustomers || 0);
+  const tourdays = tours
+    .filter(t => t.tourType === 'tourentag')
+    .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
-    acc.schooldayCustomers += schooldayCustomers;
-    acc.prevDayUnreachable += prevDayUnreachable;
-    acc.customerBase += schooldayCustomers + prevDayUnreachable;
-    acc.buyingCustomers += buyingCustomers;
-    acc.tourdayNi += Number(t.tourdayNi || 0);
-    acc.tourdayKb += Number(t.tourdayKb || 0);
-
-    acc.integrations += Number(t.integrations || 0);
-    acc.integrationBought += Number(t.integrationBought || 0);
-    acc.integrationUnreachable += Number(t.integrationUnreachable || 0);
-    acc.integrationNoNeed += Number(t.integrationNoNeed || 0);
-    acc.integrationCancelled += Number(t.integrationCancelled || 0);
-    acc.integrationPreordered += Number(t.integrationPreordered || 0);
-
-    acc.threeCustomersTotal += Number(t.threeCustomersTotal || 0);
-    acc.threeCustomersBought += Number(t.threeCustomersBought || 0);
-    acc.threeCustomersNi += Number(t.threeCustomersNi || 0);
-    acc.threeCustomersKb += Number(t.threeCustomersKb || 0);
-    acc.threeCustomersCancelled += Number(t.threeCustomersCancelled || 0);
-    acc.threeCustomersPreordered += Number(t.threeCustomersPreordered || 0);
-
-    const tourRevenueCents = toCents(t.amount || 0) + toCents(t.reklamation || 0) + toCents(t.gutscheine || 0);
-    acc.totalRevenueCents += tourRevenueCents;
+  const totals = tourdays.reduce((acc, t)=>{
+    const stats = collectTourdayStats(t);
+    acc.kundenAnzahl += stats.kundenAnzahl;
+    acc.vortagNe += stats.vortagNe;
+    acc.kauf += stats.kauf;
+    acc.integrationAnzahl += stats.integrationAnzahl;
+    acc.integrationNe += stats.integrationNe;
+    acc.integrationKauf += stats.integrationKauf;
+    acc.d3Anzahl += stats.d3Anzahl;
+    acc.d3Ne += stats.d3Ne;
+    acc.d3Kauf += stats.d3Kauf;
     return acc;
   }, {
-    schooldayCustomers: 0,
-    prevDayUnreachable: 0,
-    customerBase: 0,
-    buyingCustomers: 0,
-    tourdayNi: 0,
-    tourdayKb: 0,
-    integrations: 0,
-    integrationBought: 0,
-    integrationUnreachable: 0,
-    integrationNoNeed: 0,
-    integrationCancelled: 0,
-    integrationPreordered: 0,
-    threeCustomersTotal: 0,
-    threeCustomersBought: 0,
-    threeCustomersNi: 0,
-    threeCustomersKb: 0,
-    threeCustomersCancelled: 0,
-    threeCustomersPreordered: 0,
-    totalRevenueCents: 0
+    kundenAnzahl: 0,
+    vortagNe: 0,
+    kauf: 0,
+    integrationAnzahl: 0,
+    integrationNe: 0,
+    integrationKauf: 0,
+    d3Anzahl: 0,
+    d3Ne: 0,
+    d3Kauf: 0,
   });
 
-  const serviceSuccessRate = totals.customerBase > 0 ? (totals.buyingCustomers / totals.customerBase) * 100 : 0;
-  const avgOrderValue = totals.buyingCustomers > 0 ? totals.totalRevenueCents / totals.buyingCustomers : 0;
+  const totalServiceSuccessCount = totals.kundenAnzahl + totals.vortagNe;
+  const totalServiceSuccessRate = safeDivide(totalServiceSuccessCount, totals.kauf) * 100;
+  const totalIntegrationCount = totals.integrationAnzahl - totals.integrationNe;
+  const totalIntegrationRate = safeDivide(totalIntegrationCount, totals.integrationKauf) * 100;
+  const totalD3Count = totals.d3Anzahl - totals.d3Ne;
+  const totalD3Rate = safeDivide(totalD3Count, totals.d3Kauf) * 100;
 
   statsContent.innerHTML = '';
+  statsContent.append(createStatsGroupTitle('Monat gesamt (kumuliert)'));
   statsContent.append(
-    createSumRow('❯ Kunden am Schultag', totals.schooldayCustomers),
-    createSumRow('❯ Nicht erreicht vom Vortag', totals.prevDayUnreachable),
-    createSumRow('❯ Kundenbasis (Schultag + Vortag nicht erreicht)', totals.customerBase),
-    createSumRow('❯ Kaufende Kunden gesamt', totals.buyingCustomers),
-    createSumRow('❯ Davon NE', totals.tourdayNi),
-    createSumRow('❯ Davon KB', totals.tourdayKb),
-    createSumRow('❯ Serviceerfolg', formatPercent(serviceSuccessRate)),
+    createSumRow('❯ Serviceerfolg (Anzahl + Vortag NE) / Kauf', `${totalServiceSuccessCount} / ${totals.kauf} = ${formatPercent(totalServiceSuccessRate)}`),
+    createSumRow('❯ Integrationen (Anzahl - NE) / Kauf', `${totalIntegrationCount} / ${totals.integrationKauf} = ${formatPercent(totalIntegrationRate)}`),
+    createSumRow('❯ D3 Kunden (Anzahl - NE) / Kauf', `${totalD3Count} / ${totals.d3Kauf} = ${formatPercent(totalD3Rate)}`),
   );
+
   statsContent.appendChild(document.createElement('hr'));
-  statsContent.append(
-    createSumRow('❯ Integrationen gesamt', totals.integrations),
-    createSumRow('❯ Davon gekauft', totals.integrationBought),
-    createSumRow('❯ Davon NE', totals.integrationUnreachable),
-    createSumRow('❯ Davon kein Bedarf', totals.integrationNoNeed),
-    createSumRow('❯ Davon abgesagt', totals.integrationCancelled),
-    createSumRow('❯ Davon vorbestellt', totals.integrationPreordered),
-  );
-  statsContent.appendChild(document.createElement('hr'));
-  statsContent.append(
-    createSumRow('❯ 3 Kunden gesamt', totals.threeCustomersTotal),
-    createSumRow('❯ Davon Kauf', totals.threeCustomersBought),
-    createSumRow('❯ Davon NE', totals.threeCustomersNi),
-    createSumRow('❯ Davon KB', totals.threeCustomersKb),
-    createSumRow('❯ Davon Absagen', totals.threeCustomersCancelled),
-    createSumRow('❯ Davon Vorbestellung', totals.threeCustomersPreordered),
-  );
-  statsContent.appendChild(document.createElement('hr'));
-  statsContent.append(
-    createSumRow('❯ Gesamtumsatz', `€ ${fromCents(totals.totalRevenueCents)}`),
-    createSumRow('❯ Auftragswert ⌀ (Umsatz / kaufende Kunden)', `€ ${fromCents(avgOrderValue)}`, { emphasize: true }),
-  );
+  statsContent.append(createStatsGroupTitle('Pro Tourentag'));
+
+  if(!tourdays.length){
+    statsContent.append(createSumRow('❯ Keine Tourentage im ausgewählten Zeitraum', '-'));
+    return;
+  }
+
+  tourdays.forEach((tour, index) => {
+    const labelDate = tour.date ? new Date(tour.date).toLocaleDateString('de-DE') : 'ohne Datum';
+    const dayLabel = `${labelDate}${tour.id ? ` · ${tour.id}` : ''}`;
+    const stats = collectTourdayStats(tour);
+
+    statsContent.append(
+      createSumRow(`❯ ${dayLabel}`, '', { emphasize: true }),
+      createSumRow('  Serviceerfolg (Anzahl + Vortag NE) / Kauf', `${stats.serviceSuccessCount} / ${stats.kauf} = ${formatPercent(stats.serviceSuccessRate)}`),
+      createSumRow('  Integrationen (Anzahl - NE) / Kauf', `${stats.integrationsCount} / ${stats.integrationKauf} = ${formatPercent(stats.integrationsRate)}`),
+      createSumRow('  D3 Kunden (Anzahl - NE) / Kauf', `${stats.d3Count} / ${stats.d3Kauf} = ${formatPercent(stats.d3Rate)}`),
+    );
+
+    if(index < tourdays.length - 1){
+      statsContent.appendChild(document.createElement('hr'));
+    }
+  });
 }
 
 
