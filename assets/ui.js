@@ -2008,16 +2008,21 @@ function createStatsDashboard(totals, averageOrderValue){
     ], 'statsCard--warning'),
   );
 
-  const orderCard = document.createElement('article');
-  orderCard.className = 'statsOrderValueCard';
   const aktionsquote = calculateActionRatePercent(totals.verkaufteAktionen, totals.kundenAnzahl);
-  orderCard.innerHTML = `
-    <span>Auftragswert</span>
-    <strong>${averageOrderValue.toFixed(2).replace('.', ',')} €</strong>
-    <span>Aktionsquote</span>
-    <strong>${aktionsquote} %</strong>
+
+  const highlightMetrics = document.createElement('div');
+  highlightMetrics.className = 'statsHighlightMetrics';
+  highlightMetrics.innerHTML = `
+    <article class="statsHighlightBubble">
+      <span>Auftragswert</span>
+      <strong>${averageOrderValue.toFixed(2).replace('.', ',')} €</strong>
+    </article>
+    <article class="statsHighlightBubble">
+      <span>Aktionsquote</span>
+      <strong>${aktionsquote} %</strong>
+    </article>
   `;
-  dashboard.appendChild(orderCard);
+  dashboard.appendChild(highlightMetrics);
 
   return dashboard;
 }
