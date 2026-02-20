@@ -1678,6 +1678,21 @@ function collectTourdayStats(t){
   };
 }
 
+function formatStatsCount(value){
+  const numericValue = Number(value || 0);
+  if(!Number.isFinite(numericValue)) return '0';
+  return numericValue.toLocaleString('de-DE');
+}
+
+function calculatePercent(value, total){
+  const numericValue = Number(value || 0);
+  const numericTotal = Number(total || 0);
+  if(!Number.isFinite(numericValue) || !Number.isFinite(numericTotal) || numericTotal <= 0){
+    return '0,0';
+  }
+  return ((numericValue / numericTotal) * 100).toFixed(1).replace('.', ',');
+}
+
 function createStatsMetricRow(label, value, total){
   const percent = `${calculatePercent(value, total)} %`;
   const row = document.createElement('div');
