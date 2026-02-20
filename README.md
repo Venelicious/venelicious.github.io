@@ -186,13 +186,12 @@
     <div class="panelHeader">
       <div>
         <h3>Statistik</h3>
-        <p class="muted">Auswertung zu Kundenbasis, Serviceerfolg, Integrationen und Auftragswert für den ausgewählten Zeitraum.</p>
+        <p class="muted">Kumuliert</p>
       </div>
     </div>
 
-    <div class="summary" id="statsSummary">
-      <strong>Tab-Statistik</strong>
-      <div id="statsContent" style="margin-top:8px"></div>
+    <div class="statsBoard" id="statsSummary">
+      <div id="statsContent"></div>
     </div>
   </div>
 </section>
