@@ -20,8 +20,8 @@
     <div class="topHeaderBar">
       <button class="menuTrigger" type="button" aria-label="Menü öffnen">☰</button>
       <div class="brandWrap">
-        <strong class="brandName">WoFos</strong>
-        <span class="brandSubline">STUDIEN &amp; PROVISIONEN</span>
+        <strong class="brandName">bofrost*</strong>
+        <span class="brandSubline">Touren und Provisionen.</span>
       </div>
       <div class="headerCompactPeriod">
         <label for="selectMonth">Monat / Jahr</label>
