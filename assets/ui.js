@@ -1619,6 +1619,7 @@ async function renderTours(){
 
 function collectTourdayStats(t){
   const kundenAnzahl = Number(t.schooldayCustomers || 0);
+  const vortagNe = Number(t.prevDayUnreachable || 0);
   const kauf = Number(t.buyingCustomers || 0);
   const ne = Number(t.tourdayNi || 0);
   const kb = Number(t.tourdayKb || 0);
@@ -1641,6 +1642,7 @@ function collectTourdayStats(t){
 
   return {
     kundenAnzahl,
+    vortagNe,
     kauf,
     ne,
     kb,
@@ -1698,16 +1700,21 @@ function calculatePercent(value, total){
   return ((Number(value || 0) / base) * 100).toFixed(2).replace('.', ',');
 }
 
-function appendStatsSectionRows(container, title, stats){
+function appendStatsSectionRows(container, title, stats, { showAbsageAndReserviert = true } = {}){
   const total = Number(stats.kundenAnzahl || 0);
-  container.append(
+  const rows = [
     createStatsBoardRow(title, formatStatsCount(total), `${calculatePercent(total, total)} %`),
     createStatsBoardRow('Kauf', formatStatsCount(stats.kauf), `${calculatePercent(stats.kauf, total)} %`),
     createStatsBoardRow('NE', formatStatsCount(stats.ne), `${calculatePercent(stats.ne, total)} %`),
     createStatsBoardRow('KB', formatStatsCount(stats.kb), `${calculatePercent(stats.kb, total)} %`),
-    createStatsBoardRow('Absage', formatStatsCount(stats.absage), `${calculatePercent(stats.absage, total)} %`),
-    createStatsBoardRow('Reserviert', formatStatsCount(stats.reserviert), `${calculatePercent(stats.reserviert, total)} %`),
-  );
+  ];
+  if(showAbsageAndReserviert){
+    rows.push(
+      createStatsBoardRow('Absage', formatStatsCount(stats.absage), `${calculatePercent(stats.absage, total)} %`),
+      createStatsBoardRow('Reserviert', formatStatsCount(stats.reserviert), `${calculatePercent(stats.reserviert, total)} %`),
+    );
+  }
+  container.append(...rows);
 }
 
 function renderStatsSummary(tours){
@@ -1719,6 +1726,7 @@ function renderStatsSummary(tours){
   const totals = tourdays.reduce((acc, t) => {
     const stats = collectTourdayStats(t);
     acc.kundenAnzahl += stats.kundenAnzahl;
+    acc.vortagNe += stats.vortagNe;
     acc.kauf += stats.kauf;
     acc.ne += stats.ne;
     acc.kb += stats.kb;
@@ -1741,6 +1749,7 @@ function renderStatsSummary(tours){
     return acc;
   }, {
     kundenAnzahl: 0,
+    vortagNe: 0,
     kauf: 0,
     ne: 0,
     kb: 0,
@@ -1770,6 +1779,13 @@ function renderStatsSummary(tours){
   statsContent.innerHTML = '';
   statsContent.appendChild(createStatsBoardHeaderRow());
   appendStatsSectionRows(statsContent, 'Anzahl Kunden', totals);
+
+  appendStatsSectionRows(statsContent, 'Vortag NE', {
+    kundenAnzahl: totals.vortagNe,
+    kauf: totals.kauf,
+    ne: totals.ne,
+    kb: totals.kb,
+  }, { showAbsageAndReserviert: false });
 
   appendStatsSectionRows(statsContent, 'Integrationen', {
     kundenAnzahl: totals.integrationAnzahl,
