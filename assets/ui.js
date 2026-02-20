@@ -1617,135 +1617,159 @@ async function renderTours(){
 }
 
 
-function formatPercent(value){
-  if(!Number.isFinite(value)) return '0,00 %';
-  return `${value.toFixed(2).replace('.', ',')} %`;
-}
-
-function safeDivide(numerator, denominator){
-  if(!Number.isFinite(denominator) || denominator === 0) return 0;
-  return numerator / denominator;
-}
-
 function collectTourdayStats(t){
   const kundenAnzahl = Number(t.schooldayCustomers || 0);
-  const vortagNe = Number(t.prevDayUnreachable || 0);
   const kauf = Number(t.buyingCustomers || 0);
+  const ne = Number(t.tourdayNi || 0);
+  const kb = Number(t.tourdayKb || 0);
+  const absage = Number(t.tourdayCancelled || 0);
+  const reserviert = Number(t.tourdayReserved || 0);
 
   const integrationAnzahl = Number(t.integrations || 0);
-  const integrationNe = Number(t.integrationUnreachable || 0);
   const integrationKauf = Number(t.integrationBought || 0);
+  const integrationNe = Number(t.integrationUnreachable || 0);
+  const integrationKb = Number(t.integrationNoNeed || 0);
+  const integrationAbsage = Number(t.integrationCancelled || 0);
+  const integrationReserviert = Number(t.integrationPreordered || 0);
 
   const d3Anzahl = Number(t.threeCustomersTotal || 0);
-  const d3Ne = Number(t.threeCustomersNi || 0);
   const d3Kauf = Number(t.threeCustomersBought || 0);
-
-  const serviceSuccessCount = kundenAnzahl + vortagNe;
-  const serviceSuccessRate = safeDivide(serviceSuccessCount, kauf) * 100;
-
-  const integrationsCount = integrationAnzahl - integrationNe;
-  const integrationsRate = safeDivide(integrationsCount, integrationKauf) * 100;
-
-  const d3Count = d3Anzahl - d3Ne;
-  const d3Rate = safeDivide(d3Count, d3Kauf) * 100;
+  const d3Ne = Number(t.threeCustomersNi || 0);
+  const d3Kb = Number(t.threeCustomersKb || 0);
+  const d3Absage = Number(t.threeCustomersCancelled || 0);
+  const d3Reserviert = Number(t.threeCustomersPreordered || 0);
 
   return {
     kundenAnzahl,
-    vortagNe,
     kauf,
+    ne,
+    kb,
+    absage,
+    reserviert,
     integrationAnzahl,
-    integrationNe,
     integrationKauf,
+    integrationNe,
+    integrationKb,
+    integrationAbsage,
+    integrationReserviert,
     d3Anzahl,
-    d3Ne,
     d3Kauf,
-    serviceSuccessCount,
-    serviceSuccessRate,
-    integrationsCount,
-    integrationsRate,
-    d3Count,
-    d3Rate,
+    d3Ne,
+    d3Kb,
+    d3Absage,
+    d3Reserviert,
   };
 }
 
-function createStatsGroupTitle(label){
-  const title = document.createElement('h4');
-  title.textContent = label;
-  title.style.margin = '14px 0 8px';
-  return title;
+function createStatsBoardRow(label, value, suffix = '', { separator = false } = {}){
+  const row = document.createElement('div');
+  row.className = 'statsBoardRow';
+  if(separator) row.classList.add('statsBoardRowSeparator');
+
+  const labelCell = document.createElement('span');
+  const valueCell = document.createElement('span');
+  const suffixCell = document.createElement('span');
+
+  labelCell.className = 'statsBoardCell statsBoardCellLabel';
+  valueCell.className = 'statsBoardCell statsBoardCellValue';
+  suffixCell.className = 'statsBoardCell statsBoardCellSuffix';
+
+  labelCell.textContent = label;
+  valueCell.textContent = value;
+  suffixCell.textContent = suffix;
+
+  row.append(labelCell, valueCell, suffixCell);
+  return row;
+}
+
+function appendStatsSectionRows(container, title, stats){
+  container.append(
+    createStatsBoardRow(title, String(stats.kundenAnzahl), '%'),
+    createStatsBoardRow('Kauf', String(stats.kauf), '%'),
+    createStatsBoardRow('NE', String(stats.ne), '%'),
+    createStatsBoardRow('KB', String(stats.kb), '%'),
+    createStatsBoardRow('Absage', String(stats.absage), '%'),
+    createStatsBoardRow('Reserviert', String(stats.reserviert), '%'),
+  );
 }
 
 function renderStatsSummary(tours){
   const statsContent = document.getElementById('statsContent');
   if(!statsContent) return;
 
-  const tourdays = tours
-    .filter(t => t.tourType === 'tourentag')
-    .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+  const tourdays = tours.filter(t => t.tourType === 'tourentag');
 
-  const totals = tourdays.reduce((acc, t)=>{
+  const totals = tourdays.reduce((acc, t) => {
     const stats = collectTourdayStats(t);
     acc.kundenAnzahl += stats.kundenAnzahl;
-    acc.vortagNe += stats.vortagNe;
     acc.kauf += stats.kauf;
+    acc.ne += stats.ne;
+    acc.kb += stats.kb;
+    acc.absage += stats.absage;
+    acc.reserviert += stats.reserviert;
+
     acc.integrationAnzahl += stats.integrationAnzahl;
-    acc.integrationNe += stats.integrationNe;
     acc.integrationKauf += stats.integrationKauf;
+    acc.integrationNe += stats.integrationNe;
+    acc.integrationKb += stats.integrationKb;
+    acc.integrationAbsage += stats.integrationAbsage;
+    acc.integrationReserviert += stats.integrationReserviert;
+
     acc.d3Anzahl += stats.d3Anzahl;
-    acc.d3Ne += stats.d3Ne;
     acc.d3Kauf += stats.d3Kauf;
+    acc.d3Ne += stats.d3Ne;
+    acc.d3Kb += stats.d3Kb;
+    acc.d3Absage += stats.d3Absage;
+    acc.d3Reserviert += stats.d3Reserviert;
     return acc;
   }, {
     kundenAnzahl: 0,
-    vortagNe: 0,
     kauf: 0,
+    ne: 0,
+    kb: 0,
+    absage: 0,
+    reserviert: 0,
     integrationAnzahl: 0,
-    integrationNe: 0,
     integrationKauf: 0,
+    integrationNe: 0,
+    integrationKb: 0,
+    integrationAbsage: 0,
+    integrationReserviert: 0,
     d3Anzahl: 0,
-    d3Ne: 0,
     d3Kauf: 0,
+    d3Ne: 0,
+    d3Kb: 0,
+    d3Absage: 0,
+    d3Reserviert: 0,
   });
 
-  const totalServiceSuccessCount = totals.kundenAnzahl + totals.vortagNe;
-  const totalServiceSuccessRate = safeDivide(totalServiceSuccessCount, totals.kauf) * 100;
-  const totalIntegrationCount = totals.integrationAnzahl - totals.integrationNe;
-  const totalIntegrationRate = safeDivide(totalIntegrationCount, totals.integrationKauf) * 100;
-  const totalD3Count = totals.d3Anzahl - totals.d3Ne;
-  const totalD3Rate = safeDivide(totalD3Count, totals.d3Kauf) * 100;
+  const totalOrderValue = tours.reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
   statsContent.innerHTML = '';
-  statsContent.append(createStatsGroupTitle('Monat gesamt (kumuliert)'));
-  statsContent.append(
-    createSumRow('❯ Serviceerfolg (Anzahl + Vortag NE) / Kauf', `${totalServiceSuccessCount} / ${totals.kauf} = ${formatPercent(totalServiceSuccessRate)}`),
-    createSumRow('❯ Integrationen (Anzahl - NE) / Kauf', `${totalIntegrationCount} / ${totals.integrationKauf} = ${formatPercent(totalIntegrationRate)}`),
-    createSumRow('❯ D3 Kunden (Anzahl - NE) / Kauf', `${totalD3Count} / ${totals.d3Kauf} = ${formatPercent(totalD3Rate)}`),
-  );
+  appendStatsSectionRows(statsContent, 'Anzahl Kunden', totals);
 
-  statsContent.appendChild(document.createElement('hr'));
-  statsContent.append(createStatsGroupTitle('Pro Tourentag'));
-
-  if(!tourdays.length){
-    statsContent.append(createSumRow('❯ Keine Tourentage im ausgewählten Zeitraum', '-'));
-    return;
-  }
-
-  tourdays.forEach((tour, index) => {
-    const labelDate = tour.date ? new Date(tour.date).toLocaleDateString('de-DE') : 'ohne Datum';
-    const dayLabel = `${labelDate}${tour.id ? ` · ${tour.id}` : ''}`;
-    const stats = collectTourdayStats(tour);
-
-    statsContent.append(
-      createSumRow(`❯ ${dayLabel}`, '', { emphasize: true }),
-      createSumRow('  Serviceerfolg (Anzahl + Vortag NE) / Kauf', `${stats.serviceSuccessCount} / ${stats.kauf} = ${formatPercent(stats.serviceSuccessRate)}`),
-      createSumRow('  Integrationen (Anzahl - NE) / Kauf', `${stats.integrationsCount} / ${stats.integrationKauf} = ${formatPercent(stats.integrationsRate)}`),
-      createSumRow('  D3 Kunden (Anzahl - NE) / Kauf', `${stats.d3Count} / ${stats.d3Kauf} = ${formatPercent(stats.d3Rate)}`),
-    );
-
-    if(index < tourdays.length - 1){
-      statsContent.appendChild(document.createElement('hr'));
-    }
+  statsContent.appendChild(createStatsBoardRow('—', '', '', { separator: true }));
+  appendStatsSectionRows(statsContent, 'Integrationen', {
+    kundenAnzahl: totals.integrationAnzahl,
+    kauf: totals.integrationKauf,
+    ne: totals.integrationNe,
+    kb: totals.integrationKb,
+    absage: totals.integrationAbsage,
+    reserviert: totals.integrationReserviert,
   });
+
+  statsContent.appendChild(createStatsBoardRow('—', '', '', { separator: true }));
+  appendStatsSectionRows(statsContent, 'D3', {
+    kundenAnzahl: totals.d3Anzahl,
+    kauf: totals.d3Kauf,
+    ne: totals.d3Ne,
+    kb: totals.d3Kb,
+    absage: totals.d3Absage,
+    reserviert: totals.d3Reserviert,
+  });
+
+  statsContent.appendChild(createStatsBoardRow('—', '', '', { separator: true }));
+  statsContent.appendChild(createStatsBoardRow('Auftragswert', '', `${totalOrderValue.toFixed(2).replace('.', ',')} €`));
 }
 
 

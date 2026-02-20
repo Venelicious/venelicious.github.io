@@ -329,6 +329,52 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   box-shadow: 0 8px 16px rgba(0, 129, 185, 0.22);
 }
 
+
+.statsBoard {
+  margin-top: 8px;
+  border: 1px solid #d7dce8;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.statsBoardRow {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  min-height: 44px;
+  border-top: 1px solid #e0e4ec;
+}
+
+.statsBoardRow:first-child {
+  border-top: none;
+}
+
+.statsBoardCell {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 1.05rem;
+  color: #2f3440;
+}
+
+.statsBoardCell + .statsBoardCell {
+  border-left: 1px solid #e0e4ec;
+}
+
+.statsBoardCellValue,
+.statsBoardCellSuffix {
+  justify-content: flex-start;
+}
+
+.statsBoardRowSeparator .statsBoardCellLabel {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.statsBoardRowSeparator .statsBoardCellValue,
+.statsBoardRowSeparator .statsBoardCellSuffix {
+  color: transparent;
+}
 .summary {
   background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
   border: 1px solid #cde2ff;
