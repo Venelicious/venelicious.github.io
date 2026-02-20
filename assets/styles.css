@@ -4,6 +4,8 @@
   --brand-light: #f4f7fc;
   --accent: #071b4d;
   --muted: #516188;
+  --font-heading: "Chronica Pro Black", "Segoe UI", Inter, system-ui, Arial, sans-serif;
+  --font-body: "Rotunda Light", "Segoe UI", Inter, system-ui, Arial, sans-serif;
 }
 
 * {
@@ -11,10 +13,24 @@
 }
 
 body {
-  font-family: "Segoe UI", Inter, system-ui, Arial, sans-serif;
+  font-family: var(--font-body);
   margin: 0;
   color: var(--accent);
   background: #eef1f7;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.brandName,
+.sideMenuHeader strong,
+.customer-agreement-title,
+.tour-bubble-title,
+th {
+  font-family: var(--font-heading);
 }
 
 .pageShell {
