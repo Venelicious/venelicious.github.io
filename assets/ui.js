@@ -1732,40 +1732,8 @@ function createStatsCard(title, total, metrics, accentClass = ''){
   return card;
 }
 
-function renderStatsSummary(tours){
-  const statsContent = document.getElementById('statsContent');
-  if(!statsContent) return;
-
-  const tourdays = tours.filter(t => t.tourType === 'tourentag');
-
-  const totals = tourdays.reduce((acc, t) => {
-    const stats = collectTourdayStats(t);
-    acc.kundenAnzahl += stats.kundenAnzahl;
-    acc.vortagNe += stats.vortagNe;
-    acc.vortagKauf += stats.vortagKauf;
-    acc.vortagNeStatus += stats.vortagNeStatus;
-    acc.vortagKb += stats.vortagKb;
-    acc.kauf += stats.kauf;
-    acc.ne += stats.ne;
-    acc.kb += stats.kb;
-    acc.absage += stats.absage;
-    acc.reserviert += stats.reserviert;
-
-    acc.integrationAnzahl += stats.integrationAnzahl;
-    acc.integrationKauf += stats.integrationKauf;
-    acc.integrationNe += stats.integrationNe;
-    acc.integrationKb += stats.integrationKb;
-    acc.integrationAbsage += stats.integrationAbsage;
-    acc.integrationReserviert += stats.integrationReserviert;
-
-    acc.d3Anzahl += stats.d3Anzahl;
-    acc.d3Kauf += stats.d3Kauf;
-    acc.d3Ne += stats.d3Ne;
-    acc.d3Kb += stats.d3Kb;
-    acc.d3Absage += stats.d3Absage;
-    acc.d3Reserviert += stats.d3Reserviert;
-    return acc;
-  }, {
+function createEmptyTourdayTotals(){
+  return {
     kundenAnzahl: 0,
     vortagNe: 0,
     vortagKauf: 0,
@@ -1788,24 +1756,41 @@ function renderStatsSummary(tours){
     d3Kb: 0,
     d3Absage: 0,
     d3Reserviert: 0,
-  });
+  };
+}
 
-  const totalOrderValue = tours.reduce((sum, t) => {
-    const base = Number(t.amount || 0);
-    const rekl = Number(t.reklamation || 0);
-    const guts = Number(t.gutscheine || 0);
-    return sum + base + rekl + guts;
-  }, 0);
+function mergeTourdayTotals(target, stats){
+  target.kundenAnzahl += stats.kundenAnzahl;
+  target.vortagNe += stats.vortagNe;
+  target.vortagKauf += stats.vortagKauf;
+  target.vortagNeStatus += stats.vortagNeStatus;
+  target.vortagKb += stats.vortagKb;
+  target.kauf += stats.kauf;
+  target.ne += stats.ne;
+  target.kb += stats.kb;
+  target.absage += stats.absage;
+  target.reserviert += stats.reserviert;
 
-  const totalCustomersForOrderValue = totals.kundenAnzahl + totals.vortagNeStatus;
-  const averageOrderValue = totalCustomersForOrderValue > 0
-    ? totalOrderValue / totalCustomersForOrderValue
-    : 0;
+  target.integrationAnzahl += stats.integrationAnzahl;
+  target.integrationKauf += stats.integrationKauf;
+  target.integrationNe += stats.integrationNe;
+  target.integrationKb += stats.integrationKb;
+  target.integrationAbsage += stats.integrationAbsage;
+  target.integrationReserviert += stats.integrationReserviert;
 
-  statsContent.innerHTML = '';
-  statsContent.className = 'statsDashboard';
+  target.d3Anzahl += stats.d3Anzahl;
+  target.d3Kauf += stats.d3Kauf;
+  target.d3Ne += stats.d3Ne;
+  target.d3Kb += stats.d3Kb;
+  target.d3Absage += stats.d3Absage;
+  target.d3Reserviert += stats.d3Reserviert;
+}
 
-  statsContent.append(
+function createStatsDashboard(totals, averageOrderValue){
+  const dashboard = document.createElement('div');
+  dashboard.className = 'statsDashboard';
+
+  dashboard.append(
     createStatsCard('Anzahl Kunden', totals.kundenAnzahl, [
       { label: 'Kauf', value: totals.kauf },
       { label: 'NE', value: totals.ne },
@@ -1840,7 +1825,85 @@ function renderStatsSummary(tours){
     <span>Auftragswert</span>
     <strong>${averageOrderValue.toFixed(2).replace('.', ',')} €</strong>
   `;
-  statsContent.appendChild(orderCard);
+  dashboard.appendChild(orderCard);
+
+  return dashboard;
+}
+
+function renderStatsSummary(tours){
+  const statsContent = document.getElementById('statsContent');
+  if(!statsContent) return;
+
+  const tourdays = tours.filter(t => t.tourType === 'tourentag');
+
+  const totals = createEmptyTourdayTotals();
+  tourdays.forEach(t => mergeTourdayTotals(totals, collectTourdayStats(t)));
+
+  const totalOrderValue = tours.reduce((sum, t) => {
+    const base = Number(t.amount || 0);
+    const rekl = Number(t.reklamation || 0);
+    const guts = Number(t.gutscheine || 0);
+    return sum + base + rekl + guts;
+  }, 0);
+
+  const totalCustomersForOrderValue = totals.kundenAnzahl + totals.vortagNeStatus;
+  const averageOrderValue = totalCustomersForOrderValue > 0
+    ? totalOrderValue / totalCustomersForOrderValue
+    : 0;
+
+  statsContent.innerHTML = '';
+  statsContent.className = 'statsContentStack';
+
+  const cumulativeSection = document.createElement('div');
+  cumulativeSection.className = 'statsSection';
+  cumulativeSection.appendChild(createStatsDashboard(totals, averageOrderValue));
+  statsContent.appendChild(cumulativeSection);
+
+  if(!tourdays.length){
+    return;
+  }
+
+  const byDate = new Map();
+  tourdays.forEach(t => {
+    const key = t.date || 'ohne-datum';
+    if(!byDate.has(key)) byDate.set(key, []);
+    byDate.get(key).push(t);
+  });
+
+  const perDayWrapper = document.createElement('div');
+  perDayWrapper.className = 'statsPerDayList';
+
+  const sortedDates = [...byDate.keys()].sort((a,b)=> b.localeCompare(a));
+  sortedDates.forEach((dateKey, idx) => {
+    const entries = byDate.get(dateKey) || [];
+    const dayTotals = createEmptyTourdayTotals();
+    entries.forEach(t => mergeTourdayTotals(dayTotals, collectTourdayStats(t)));
+
+    const dayOrderValue = entries.reduce((sum, t) => {
+      const base = Number(t.amount || 0);
+      const rekl = Number(t.reklamation || 0);
+      const guts = Number(t.gutscheine || 0);
+      return sum + base + rekl + guts;
+    }, 0);
+    const dayCustomerBase = dayTotals.kundenAnzahl + dayTotals.vortagNeStatus;
+    const dayAverageOrderValue = dayCustomerBase > 0 ? dayOrderValue / dayCustomerBase : 0;
+
+    const details = document.createElement('details');
+    details.className = 'statsDayDetails';
+    if(idx === 0) details.open = true;
+
+    const summary = document.createElement('summary');
+    summary.className = 'statsDaySummary';
+    const formattedDate = dateKey === 'ohne-datum'
+      ? 'Ohne Datum'
+      : new Date(dateKey).toLocaleDateString('de-DE');
+    summary.innerHTML = `<span>${formattedDate}</span><small>${entries.length} Tour${entries.length === 1 ? '' : 'en'}</small>`;
+
+    details.append(summary, createStatsDashboard(dayTotals, dayAverageOrderValue));
+    perDayWrapper.appendChild(details);
+  });
+
+  statsContent.appendChild(perDayWrapper);
 }
 
 
