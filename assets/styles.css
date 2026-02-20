@@ -355,6 +355,63 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.statsContentStack {
+  display: grid;
+  gap: 14px;
+}
+
+.statsSection {
+  display: grid;
+  gap: 10px;
+}
+
+.statsPerDayList {
+  display: grid;
+  gap: 10px;
+}
+
+.statsDayDetails {
+  border: 1px solid #d3e4ff;
+  border-radius: 12px;
+  background: #f8fbff;
+  overflow: hidden;
+}
+
+.statsDaySummary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #123d84;
+  background: linear-gradient(180deg, #edf4ff 0%, #e4efff 100%);
+}
+
+.statsDaySummary::-webkit-details-marker { display: none; }
+
+.statsDaySummary::after {
+  content: '▾';
+  color: #1f5fb7;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
+.statsDayDetails[open] .statsDaySummary::after {
+  transform: rotate(180deg);
+}
+
+.statsDaySummary small {
+  color: #4d6ea6;
+  font-weight: 600;
+}
+
+.statsDayDetails .statsDashboard {
+  padding: 10px;
+}
+
 .statsCard {
   border-radius: 12px;
   border: 1px solid #d8e6ff;
