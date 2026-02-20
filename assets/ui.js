@@ -886,7 +886,7 @@ document.getElementById('exportCsv').addEventListener('click', async ()=>{
     const gutsCents = toCents(t.gutscheine || 0);
     const totCents = baseCents + reklCents + gutsCents;
     const nk = computeNeukundenBonusForTourCents(t.newC || 0, totalNKThisMonth, conf);
-    const ip = computeIntegrationCents(t.integrations || 0, conf);
+    const ip = computeIntegrationCents(t.integrationBought || 0, conf);
     const actionsSum = computeActionSum(t.actions || []);
     const actionsPiece = (t.actions && t.actions.length) ? t.actions.reduce((s,a)=>s+Number(a.qty||0),0) : 0;
     const paprovVal = (t.tourType !== 'tourentag' && conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? conf.paprovPerMonth[t.period] : 0;
@@ -1379,7 +1379,7 @@ async function renderTours(){
     }
     if(t.tourType === 'neukundentour') countNeukundentouren++;
 
-    totalIntegrationCents += computeIntegrationCents(t.integrations || 0, conf);
+    totalIntegrationCents += computeIntegrationCents(t.integrationBought || 0, conf);
     const spC = computeSpesenCentsForTour(t, conf);
     totalSpesenCents += spC;
     totalActionProvCents += computeActionProvisionCents(t.actions || []);
@@ -1682,14 +1682,21 @@ function createStatsBoardRow(label, value, suffix = '', { separator = false } = 
   return row;
 }
 
+function calculatePercent(value, total){
+  const base = Number(total || 0);
+  if(base <= 0) return '0,00';
+  return ((Number(value || 0) / base) * 100).toFixed(2).replace('.', ',');
+}
+
 function appendStatsSectionRows(container, title, stats){
+  const total = Number(stats.kundenAnzahl || 0);
   container.append(
-    createStatsBoardRow(title, String(stats.kundenAnzahl), '%'),
-    createStatsBoardRow('Kauf', String(stats.kauf), '%'),
-    createStatsBoardRow('NE', String(stats.ne), '%'),
-    createStatsBoardRow('KB', String(stats.kb), '%'),
-    createStatsBoardRow('Absage', String(stats.absage), '%'),
-    createStatsBoardRow('Reserviert', String(stats.reserviert), '%'),
+    createStatsBoardRow(title, calculatePercent(total, total), '%'),
+    createStatsBoardRow('Kauf', calculatePercent(stats.kauf, total), '%'),
+    createStatsBoardRow('NE', calculatePercent(stats.ne, total), '%'),
+    createStatsBoardRow('KB', calculatePercent(stats.kb, total), '%'),
+    createStatsBoardRow('Absage', calculatePercent(stats.absage, total), '%'),
+    createStatsBoardRow('Reserviert', calculatePercent(stats.reserviert, total), '%'),
   );
 }
 
@@ -1743,12 +1750,16 @@ function renderStatsSummary(tours){
     d3Reserviert: 0,
   });
 
-  const totalOrderValue = tours.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+  const totalOrderValue = tours.reduce((sum, t) => {
+    const base = Number(t.amount || 0);
+    const rekl = Number(t.reklamation || 0);
+    const guts = Number(t.gutscheine || 0);
+    return sum + base + rekl + guts;
+  }, 0);
 
   statsContent.innerHTML = '';
   appendStatsSectionRows(statsContent, 'Anzahl Kunden', totals);
 
-  statsContent.appendChild(createStatsBoardRow('—', '', '', { separator: true }));
   appendStatsSectionRows(statsContent, 'Integrationen', {
     kundenAnzahl: totals.integrationAnzahl,
     kauf: totals.integrationKauf,
@@ -1758,7 +1769,6 @@ function renderStatsSummary(tours){
     reserviert: totals.integrationReserviert,
   });
 
-  statsContent.appendChild(createStatsBoardRow('—', '', '', { separator: true }));
   appendStatsSectionRows(statsContent, 'D3', {
     kundenAnzahl: totals.d3Anzahl,
     kauf: totals.d3Kauf,
@@ -1768,7 +1778,6 @@ function renderStatsSummary(tours){
     reserviert: totals.d3Reserviert,
   });
 
-  statsContent.appendChild(createStatsBoardRow('—', '', '', { separator: true }));
   statsContent.appendChild(createStatsBoardRow('Auftragswert', '', `${totalOrderValue.toFixed(2).replace('.', ',')} €`));
 }
 
@@ -1887,7 +1896,7 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
     if(t.tourType==='tourentag'){ totalVGRevenueCents += tourTotal; countVGTours++; }
     if(t.tourType==='neukundentour') countNeukundentouren++;
     totalNKCount += Number(t.newC || 0);
-    totalIntegrationCents += computeIntegrationCents(t.integrations||0,conf);
+    totalIntegrationCents += computeIntegrationCents(t.integrationBought||0,conf);
     totalSpesenCents += computeSpesenCentsForTour(t,conf);
     totalActionProvCents += computeActionProvisionCents(t.actions||[]);
     let extra=0;
