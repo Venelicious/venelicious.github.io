@@ -196,6 +196,10 @@
         <h3>Statistik</h3>
         <p class="muted">Kumuliert</p>
       </div>
+      <div class="statsPrintActions">
+        <button id="printStatsCumulative" class="small" type="button" aria-label="Kumulierte Statistik drucken" title="Kumulierte Statistik drucken">Kumuliert drucken</button>
+        <button id="printStatsPerTour" class="small" type="button" aria-label="Jede Tour einzeln drucken" title="Jede Tour einzeln drucken">Touren einzeln drucken</button>
+      </div>
     </div>
 
     <div class="statsBoard" id="statsSummary">
