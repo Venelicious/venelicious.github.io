@@ -63,6 +63,20 @@ const tabTargets = {
   tabExport: 'sectionExport'
 };
 
+const sectionIds = new Set(Object.values(tabTargets));
+
+function sectionFromHash(){
+  const hashValue = window.location.hash.replace(/^#/, '');
+  return sectionIds.has(hashValue) ? hashValue : null;
+}
+
+function updateLocationHash(sectionId){
+  const targetHash = `#${sectionId}`;
+  if(window.location.hash !== targetHash){
+    history.replaceState(null, '', targetHash);
+  }
+}
+
 const menuTriggerBtn = document.querySelector('.menuTrigger');
 const sideMenu = document.getElementById('sideMenu');
 const menuOverlay = document.getElementById('menuOverlay');
@@ -150,6 +164,8 @@ function deriveChildrenStatusFromConfig(netCfg = {}){
 }
 
 function setActiveSection(sectionId){
+  if(!sectionIds.has(sectionId)) return;
+
   Object.entries(tabTargets).forEach(([tabId, targetId]) => {
     const tab = document.getElementById(tabId);
     const section = document.getElementById(targetId);
@@ -167,6 +183,8 @@ function setActiveSection(sectionId){
   }else if(sectionId === 'sectionCustomers'){
     renderCustomerAgreements().catch(err => console.error('Kundenabsprachen laden fehlgeschlagen', err));
   }
+
+  updateLocationHash(sectionId);
 }
 
 /* Jahre + Monatsselektoren auffüllen */
@@ -2636,6 +2654,13 @@ export async function init(){
     if(sideMenu && sideMenu.classList.contains('active')) positionSideMenuNearTrigger();
   });
 
+  window.addEventListener('hashchange', ()=>{
+    const hashedSection = sectionFromHash();
+    if(hashedSection){
+      setActiveSection(hashedSection);
+    }
+  });
+
   Object.entries(tabTargets).forEach(([tabId, sectionId])=>{
     const tab = document.getElementById(tabId);
     if(tab) tab.addEventListener('click', ()=> {
@@ -2655,6 +2680,6 @@ export async function init(){
 
   await renderCustomerAgreements();
   await renderCustomerAddressSuggestions('');
-  setActiveSection('sectionNewTour');
+  setActiveSection(sectionFromHash() || 'sectionNewTour');
   await renderTours();
 }
