@@ -558,8 +558,86 @@
 <div id="editModal" class="modal"><div class="modalContent">
   <h3>Tour bearbeiten</h3>
   <form onsubmit="return false;">
-    <label>Bezeichnung<input type="text" id="editId"/></label>
-    <label>Datum<input type="date" id="editDate"/></label>
+    <label>Tour-Nr. / Bezeichnung
+      <input type="text" id="editId" placeholder="z.B. Tour 101"/>
+    </label>
+
+    <div class="row">
+      <div>
+        <label>Datum<input type="date" id="editDate"/></label>
+      </div>
+      <div>
+        <label>Umsatz<input type="number" step="0.01" id="editAmount"/></label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Reklamation<input type="number" step="0.01" id="editReklamation"/></label>
+      </div>
+      <div>
+        <label>Gutscheine<input type="number" step="0.01" id="editGutscheine"/></label>
+      </div>
+    </div>
+
+    <div class="entry-grid">
+      <section class="entry-block">
+        <h4>Allgemein</h4>
+        <div class="row">
+          <div>
+            <label>Neukunden<input type="number" id="editNewC"/></label>
+          </div>
+          <div></div>
+        </div>
+      </section>
+
+      <section class="entry-block compact-entry-block">
+        <h4>Integrationen</h4>
+        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Vorbestellt</p>
+        <div class="compact-metrics-row">
+          <label>Anzahl<input type="number" id="editIntegrations"/></label>
+          <label>Kauf<input type="number" id="editIntegrationBought"/></label>
+          <label>NE<input type="number" id="editIntegrationUnreachable"/></label>
+          <label>KB<input type="number" id="editIntegrationNoNeed"/></label>
+          <label>Absage<input type="number" id="editIntegrationCancelled"/></label>
+          <label>Vorbestellt<input type="number" id="editIntegrationPreordered"/></label>
+        </div>
+      </section>
+
+      <section class="entry-block compact-entry-block">
+        <h4>Tourentag (normale Tour)</h4>
+        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Reservierung // Vortag NE</p>
+        <div class="compact-metrics-row">
+          <label>Anzahl<input type="number" id="editSchooldayCustomers"/></label>
+          <label>Kauf<input type="number" id="editBuyingCustomers"/></label>
+          <label>NE<input type="number" id="editTourdayNi"/></label>
+          <label>KB<input type="number" id="editTourdayKb"/></label>
+          <label>Absage<input type="number" id="editTourdayCancelled"/></label>
+          <label>Reservierung<input type="number" id="editTourdayReserved"/></label>
+          <label>Vortag NE<input type="number" id="editPrevDayUnreachable"/></label>
+        </div>
+        <p class="entry-block-hint" style="margin-top:8px;">Vortag NE: Kauf // NE // KB</p>
+        <div class="compact-metrics-row compact-metrics-row--five">
+          <label>Kauf<input type="number" id="editPrevDayBought"/></label>
+          <label>NE<input type="number" id="editPrevDayNi"/></label>
+          <label>KB<input type="number" id="editPrevDayKb"/></label>
+        </div>
+      </section>
+
+      <section class="entry-block compact-entry-block">
+        <h4>D3 Kunden</h4>
+        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Vorbestellt</p>
+        <div class="compact-metrics-row">
+          <label>Anzahl<input type="number" id="editThreeCustomersTotal"/></label>
+          <label>Kauf<input type="number" id="editThreeCustomersBought"/></label>
+          <label>NE<input type="number" id="editThreeCustomersNi"/></label>
+          <label>KB<input type="number" id="editThreeCustomersKb"/></label>
+          <label>Absage<input type="number" id="editThreeCustomersCancelled"/></label>
+          <label>Vorbestellt<input type="number" id="editThreeCustomersPreordered"/></label>
+        </div>
+      </section>
+    </div>
+
     <label>Tourenart
       <select id="editTourType">
         <option value="tourentag">Tourentag</option>
@@ -569,37 +647,15 @@
         <option value="urlaub">Urlaub</option>
       </select>
     </label>
-    <label>Umsatz<input type="number" step="0.01" id="editAmount"/></label>
-    <label>Reklamation<input type="number" step="0.01" id="editReklamation"/></label>
-    <label>Gutscheine<input type="number" step="0.01" id="editGutscheine"/></label>
-    <label>Neukunden<input type="number" id="editNewC"/></label>
-    <label>Integrationen gesamt<input type="number" id="editIntegrations"/></label>
-    <label>Integration Kauf<input type="number" id="editIntegrationBought"/></label>
-    <label>Integration NE<input type="number" id="editIntegrationUnreachable"/></label>
-    <label>Integration KB<input type="number" id="editIntegrationNoNeed"/></label>
-    <label>Integration Absagen<input type="number" id="editIntegrationCancelled"/></label>
-    <label>Integration Vorbestellung<input type="number" id="editIntegrationPreordered"/></label>
-    <label>Anzahl Kunden (Tourentag)<input type="number" id="editSchooldayCustomers"/></label>
-    <label>Davon Kauf<input type="number" id="editBuyingCustomers"/></label>
-    <label>Davon NE<input type="number" id="editTourdayNi"/></label>
-    <label>Davon KB<input type="number" id="editTourdayKb"/></label>
-    <label>Davon Absage<input type="number" id="editTourdayCancelled"/></label>
-    <label>Davon Reservierung<input type="number" id="editTourdayReserved"/></label>
-    <label>Kunden vom Vortrag<input type="number" id="editPrevDayUnreachable"/></label>
-    <label>Vortag Kauf<input type="number" id="editPrevDayBought"/></label>
-    <label>Vortag NE<input type="number" id="editPrevDayNi"/></label>
-    <label>Vortag KB<input type="number" id="editPrevDayKb"/></label>
-    <label>3 Kunden gesamt<input type="number" id="editThreeCustomersTotal"/></label>
-    <label>3 Kunden Kauf<input type="number" id="editThreeCustomersBought"/></label>
-    <label>3 Kunden NE<input type="number" id="editThreeCustomersNi"/></label>
-    <label>3 Kunden KB<input type="number" id="editThreeCustomersKb"/></label>
-    <label>3 Kunden Absagen<input type="number" id="editThreeCustomersCancelled"/></label>
-    <label>3 Kunden Vorbestellung<input type="number" id="editThreeCustomersPreordered"/></label>
-    <label><input type="checkbox" id="editVertretung"/> Vertretung (+2%)</label>
+
+    <label style="margin-top:10px;"><input type="checkbox" id="editVertretung"/> Vertretung (+2%)</label>
     <label><input type="checkbox" id="editFahrt45"/> Entfernung &gt;45min (+0,25%)</label>
+
+    <h4 style="margin-top:12px">Aktionen</h4>
     <label>Aktionen-Details
       <input type="text" id="editActionsDetail" placeholder='z.B. 3x5.99|2x3.50'/>
     </label>
+
     <label>Notiz<input type="text" id="editNote"/></label>
 
     <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
