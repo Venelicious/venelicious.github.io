@@ -124,13 +124,21 @@
 
       <section class="entry-block compact-entry-block">
         <h4>Tourentag (normale Tour)</h4>
-        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Vortag NE</p>
-        <div class="compact-metrics-row compact-metrics-row--five">
+        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Reservierung // Vortag NE</p>
+        <div class="compact-metrics-row">
           <label>Anzahl<input id="schooldayCustomers" type="number" step="1" min="0" value="0"/></label>
           <label>Kauf<input id="buyingCustomers" type="number" step="1" min="0" value="0"/></label>
           <label>NE<input id="tourdayNi" type="number" step="1" min="0" value="0"/></label>
           <label>KB<input id="tourdayKb" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="tourdayCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Reservierung<input id="tourdayReserved" type="number" step="1" min="0" value="0"/></label>
           <label>Vortag NE<input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
+        </div>
+        <p class="entry-block-hint" style="margin-top:8px;">Vortag NE: Kauf // NE // KB</p>
+        <div class="compact-metrics-row compact-metrics-row--five">
+          <label>Kauf<input id="prevDayBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="prevDayNi" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="prevDayKb" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
 
@@ -575,7 +583,12 @@
     <label>Davon Kauf<input type="number" id="editBuyingCustomers"/></label>
     <label>Davon NE<input type="number" id="editTourdayNi"/></label>
     <label>Davon KB<input type="number" id="editTourdayKb"/></label>
+    <label>Davon Absage<input type="number" id="editTourdayCancelled"/></label>
+    <label>Davon Reservierung<input type="number" id="editTourdayReserved"/></label>
     <label>Kunden vom Vortrag<input type="number" id="editPrevDayUnreachable"/></label>
+    <label>Vortag Kauf<input type="number" id="editPrevDayBought"/></label>
+    <label>Vortag NE<input type="number" id="editPrevDayNi"/></label>
+    <label>Vortag KB<input type="number" id="editPrevDayKb"/></label>
     <label>3 Kunden gesamt<input type="number" id="editThreeCustomersTotal"/></label>
     <label>3 Kunden Kauf<input type="number" id="editThreeCustomersBought"/></label>
     <label>3 Kunden NE<input type="number" id="editThreeCustomersNi"/></label>
