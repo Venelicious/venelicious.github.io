@@ -337,6 +337,17 @@ function mapAgreementTypeClass(type){
   return classes[type] || 'agreement-type-sonstiges';
 }
 
+function mapAgreementTypePrintRowClass(type){
+  const classes = {
+    rhythmus_geaendert: 'print-row-rhythmus-geaendert',
+    komplett_storno: 'print-row-komplett-storno',
+    nur_auf_bestellung: 'print-row-nur-auf-bestellung',
+    urlaub: 'print-row-urlaub',
+    sonstiges: 'print-row-sonstiges'
+  };
+  return classes[type] || 'print-row-sonstiges';
+}
+
 function buildAddressSuggestionLabel(agreement){
   const address = [agreement.customerStreet || '', agreement.customerHouseNumber || ''].filter(Boolean).join(' ');
   const city = [agreement.customerPostalCode || '', agreement.customerCity || ''].filter(Boolean).join(' ');
@@ -585,7 +596,7 @@ async function printCustomerAgreements(){
       [agreement.customerPostalCode || '', agreement.customerCity || ''].filter(Boolean).join(' ')
     ].filter(Boolean).join(', ') || '—';
 
-    return `<tr>
+    return `<tr class="${mapAgreementTypePrintRowClass(agreement.type)}">
       <td>${sanitizeForPdf(agreement.customerNumber || '—')}</td>
       <td>${sanitizeForPdf(fullName)}</td>
       <td>${sanitizeForPdf(address)}</td>
@@ -652,6 +663,11 @@ async function printCustomerAgreements(){
     tr { break-inside: avoid-page; page-break-inside: avoid; }
     .note-cell { white-space: pre-wrap; }
     th { background: #f0f0f0; }
+    .print-row-rhythmus-geaendert { background: rgba(232, 241, 255, 0.6); }
+    .print-row-komplett-storno { background: rgba(255, 236, 236, 0.6); }
+    .print-row-nur-auf-bestellung { background: rgba(255, 244, 229, 0.6); }
+    .print-row-urlaub { background: rgba(233, 249, 240, 0.6); }
+    .print-row-sonstiges { background: rgba(241, 243, 245, 0.6); }
     thead { display: table-header-group; }
     tfoot { display: table-footer-group; }
     .print-page { break-after: page; page-break-after: always; }
@@ -659,6 +675,10 @@ async function printCustomerAgreements(){
     footer { margin-top: 6px; text-align: right; color: #666; font-size: 11px; }
     @media print {
       body { padding: 0; }
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
