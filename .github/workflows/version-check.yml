@@ -1,0 +1,28 @@
+name: Version check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  require-version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine base ref
+        id: base
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "ref=origin/${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=HEAD~1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ensure app version is bumped
+        run: ./scripts/check-version-bump.sh "${{ steps.base.outputs.ref }}"
