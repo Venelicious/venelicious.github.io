@@ -69,16 +69,25 @@ const tabTargets = Object.fromEntries(NAVIGATION_STRUCTURE.map(item => [item.tab
 
 const sectionIds = new Set(Object.values(tabTargets));
 
-function applyNavigationIndexing(){
-  const setSize = NAVIGATION_STRUCTURE.length;
-  NAVIGATION_STRUCTURE.forEach((item) => {
-    const tab = document.getElementById(item.tabId);
-    if(!tab) return;
-    tab.dataset.navIndex = String(item.index);
+function renderSideMenuNavigation(){
+  const sideMenuBody = document.getElementById('sideMenuBody');
+  if(!sideMenuBody) return;
+
+  sideMenuBody.innerHTML = '';
+  const sortedNavigation = [...NAVIGATION_STRUCTURE].sort((a, b)=> a.index - b.index);
+  sortedNavigation.forEach((item)=>{
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.id = item.tabId;
+    tab.className = 'tabButton';
     tab.dataset.sectionId = item.sectionId;
+    tab.dataset.navIndex = String(item.index);
+    tab.setAttribute('aria-label', item.label);
     tab.setAttribute('aria-posinset', String(item.index));
-    tab.setAttribute('aria-setsize', String(setSize));
+    tab.setAttribute('aria-setsize', String(sortedNavigation.length));
     tab.title = `${item.index}. ${item.label}`;
+    tab.textContent = item.label;
+    sideMenuBody.appendChild(tab);
   });
 }
 
@@ -2796,7 +2805,7 @@ export async function init(){
     document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
   }
 
-  applyNavigationIndexing();
+  renderSideMenuNavigation();
 
   if(menuTriggerBtn) menuTriggerBtn.addEventListener('click', toggleSideMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeSideMenu);
