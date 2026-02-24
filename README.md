@@ -314,6 +314,16 @@
       <button id="printCustomerList" class="small" aria-label="Kundenliste drucken" title="Kundenliste drucken">🖨️</button>
     </div>
 
+    <div class="row" style="margin-top:8px">
+      <label>Druckfilter von
+        <input id="customerPrintFrom" type="date" />
+      </label>
+      <label>bis
+        <input id="customerPrintTo" type="date" />
+      </label>
+    </div>
+    <p class="muted" style="margin-top:6px">Beim Drucken werden Kundendaten nach „Gültig ab" im gewählten Zeitraum gefiltert.</p>
+
     <div id="customerAgreementsList" class="customer-agreements-list" style="margin-top:12px"></div>
   </div>
 </section>

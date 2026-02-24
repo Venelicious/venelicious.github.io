@@ -39,6 +39,8 @@ const customerAgreementNoteInput = document.getElementById('customerAgreementNot
 const customerAgreementsList = document.getElementById('customerAgreementsList');
 const customerAddressSearchInput = document.getElementById('customerAddressSearch');
 const customerAddressSuggestions = document.getElementById('customerAddressSuggestions');
+const customerPrintFromInput = document.getElementById('customerPrintFrom');
+const customerPrintToInput = document.getElementById('customerPrintTo');
 const customerAddressSuggestionMap = new Map();
 let editingCustomerAgreementId = null;
 let saveCustomerAgreementBtn;
@@ -568,9 +570,18 @@ function openCustomerAgreementEditModal(agreement){
   modal.classList.add('active');
 }
 
-async function printCustomerAgreements(){
+async function printCustomerAgreements(filter = {}){
   const agreements = await getAllCustomerAgreements();
-  agreements.sort((a,b)=>{
+  const from = filter.from || '';
+  const to = filter.to || '';
+
+  const filteredAgreements = agreements.filter(agreement => {
+    const since = agreement.since || '';
+    if(from && (!since || since < from)) return false;
+    if(to && (!since || since > to)) return false;
+    return true;
+  });
+  filteredAgreements.sort((a,b)=>{
     const lastNameCompare = (a.customerLastName || '').localeCompare((b.customerLastName || ''), 'de', { sensitivity: 'base' });
     if(lastNameCompare !== 0) return lastNameCompare;
 
@@ -589,7 +600,7 @@ async function printCustomerAgreements(){
     return;
   }
 
-  const rows = agreements.map(agreement => {
+  const rows = filteredAgreements.map(agreement => {
     const fullName = `${agreement.customerLastName || '—'}, ${agreement.customerFirstName || '—'}`;
     const address = [
       [agreement.customerStreet || '', agreement.customerHouseNumber || ''].filter(Boolean).join(' '),
@@ -685,6 +696,7 @@ async function printCustomerAgreements(){
 <body>
   <h1>Kundenliste</h1>
   <p>Stand: ${new Date().toLocaleString('de-DE')}</p>
+  <p>Zeitraum (Gültig ab): ${from ? new Date(from).toLocaleDateString('de-DE') : 'alle'} bis ${to ? new Date(to).toLocaleDateString('de-DE') : 'alle'}</p>
   ${pagedTables}
 </body>
 </html>`);
@@ -1296,7 +1308,15 @@ if(clearCustomerAgreementFormBtn){
 printCustomerListBtn = document.getElementById('printCustomerList');
 if(printCustomerListBtn){
   printCustomerListBtn.addEventListener('click', ()=>{
-    printCustomerAgreements().catch(err => {
+    const from = customerPrintFromInput?.value || '';
+    const to = customerPrintToInput?.value || '';
+
+    if(from && to && from > to){
+      alert('Bitte einen gültigen Zeitraum wählen (Von-Datum darf nicht nach dem Bis-Datum liegen).');
+      return;
+    }
+
+    printCustomerAgreements({ from, to }).catch(err => {
       console.error('Kundenliste drucken fehlgeschlagen', err);
       alert('Kundenliste konnte nicht gedruckt werden.');
     });
