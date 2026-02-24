@@ -663,30 +663,58 @@ async function printCustomerAgreements(filter = {}){
   <meta charset="utf-8" />
   <title>Kundenliste</title>
   <style>
-    @page { size: A4 portrait; margin: 12mm; }
-    body { font-family: Arial, sans-serif; padding: 16px; color: #111; }
+    :root {
+      --print-text: #1b1f23;
+      --print-grid: #c7d0db;
+      --print-header-bg: #1d3557;
+      --print-header-text: #ffffff;
+      --print-row-rhythmus: #e9f1ff;
+      --print-row-storno: #ffe7e7;
+      --print-row-bestellung: #fff2df;
+      --print-row-urlaub: #e8f8ef;
+      --print-row-sonstiges: #f3f5f7;
+    }
+    @page { size: A4 landscape; margin: 8mm; }
+    body { font-family: Arial, sans-serif; padding: 8px; color: var(--print-text); }
     h1 { margin: 0 0 8px; font-size: 20px; }
-    p { margin: 0 0 16px; color: #555; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    p { margin: 0 0 10px; color: #485260; }
+    table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
+    col.col-number { width: 7%; }
+    col.col-name { width: 17%; }
+    col.col-address { width: 26%; }
+    col.col-type { width: 14%; }
+    col.col-since { width: 8%; }
+    col.col-until { width: 8%; }
+    col.col-note { width: 20%; }
     th, td {
-      border: 1px solid #bbb;
-      padding: 6px;
+      border: 1px solid var(--print-grid);
+      padding: 5px;
       text-align: left;
       vertical-align: top;
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: break-word;
     }
-    tr { break-inside: auto; page-break-inside: auto; }
+    tr {
+      break-inside: avoid-page;
+      page-break-inside: avoid;
+    }
     .note-cell { white-space: pre-wrap; }
-    th { background: #f0f0f0; }
-    .print-row-rhythmus-geaendert { background: rgba(232, 241, 255, 0.6); }
-    .print-row-komplett-storno { background: rgba(255, 236, 236, 0.6); }
-    .print-row-nur-auf-bestellung { background: rgba(255, 244, 229, 0.6); }
-    .print-row-urlaub { background: rgba(233, 249, 240, 0.6); }
-    .print-row-sonstiges { background: rgba(241, 243, 245, 0.6); }
+    th {
+      background: var(--print-header-bg);
+      color: var(--print-header-text);
+      font-weight: 700;
+    }
+    .print-row-rhythmus-geaendert { background: var(--print-row-rhythmus); }
+    .print-row-komplett-storno { background: var(--print-row-storno); }
+    .print-row-nur-auf-bestellung { background: var(--print-row-bestellung); }
+    .print-row-urlaub { background: var(--print-row-urlaub); }
+    .print-row-sonstiges { background: var(--print-row-sonstiges); }
     thead { display: table-header-group; }
-    tbody { break-inside: auto; page-break-inside: auto; }
+    tbody {
+      break-inside: auto;
+      page-break-inside: auto;
+    }
     @media print {
       body { padding: 0; }
       * {
@@ -701,6 +729,15 @@ async function printCustomerAgreements(filter = {}){
   <p>Stand: ${new Date().toLocaleString('de-DE')}</p>
   <p>Zeitraum (Gültig ab): ${from ? new Date(from).toLocaleDateString('de-DE') : 'alle'} bis ${to ? new Date(to).toLocaleDateString('de-DE') : 'alle'}</p>
   <table>
+    <colgroup>
+      <col class="col-number">
+      <col class="col-name">
+      <col class="col-address">
+      <col class="col-type">
+      <col class="col-since">
+      <col class="col-until">
+      <col class="col-note">
+    </colgroup>
     <thead>
       <tr>
         <th>Kundennr.</th>
