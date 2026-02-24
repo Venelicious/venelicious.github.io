@@ -24,6 +24,7 @@ const baseSalaryMonth = document.getElementById('baseSalaryMonth');
 const heimschlaeferMonth = document.getElementById('heimschlaeferMonth');
 const csvInput = document.getElementById('csvInput');
 const jsonInput = document.getElementById('jsonInput');
+const appVersionLabel = document.getElementById('appVersion');
 const customerNumberInput = document.getElementById('customerNumber');
 const customerNameInput = document.getElementById('customerName');
 const customerLastNameInput = document.getElementById('customerLastName');
@@ -47,6 +48,13 @@ let saveCustomerAgreementBtn;
 let printCustomerListBtn;
 let customerEditModal;
 let currentSort = { key:null, dir:'asc' };
+
+
+function renderAppVersion(){
+  if(!appVersionLabel) return;
+  const appVersion = document.querySelector('meta[name="app-version"]')?.content || 'dev';
+  appVersionLabel.textContent = `Version ${appVersion}`;
+}
 
 function compareToursByDateDesc(a, b){
   const da = a?.date || '';
@@ -2826,6 +2834,7 @@ export async function init(){
   }
 
   renderSideMenuNavigation();
+  renderAppVersion();
 
   if(menuTriggerBtn) menuTriggerBtn.addEventListener('click', toggleSideMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeSideMenu);

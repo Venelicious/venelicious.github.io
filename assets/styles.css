@@ -234,6 +234,19 @@ th {
 .tabSection { display: none; }
 .tabSection.active { display: block; }
 
+
+.appFooter {
+  margin-top: 16px;
+  padding: 8px 4px 2px;
+  text-align: right;
+}
+
+.appVersion {
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+}
+
 h3 { margin-top: 6px; margin-bottom: 6px; }
 hr { border: none; border-top: 1px solid #d7e8ff; margin: 10px 0; }
 
