@@ -45,7 +45,16 @@
     <strong>Navigation</strong>
     <button id="closeMenu" class="menuClose" type="button" aria-label="Menü schließen">✕</button>
   </div>
-  <div id="sideMenuBody" class="sideMenuBody"></div>
+  <div id="sideMenuBody" class="sideMenuBody">
+    <button type="button" id="tabNewTour" class="tabButton" data-section-id="sectionNewTour">Neue Tour</button>
+    <button type="button" id="tabTours" class="tabButton" data-section-id="sectionTours">Touren</button>
+    <button type="button" id="tabSummary" class="tabButton" data-section-id="sectionSummary">Übersicht</button>
+    <button type="button" id="tabStats" class="tabButton" data-section-id="sectionStats">Statistik</button>
+    <button type="button" id="tabCustomers" class="tabButton" data-section-id="sectionCustomers">Kunden</button>
+    <button type="button" id="tabSettings" class="tabButton" data-section-id="sectionSettings">Einstellungen</button>
+    <button type="button" id="tabBackups" class="tabButton" data-section-id="sectionBackups">Backups</button>
+    <button type="button" id="tabExport" class="tabButton" data-section-id="sectionExport">Export</button>
+  </div>
 </nav>
 
 <section id="sectionNewTour" class="tabSection active">
