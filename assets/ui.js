@@ -637,12 +637,6 @@ async function printCustomerAgreements(filter = {}){
     return (a.since || '').localeCompare((b.since || ''));
   });
 
-  const printWindow = window.open('', '_blank');
-  if(!printWindow){
-    alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
-    return;
-  }
-
   const rows = filteredAgreements.map(agreement => {
     const fullName = `${agreement.customerLastName || '—'}, ${agreement.customerFirstName || '—'}`;
     const address = [
@@ -665,7 +659,7 @@ async function printCustomerAgreements(filter = {}){
     ? rows.join('')
     : '<tr><td colspan="7">Keine Kundenabsprachen vorhanden.</td></tr>';
 
-  printWindow.document.write(`<!doctype html>
+  const printHtml = `<!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
@@ -762,10 +756,64 @@ async function printCustomerAgreements(filter = {}){
     </tbody>
   </table>
 </body>
-</html>`);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
+</html>`;
+
+  if(!openAndPrintDocument(printHtml)){
+    alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
+  }
+}
+
+function openAndPrintDocument(html){
+  const popup = window.open('', '_blank');
+  const canUsePopup = popup && popup !== window;
+
+  if(canUsePopup){
+    popup.document.write(html);
+    popup.document.close();
+
+    const closePopup = ()=> {
+      try { popup.close(); } catch(_err){ /* noop */ }
+    };
+
+    popup.addEventListener('afterprint', closePopup, { once: true });
+    window.setTimeout(closePopup, 120000);
+    popup.focus();
+    popup.print();
+    return true;
+  }
+
+  const frame = document.createElement('iframe');
+  frame.setAttribute('aria-hidden', 'true');
+  frame.style.position = 'fixed';
+  frame.style.right = '0';
+  frame.style.bottom = '0';
+  frame.style.width = '0';
+  frame.style.height = '0';
+  frame.style.border = '0';
+
+  document.body.appendChild(frame);
+
+  const frameWindow = frame.contentWindow;
+  if(!frameWindow){
+    frame.remove();
+    return false;
+  }
+
+  frameWindow.document.open();
+  frameWindow.document.write(html);
+  frameWindow.document.close();
+
+  const cleanup = ()=> {
+    if(frame.parentNode){
+      frame.parentNode.removeChild(frame);
+    }
+  };
+
+  frameWindow.addEventListener('afterprint', cleanup, { once: true });
+  window.setTimeout(cleanup, 120000);
+  frameWindow.focus();
+  frameWindow.print();
+  return true;
 }
 
 async function renderCustomerAgreements(){
@@ -2226,12 +2274,6 @@ async function printTourStats(mode = 'cumulative'){
     return;
   }
 
-  const printWindow = window.open('', '_blank');
-  if(!printWindow){
-    alert('Druckfenster konnte nicht geöffnet werden.');
-    return;
-  }
-
   const monthLabel = `${selectMonth.options[selectMonth.selectedIndex].text} ${selectYear.value}`;
 
   const sections = [];
@@ -2255,7 +2297,7 @@ async function printTourStats(mode = 'cumulative'){
     `);
   }
 
-  printWindow.document.write(`<!doctype html>
+  const printHtml = `<!doctype html>
   <html lang="de">
     <head>
       <meta charset="utf-8" />
@@ -2330,9 +2372,10 @@ async function printTourStats(mode = 'cumulative'){
       ${sections.join('')}
     </body>
   </html>`);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
+
+  if(!openAndPrintDocument(printHtml)){
+    alert('Druckfenster konnte nicht geöffnet werden.');
+  }
 }
 
 async function printSingleTourStatsByDate(dateKey){
@@ -2347,12 +2390,6 @@ async function printSingleTourStatsByDate(dateKey){
     return;
   }
 
-  const printWindow = window.open('', '_blank');
-  if(!printWindow){
-    alert('Druckfenster konnte nicht geöffnet werden.');
-    return;
-  }
-
   const monthLabel = `${selectMonth.options[selectMonth.selectedIndex].text} ${selectYear.value}`;
   const sectionHtml = `
     <section class="print-page">
@@ -2362,7 +2399,7 @@ async function printSingleTourStatsByDate(dateKey){
     </section>
   `;
 
-  printWindow.document.write(`<!doctype html>
+  const printHtml = `<!doctype html>
   <html lang="de">
     <head>
       <meta charset="utf-8" />
@@ -2435,9 +2472,10 @@ async function printSingleTourStatsByDate(dateKey){
       ${sectionHtml}
     </body>
   </html>`);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
+
+  if(!openAndPrintDocument(printHtml)){
+    alert('Druckfenster konnte nicht geöffnet werden.');
+  }
 }
 
 function renderStatsSummary(tours){
