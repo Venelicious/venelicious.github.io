@@ -676,10 +676,8 @@ async function printCustomerAgreements(filter = {}){
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: break-word;
-      break-inside: avoid-page;
-      page-break-inside: avoid;
     }
-    tr { break-inside: avoid-page; page-break-inside: avoid; }
+    tr { break-inside: auto; page-break-inside: auto; }
     .note-cell { white-space: pre-wrap; }
     th { background: #f0f0f0; }
     .print-row-rhythmus-geaendert { background: rgba(232, 241, 255, 0.6); }
@@ -688,9 +686,7 @@ async function printCustomerAgreements(filter = {}){
     .print-row-urlaub { background: rgba(233, 249, 240, 0.6); }
     .print-row-sonstiges { background: rgba(241, 243, 245, 0.6); }
     thead { display: table-header-group; }
-    tfoot { display: table-footer-group; }
     tbody { break-inside: auto; page-break-inside: auto; }
-    table, thead, tbody, tr, td, th { orphans: 2; widows: 2; }
     @media print {
       body { padding: 0; }
       * {
