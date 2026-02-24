@@ -54,18 +54,44 @@ function compareToursByDateDesc(a, b){
   return db.localeCompare(da);
 }
 
-const tabTargets = {
-  tabNewTour: 'sectionNewTour',
-  tabTours: 'sectionTours',
-  tabSummary: 'sectionSummary',
-  tabStats: 'sectionStats',
-  tabCustomers: 'sectionCustomers',
-  tabSettings: 'sectionSettings',
-  tabBackups: 'sectionBackups',
-  tabExport: 'sectionExport'
-};
+const NAVIGATION_STRUCTURE = [
+  { index: 1, tabId: 'tabNewTour', sectionId: 'sectionNewTour', label: 'Neue Tour' },
+  { index: 2, tabId: 'tabTours', sectionId: 'sectionTours', label: 'Touren' },
+  { index: 3, tabId: 'tabSummary', sectionId: 'sectionSummary', label: 'Übersicht' },
+  { index: 4, tabId: 'tabStats', sectionId: 'sectionStats', label: 'Statistik' },
+  { index: 5, tabId: 'tabCustomers', sectionId: 'sectionCustomers', label: 'Kunden' },
+  { index: 6, tabId: 'tabSettings', sectionId: 'sectionSettings', label: 'Einstellungen' },
+  { index: 7, tabId: 'tabBackups', sectionId: 'sectionBackups', label: 'Backups' },
+  { index: 8, tabId: 'tabExport', sectionId: 'sectionExport', label: 'Export' }
+];
+
+const tabTargets = Object.fromEntries(NAVIGATION_STRUCTURE.map(item => [item.tabId, item.sectionId]));
 
 const sectionIds = new Set(Object.values(tabTargets));
+
+function applyNavigationIndexing(){
+  const setSize = NAVIGATION_STRUCTURE.length;
+  NAVIGATION_STRUCTURE.forEach((item) => {
+    const tab = document.getElementById(item.tabId);
+    if(!tab) return;
+    tab.dataset.navIndex = String(item.index);
+    tab.dataset.sectionId = item.sectionId;
+    tab.setAttribute('aria-posinset', String(item.index));
+    tab.setAttribute('aria-setsize', String(setSize));
+    tab.title = `${item.index}. ${item.label}`;
+  });
+}
+
+function handleNavigationShortcuts(event){
+  if(!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+  if(!/^Digit[1-8]$/.test(event.code)) return;
+  const pressedIndex = Number(event.code.replace('Digit', ''));
+  const target = NAVIGATION_STRUCTURE.find(item => item.index === pressedIndex);
+  if(!target) return;
+  event.preventDefault();
+  setActiveSection(target.sectionId);
+  closeSideMenu();
+}
 
 function sectionFromHash(){
   const hashValue = window.location.hash.replace(/^#/, '');
@@ -2770,12 +2796,15 @@ export async function init(){
     document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
   }
 
+  applyNavigationIndexing();
+
   if(menuTriggerBtn) menuTriggerBtn.addEventListener('click', toggleSideMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeSideMenu);
   if(menuOverlay) menuOverlay.addEventListener('click', closeSideMenu);
   document.addEventListener('keydown', (event)=>{
     if(event.key === 'Escape') closeSideMenu();
   });
+  document.addEventListener('keydown', handleNavigationShortcuts);
   window.addEventListener('resize', ()=>{
     if(sideMenu && sideMenu.classList.contains('active')) positionSideMenuNearTrigger();
   });
