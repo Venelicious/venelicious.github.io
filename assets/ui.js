@@ -653,38 +653,9 @@ async function printCustomerAgreements(filter = {}){
     </tr>`;
   });
 
-  const rowsPerPage = 24;
-  const rowChunks = [];
-  for(let i = 0; i < rows.length; i += rowsPerPage){
-    rowChunks.push(rows.slice(i, i + rowsPerPage));
-  }
-
-  if(!rowChunks.length){
-    rowChunks.push(['<tr><td colspan="7">Keine Kundenabsprachen vorhanden.</td></tr>']);
-  }
-
-  const totalPages = rowChunks.length;
-  const pagedTables = rowChunks.map((chunk, index) => `
-    <section class="print-page">
-      <table>
-        <thead>
-          <tr>
-            <th>Kundennr.</th>
-            <th>Name</th>
-            <th>Adresse</th>
-            <th>Absprache</th>
-            <th>Gültig ab</th>
-            <th>Bis</th>
-            <th>Notiz</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${chunk.join('')}
-        </tbody>
-      </table>
-      <footer>Seite ${index + 1} von ${totalPages}</footer>
-    </section>
-  `).join('');
+  const tableRows = rows.length
+    ? rows.join('')
+    : '<tr><td colspan="7">Keine Kundenabsprachen vorhanden.</td></tr>';
 
   printWindow.document.write(`<!doctype html>
 <html lang="de">
@@ -705,6 +676,8 @@ async function printCustomerAgreements(filter = {}){
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: break-word;
+      break-inside: avoid-page;
+      page-break-inside: avoid;
     }
     tr { break-inside: avoid-page; page-break-inside: avoid; }
     .note-cell { white-space: pre-wrap; }
@@ -716,9 +689,8 @@ async function printCustomerAgreements(filter = {}){
     .print-row-sonstiges { background: rgba(241, 243, 245, 0.6); }
     thead { display: table-header-group; }
     tfoot { display: table-footer-group; }
-    .print-page { break-after: page; page-break-after: always; }
-    .print-page:last-of-type { break-after: auto; page-break-after: auto; }
-    footer { margin-top: 6px; text-align: right; color: #666; font-size: 11px; }
+    tbody { break-inside: auto; page-break-inside: auto; }
+    table, thead, tbody, tr, td, th { orphans: 2; widows: 2; }
     @media print {
       body { padding: 0; }
       * {
@@ -732,7 +704,22 @@ async function printCustomerAgreements(filter = {}){
   <h1>Kundenliste</h1>
   <p>Stand: ${new Date().toLocaleString('de-DE')}</p>
   <p>Zeitraum (Gültig ab): ${from ? new Date(from).toLocaleDateString('de-DE') : 'alle'} bis ${to ? new Date(to).toLocaleDateString('de-DE') : 'alle'}</p>
-  ${pagedTables}
+  <table>
+    <thead>
+      <tr>
+        <th>Kundennr.</th>
+        <th>Name</th>
+        <th>Adresse</th>
+        <th>Absprache</th>
+        <th>Gültig ab</th>
+        <th>Bis</th>
+        <th>Notiz</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${tableRows}
+    </tbody>
+  </table>
 </body>
 </html>`);
   printWindow.document.close();
