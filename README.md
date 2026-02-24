@@ -10,9 +10,50 @@
 <link rel="stylesheet" href="assets/styles.css">
 <title>Provisionstool</title>
 
-<!-- jsPDF & AutoTable via CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+<!-- jsPDF & AutoTable mit Fallback-Kaskade (PWA-freundlich) -->
+<script>
+  (function(){
+    const scriptGroups = [
+      [
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+        "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
+      ],
+      [
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js",
+        "https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"
+      ]
+    ];
+
+    const loadScript = (sources) => new Promise((resolve, reject) => {
+      const tryAt = (index) => {
+        if (index >= sources.length) {
+          reject(new Error(`Alle Quellen fehlgeschlagen: ${sources.join(', ')}`));
+          return;
+        }
+
+        const src = sources[index];
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false;
+        script.onload = () => resolve(src);
+        script.onerror = () => {
+          script.remove();
+          tryAt(index + 1);
+        };
+        document.head.appendChild(script);
+      };
+
+      tryAt(0);
+    });
+
+    window.__pdfDepsReady = scriptGroups
+      .reduce((promise, sources) => promise.then(() => loadScript(sources)), Promise.resolve())
+      .catch((err) => {
+        console.warn('PDF-Bibliotheken konnten nicht geladen werden.', err);
+        return null;
+      });
+  })();
+</script>
 </head>
 <body>
 <div class="pageShell">
@@ -684,7 +725,8 @@
 <script type="module">
   import { init } from './assets/ui.js';
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    await (window.__pdfDepsReady || Promise.resolve());
     init();
   });
 

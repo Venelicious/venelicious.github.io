@@ -1,6 +1,14 @@
-const APP_REVISION = "2026-02-24-01";
+const APP_REVISION = "2026-02-24-02";
 const CACHE_NAME = `provision-pwa-${APP_REVISION}`;
 
+
+const EXTERNAL_ASSET_URLS = [
+  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js",
+  "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
+  "https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"
+];
+const EXTERNAL_ASSET_SET = new Set(EXTERNAL_ASSET_URLS);
 const FILES_TO_CACHE = [
   "./",
   "./README.md",
@@ -56,14 +64,17 @@ self.addEventListener("fetch", (event) => {
       if (cachedResponse) return cachedResponse;
 
       return fetch(event.request).then((networkResponse) => {
-        if (
-          networkResponse &&
-          networkResponse.ok &&
-          new URL(event.request.url).origin === self.location.origin
-        ) {
+        if (!networkResponse || !networkResponse.ok) return networkResponse;
+
+        const requestUrl = new URL(event.request.url);
+        const isSameOrigin = requestUrl.origin === self.location.origin;
+        const isExternalPdfDependency = EXTERNAL_ASSET_SET.has(event.request.url);
+
+        if (isSameOrigin || isExternalPdfDependency) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
+
         return networkResponse;
       });
     })
