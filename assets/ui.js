@@ -65,6 +65,84 @@ function parseDecimal(value){
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function normalizeDateValue(value){
+  if(!value) return new Date().toISOString().slice(0,10);
+  const raw = String(value).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+  const dotMatch = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(dotMatch){
+    const [, dd, mm, yyyy] = dotMatch;
+    return `${yyyy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+  }
+
+  const parsed = new Date(raw);
+  if(!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0,10);
+
+  return new Date().toISOString().slice(0,10);
+}
+
+function normalizePeriodValue(period, dateValue){
+  const rawPeriod = String(period || '').trim();
+  if(/^\d{4}-\d{2}$/.test(rawPeriod)) return rawPeriod;
+
+  const loosePeriodMatch = rawPeriod.match(/^(\d{4})-(\d{1,2})$/);
+  if(loosePeriodMatch){
+    const [, yy, mm] = loosePeriodMatch;
+    return `${yy}-${String(mm).padStart(2, '0')}`;
+  }
+
+  const normalizedDate = normalizeDateValue(dateValue);
+  const dateForPeriod = new Date(normalizedDate);
+  const yy = dateForPeriod.getFullYear();
+  const mm = String(dateForPeriod.getMonth() + 1).padStart(2,'0');
+  return `${yy}-${mm}`;
+}
+
+function normalizeActionsValue(actions){
+  if(!Array.isArray(actions)) return [];
+  return actions
+    .map((action)=>({
+      price: parseDecimal(action?.price),
+      qty: Number(action?.qty || 0),
+    }))
+    .filter((action)=> Number.isFinite(action.price) && Number.isFinite(action.qty) && action.price > 0 && action.qty > 0);
+}
+
+function normalizeTourRecord(tour = {}){
+  const normalized = { ...tour };
+  const normalizedDate = normalizeDateValue(normalized.date);
+  normalized.date = normalizedDate;
+  normalized.period = normalizePeriodValue(normalized.period, normalizedDate);
+
+  normalized.amount = parseDecimal(normalized.amount);
+  normalized.reklamation = parseDecimal(normalized.reklamation);
+  normalized.gutscheine = parseDecimal(normalized.gutscheine);
+  normalized.umsatzvorgabe = parseDecimal(normalized.umsatzvorgabe ?? normalized.umsatzVorgabe);
+  if(Object.prototype.hasOwnProperty.call(normalized, 'umsatzVorgabe')){
+    delete normalized.umsatzVorgabe;
+  }
+
+  normalized.newC = Number(normalized.newC || 0);
+  normalized.integrations = Number(normalized.integrations || 0);
+  normalized.integrationBought = Number(
+    normalized.integrationBought
+    ?? normalized.integrationKauf
+    ?? normalized.integrations
+    ?? 0
+  );
+  normalized.integrationUnreachable = Number(normalized.integrationUnreachable || 0);
+  normalized.integrationNoNeed = Number(normalized.integrationNoNeed || 0);
+  normalized.integrationCancelled = Number(normalized.integrationCancelled || 0);
+  normalized.integrationPreordered = Number(normalized.integrationPreordered || 0);
+
+  normalized.actions = normalizeActionsValue(normalized.actions);
+  normalized.vertretung = !!normalized.vertretung;
+  normalized.fahrt45 = !!normalized.fahrt45;
+
+  return normalized;
+}
+
 function readDecimalInput(inputId){
   const input = document.getElementById(inputId);
   if(!input) return 0;
@@ -924,14 +1002,13 @@ async function renderCustomerAgreements(){
 }
 
 /* ========== Data-Operationen via IndexedDB ========== */
+async function addTourRecord(tour){
+  const normalizedTour = normalizeTourRecord(tour);
+  await idbAdd('tours', normalizedTour);
+}
+
 async function saveTourObj(t){
-  if(!t.period){
-    const d = new Date(t.date || new Date().toISOString().slice(0,10));
-    const mm = String(d.getMonth()+1).padStart(2,'0');
-    const yy = d.getFullYear();
-    t.period = `${yy}-${mm}`;
-  }
-  await idbAdd('tours', t);
+  await addTourRecord(t);
   await triggerAutoBackup('tour_saved');
   await renderTours();
 }
@@ -1073,7 +1150,7 @@ async function migrateFromLocalStorageIfPresent(){
       const arr = JSON.parse(tRaw);
       if(Array.isArray(arr)){
         for(const t of arr){
-          await idbAdd('tours', t);
+          await addTourRecord(t);
         }
       }
       localStorage.removeItem('provision_tours_v3');
@@ -1096,6 +1173,24 @@ async function migrateFromLocalStorageIfPresent(){
       localStorage.removeItem('provision_conf_v3');
     }catch(e){}
   }
+}
+
+
+async function migrateLegacyToursInDb(){
+  const tours = await idbGetAll('tours');
+  let hasChanges = false;
+
+  for(const tour of tours){
+    const normalizedTour = normalizeTourRecord(tour);
+    const before = JSON.stringify(tour);
+    const after = JSON.stringify(normalizedTour);
+    if(before !== after){
+      hasChanges = true;
+      await idbPut('tours', normalizedTour);
+    }
+  }
+
+  return hasChanges;
 }
 
 /* ========== Auto-Backup (lokal) ========== */
@@ -1182,7 +1277,7 @@ jsonInput.addEventListener('change', async (ev)=>{
       const arr = j.data.tours || [];
       for(const t of arr){
         delete t.idAuto;
-        await idbAdd('tours', t);
+        await addTourRecord(t);
       }
       const agreements = Array.isArray(j.data.customerAgreements) ? j.data.customerAgreements : [];
       for(const agreement of agreements){
@@ -1271,7 +1366,7 @@ csvInput.addEventListener('change', async (ev) => {
       period: parts[idx.per] || `${selectYear.value}-${selectMonth.value}`,
       note: parts[idx.note] || ''
     };
-    await idbAdd('tours', t);
+    await addTourRecord(t);
   }
   await renderTours();
   alert('Import abgeschlossen ✔');
@@ -1320,7 +1415,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
     actions: Array.from(document.querySelectorAll('#actionsList .action-row')).map(r=>({ price: Number(r.querySelector('.actPrice').value||0), qty: Number(r.querySelector('.actQty').value||0) })).filter(a=>a.price>0 && a.qty>0),
     period: `${year}-${month}`
   };
-  await idbAdd('tours', t);
+  await addTourRecord(t);
   document.getElementById('tourId').value=''; document.getElementById('amount').value=''; document.getElementById('umsatzvorgabe').value='0.00';
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
@@ -2712,7 +2807,7 @@ document.getElementById('saveEdit').addEventListener('click', async ()=>{
   t.actions = actions;
   await idbDelete('tours', currentEditingKey);
   delete t.idAuto;
-  await idbAdd('tours', t);
+  await addTourRecord(t);
   currentEditingKey = null;
   document.getElementById('editModal').classList.remove('active');
   await renderTours();
@@ -2926,6 +3021,7 @@ document.querySelectorAll('#toursTable thead th[data-sort]').forEach(th=>{
 /* ========== Init ========== */
 export async function init(){
   await migrateFromLocalStorageIfPresent();
+  await migrateLegacyToursInDb();
 
   const today = new Date(); 
   const mm = String(today.getMonth()+1).padStart(2,'0');
