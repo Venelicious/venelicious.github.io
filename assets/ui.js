@@ -1778,6 +1778,7 @@ async function renderTours(){
       detailContainer.className = 'tour-bubble-details';
       const detailParts = [
         `Umsatz: ${fromCents(tourTotalCents)}`,
+        `Umsatzvorgabe: ${Number(getRevenueTargetValue(t)).toFixed(2).replace('.', ',')} €`,
         `Rekl.: ${fromCents(reklCents)}`,
         `GS: ${gutscheineDisplay(t.gutscheine)}`,
         `NK: ${t.newC || 0}`,
@@ -2146,16 +2147,17 @@ function mergeTourdayTotals(target, stats){
 }
 
 
-function formatRevenueTargetDelta(deltaValue, targetValue){
-  const safeDelta = Number(deltaValue) || 0;
-  const safeTarget = Number(targetValue) || 0;
-  const sign = safeDelta >= 0 ? '+' : '-';
-  const absDelta = Math.abs(safeDelta);
-  const percent = safeTarget > 0 ? (absDelta / safeTarget) * 100 : 0;
+function buildRevenueTargetGapInfo(orderValue = 0, targetValue = 0){
+  const safeOrderValue = Number(orderValue) || 0;
+  const safeTargetValue = Number(targetValue) || 0;
+  const gapValue = safeOrderValue - safeTargetValue;
+  const sign = gapValue >= 0 ? '+' : '-';
+  const absGap = Math.abs(gapValue);
+  const percent = safeTargetValue > 0 ? (absGap / safeTargetValue) * 100 : 0;
 
   return {
-    className: safeDelta >= 0 ? 'statsRevenueTarget--above' : 'statsRevenueTarget--below',
-    valueText: `${sign}${absDelta.toFixed(2).replace('.', ',')} € (${percent.toFixed(2).replace('.', ',')}%)`,
+    className: gapValue >= 0 ? 'statsRevenueTarget--above' : 'statsRevenueTarget--below',
+    valueText: `${sign}${absGap.toFixed(2).replace('.', ',')} € (${percent.toFixed(2).replace('.', ',')}%)`,
   };
 }
 
@@ -2173,7 +2175,7 @@ function normalizeRevenueTargetField(tour = {}){
   return normalizedValue;
 }
 
-function createStatsDashboard(totals, averageOrderValue, revenueTargetDelta){
+function createStatsDashboard(totals, averageOrderValue, revenueTargetModel){
   const dashboard = document.createElement('div');
   dashboard.className = 'statsDashboard';
 
@@ -2210,24 +2212,23 @@ function createStatsDashboard(totals, averageOrderValue, revenueTargetDelta){
 
   const highlightMetrics = document.createElement('div');
   highlightMetrics.className = 'statsHighlightMetrics';
-  const revenueTargetInfo = formatRevenueTargetDelta(revenueTargetDelta?.delta || 0, revenueTargetDelta?.target || 0);
+  const revenueTargetInfo = buildRevenueTargetGapInfo(
+    revenueTargetModel?.orderValue || 0,
+    revenueTargetModel?.target || 0,
+  );
 
   highlightMetrics.innerHTML = `
     <article class="statsHighlightBubble">
       <span>Auftragswert</span>
       <strong>${averageOrderValue.toFixed(2).replace('.', ',')} €</strong>
     </article>
+    <article class="statsHighlightBubble statsRevenueTarget ${revenueTargetInfo.className}">
+      <span>Tourenvorgabe</span>
+      <strong>${revenueTargetInfo.valueText}</strong>
+    </article>
     <article class="statsHighlightBubble">
       <span>Aktionsquote</span>
       <strong>${aktionsquote} %</strong>
-    </article>
-    <article class="statsHighlightBubble">
-      <span>Umsatzvorgabe</span>
-      <strong>${Number(revenueTargetDelta?.target || 0).toFixed(2).replace('.', ',')} €</strong>
-    </article>
-    <article class="statsHighlightBubble statsRevenueTarget ${revenueTargetInfo.className}">
-      <span>Tagesumsatz - Vorgabe</span>
-      <strong>${revenueTargetInfo.valueText}</strong>
     </article>
   `;
   dashboard.appendChild(highlightMetrics);
@@ -2250,7 +2251,6 @@ function buildTourdayStatsModels(tours = []){
   }, 0);
 
   const totalRevenueTarget = tourdays.reduce((sum, t) => sum + getRevenueTargetValue(t), 0);
-  const revenueTargetDelta = totalOrderValue - totalRevenueTarget;
 
   const totalBuyingCustomersForOrderValue = totals.kauf;
   const averageOrderValue = totalBuyingCustomersForOrderValue > 0
@@ -2278,7 +2278,6 @@ function buildTourdayStatsModels(tours = []){
         return sum + base + rekl + guts;
       }, 0);
       const dayRevenueTarget = entries.reduce((sum, t) => sum + getRevenueTargetValue(t), 0);
-      const dayRevenueTargetDelta = dayOrderValue - dayRevenueTarget;
       const dayBuyingCustomers = dayTotals.kauf;
       const dayAverageOrderValue = dayBuyingCustomers > 0 ? dayOrderValue / dayBuyingCustomers : 0;
 
@@ -2287,8 +2286,8 @@ function buildTourdayStatsModels(tours = []){
         entries,
         totals: dayTotals,
         averageOrderValue: dayAverageOrderValue,
-        revenueTargetDelta: {
-          delta: dayRevenueTargetDelta,
+        revenueTargetModel: {
+          orderValue: dayOrderValue,
           target: dayRevenueTarget,
         },
       };
@@ -2299,8 +2298,8 @@ function buildTourdayStatsModels(tours = []){
     cumulative: {
       totals,
       averageOrderValue,
-      revenueTargetDelta: {
-        delta: revenueTargetDelta,
+      revenueTargetModel: {
+        orderValue: totalOrderValue,
         target: totalRevenueTarget,
       },
     },
@@ -2335,7 +2334,7 @@ async function printTourStats(mode = 'cumulative'){
         <section class="print-page">
           <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
           <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
-          ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetDelta).outerHTML}
+          ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetModel).outerHTML}
         </section>
       `);
     });
@@ -2344,7 +2343,7 @@ async function printTourStats(mode = 'cumulative'){
       <section class="print-page">
         <h2>Kumulierte Statistik</h2>
         <p class="meta">Zeitraum: ${monthLabel}</p>
-        ${createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue, statsModel.cumulative.revenueTargetDelta).outerHTML}
+        ${createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue, statsModel.cumulative.revenueTargetModel).outerHTML}
       </section>
     `);
   }
@@ -2449,7 +2448,7 @@ async function printSingleTourStatsByDate(dateKey){
     <section class="print-page">
       <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
       <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
-      ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetDelta).outerHTML}
+      ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetModel).outerHTML}
     </section>
   `;
 
@@ -2545,7 +2544,7 @@ function renderStatsSummary(tours){
 
   const cumulativeSection = document.createElement('div');
   cumulativeSection.className = 'statsSection';
-  cumulativeSection.appendChild(createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue, statsModel.cumulative.revenueTargetDelta));
+  cumulativeSection.appendChild(createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue, statsModel.cumulative.revenueTargetModel));
   statsContent.appendChild(cumulativeSection);
 
   if(!statsModel.tourdays.length){
@@ -2588,7 +2587,7 @@ function renderStatsSummary(tours){
     summaryActions.appendChild(printBtn);
     summary.append(summaryMain, summaryActions);
 
-    details.append(summary, createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetDelta));
+    details.append(summary, createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetModel));
     perDayWrapper.appendChild(details);
   });
 
