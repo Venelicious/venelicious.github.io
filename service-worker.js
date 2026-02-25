@@ -1,4 +1,4 @@
-const APP_REVISION = "2026-02-25-01";
+const APP_REVISION = "2026-02-25-02";
 const CACHE_NAME = `provision-pwa-${APP_REVISION}`;
 
 
