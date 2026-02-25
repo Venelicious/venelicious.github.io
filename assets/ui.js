@@ -2164,6 +2164,15 @@ function getRevenueTargetValue(tour = {}){
   return Number(rawValue) || 0;
 }
 
+function normalizeRevenueTargetField(tour = {}){
+  const normalizedValue = getRevenueTargetValue(tour);
+  tour.umsatzvorgabe = normalizedValue;
+  if(Object.prototype.hasOwnProperty.call(tour, 'umsatzVorgabe')){
+    delete tour.umsatzVorgabe;
+  }
+  return normalizedValue;
+}
+
 function createStatsDashboard(totals, averageOrderValue, revenueTargetDelta){
   const dashboard = document.createElement('div');
   dashboard.className = 'statsDashboard';
@@ -2596,7 +2605,7 @@ function openEditModalFor(entry, key){
   document.getElementById('editDate').value = entry.date || '';
   document.getElementById('editTourType').value = entry.tourType || 'tourentag';
   document.getElementById('editAmount').value = entry.amount || 0;
-  document.getElementById('editUmsatzvorgabe').value = entry.umsatzvorgabe || 0;
+  document.getElementById('editUmsatzvorgabe').value = normalizeRevenueTargetField(entry);
   document.getElementById('editReklamation').value = entry.reklamation || 0;
   document.getElementById('editGutscheine').value = entry.gutscheine || 0;
   document.getElementById('editNewC').value = entry.newC || 0;
@@ -2640,6 +2649,9 @@ document.getElementById('saveEdit').addEventListener('click', async ()=>{
   t.tourType = document.getElementById('editTourType').value;
   t.amount = Number(document.getElementById('editAmount').value || 0);
   t.umsatzvorgabe = Number(document.getElementById('editUmsatzvorgabe').value || 0);
+  if(Object.prototype.hasOwnProperty.call(t, 'umsatzVorgabe')){
+    delete t.umsatzVorgabe;
+  }
   t.reklamation = Number(document.getElementById('editReklamation').value || 0);
   t.gutscheine = Number(document.getElementById('editGutscheine').value || 0);
   t.newC = Number(document.getElementById('editNewC').value || 0);
