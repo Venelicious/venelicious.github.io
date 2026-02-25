@@ -1143,8 +1143,10 @@ async function populateSettingsSection(){
 
 /* Migration von localStorage (falls noch alte Daten) */
 async function migrateFromLocalStorageIfPresent(){
-  const tRaw = localStorage.getItem('provision_tours_v3') || localStorage.getItem('provision_tours_v2') || localStorage.getItem('provision_tours_v1');
-  const cRaw = localStorage.getItem('provision_conf_v3') || localStorage.getItem('provision_conf_v2');
+  const tourKeys = ['provision_tours_v3', 'provision_tours_v2', 'provision_tours_v1'];
+  const confKeys = ['provision_conf_v3', 'provision_conf_v2'];
+  const tRaw = tourKeys.map(key => localStorage.getItem(key)).find(val => val !== null);
+  const cRaw = confKeys.map(key => localStorage.getItem(key)).find(val => val !== null);
   if(tRaw){
     try{
       const arr = JSON.parse(tRaw);
@@ -1153,7 +1155,7 @@ async function migrateFromLocalStorageIfPresent(){
           await addTourRecord(t);
         }
       }
-      localStorage.removeItem('provision_tours_v3');
+      tourKeys.forEach(key => localStorage.removeItem(key));
     }catch(e){}
   }
   if(cRaw){
@@ -1170,7 +1172,7 @@ async function migrateFromLocalStorageIfPresent(){
           await idbPut('conf', { k: 'lostCustomersPerMonth', v: { [`${today.getFullYear()}-${mm}`]: Number(cObj.lostCustomersAvg || 0) } });
         }
       }
-      localStorage.removeItem('provision_conf_v3');
+      confKeys.forEach(key => localStorage.removeItem(key));
     }catch(e){}
   }
 }
