@@ -561,6 +561,9 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .statsHighlightBubble span { color: #204c95; font-weight: 700; }
 .statsHighlightBubble strong { color: #07387f; font-size: 1.35rem; }
 
+.statsRevenueTarget--above strong { color: #12803a; }
+.statsRevenueTarget--below strong { color: #c62828; }
+
 .summary {
   background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
   border: 1px solid #cde2ff;

@@ -124,6 +124,11 @@
           <input id="amount" type="number" step="0.01" placeholder="Gesamtumsatz"/>
         </label>
       </div>
+      <div>
+        <label>Umsatzvorgabe
+          <input id="umsatzvorgabe" type="number" step="0.01" min="0" value="0.00" placeholder="Tagesumsatz-Ziel"/>
+        </label>
+      </div>
     </div>
 
     <div class="row">
@@ -678,6 +683,10 @@
           <label>Kauf<input type="number" id="editPrevDayBought"/></label>
           <label>NE<input type="number" id="editPrevDayNi"/></label>
           <label>KB<input type="number" id="editPrevDayKb"/></label>
+        </div>
+
+        <div class="compact-metrics-row" style="margin-top:8px;">
+          <label>Umsatzvorgabe<input type="number" id="editUmsatzvorgabe" step="0.01" min="0"/></label>
         </div>
       </section>
 
