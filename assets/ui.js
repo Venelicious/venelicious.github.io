@@ -42,6 +42,10 @@ const customerAddressSearchInput = document.getElementById('customerAddressSearc
 const customerAddressSuggestions = document.getElementById('customerAddressSuggestions');
 const customerPrintFromInput = document.getElementById('customerPrintFrom');
 const customerPrintToInput = document.getElementById('customerPrintTo');
+const statsRangeFromInput = document.getElementById('statsRangeFrom');
+const statsRangeToInput = document.getElementById('statsRangeTo');
+const statsRangeResetBtn = document.getElementById('statsRangeReset');
+const statsPeriodHint = document.getElementById('statsPeriodHint');
 const customerAddressSuggestionMap = new Map();
 let editingCustomerAgreementId = null;
 let saveCustomerAgreementBtn;
@@ -2385,18 +2389,84 @@ function formatStatsDate(dateKey){
   return parsed.toLocaleDateString('de-DE');
 }
 
+function getMonthDateRange(){
+  const year = Number(selectYear?.value || new Date().getFullYear());
+  const monthIndex = Math.max(0, Number(selectMonth?.value || 1) - 1);
+  const start = new Date(year, monthIndex, 1);
+  const end = new Date(year, monthIndex + 1, 0);
+  return {
+    from: start.toISOString().slice(0,10),
+    to: end.toISOString().slice(0,10),
+  };
+}
+
+function syncStatsRangeToMonth(){
+  if(!statsRangeFromInput || !statsRangeToInput) return;
+  const monthRange = getMonthDateRange();
+  statsRangeFromInput.value = monthRange.from;
+  statsRangeToInput.value = monthRange.to;
+  updateStatsPeriodHint();
+}
+
+function getSelectedStatsRange(){
+  const monthRange = getMonthDateRange();
+  if(!statsRangeFromInput || !statsRangeToInput){
+    return { ...monthRange, monthRange, label: 'gesamter Monat' };
+  }
+
+  let from = statsRangeFromInput.value || monthRange.from;
+  let to = statsRangeToInput.value || monthRange.to;
+
+  if(from > to){
+    [from, to] = [to, from];
+    statsRangeFromInput.value = from;
+    statsRangeToInput.value = to;
+  }
+
+  if(from < monthRange.from){
+    from = monthRange.from;
+    statsRangeFromInput.value = from;
+  }
+  if(to > monthRange.to){
+    to = monthRange.to;
+    statsRangeToInput.value = to;
+  }
+
+  const isFullMonth = from === monthRange.from && to === monthRange.to;
+  const label = isFullMonth
+    ? 'gesamter Monat'
+    : `${new Date(from).toLocaleDateString('de-DE')} bis ${new Date(to).toLocaleDateString('de-DE')}`;
+
+  return { from, to, monthRange, label };
+}
+
+function isTourWithinStatsRange(tour, range){
+  const tourDate = String(tour?.date || '').slice(0,10);
+  if(!tourDate) return false;
+  return tourDate >= range.from && tourDate <= range.to;
+}
+
+function updateStatsPeriodHint(){
+  if(!statsPeriodHint) return;
+  const range = getSelectedStatsRange();
+  statsPeriodHint.textContent = `Zeitraum: ${range.label}`;
+}
+
 async function printTourStats(mode = 'cumulative'){
   const allTours = await getAllTours();
   const monthFilter = `${selectYear.value}-${selectMonth.value}`;
   const monthTours = allTours.filter(t => t.period === monthFilter);
-  const statsModel = buildTourdayStatsModels(monthTours);
+  const selectedRange = getSelectedStatsRange();
+  const statsTours = monthTours.filter(t => isTourWithinStatsRange(t, selectedRange));
+  const statsModel = buildTourdayStatsModels(statsTours);
 
   if(!statsModel.tourdays.length){
-    alert('Keine Tourentage für die Statistik im ausgewählten Monat vorhanden.');
+    alert('Keine Tourentage für die Statistik im ausgewählten Zeitraum vorhanden.');
     return;
   }
 
   const monthLabel = `${selectMonth.options[selectMonth.selectedIndex].text} ${selectYear.value}`;
+  const periodLabel = selectedRange.label === 'gesamter Monat' ? monthLabel : `${monthLabel} (${selectedRange.label})`;
 
   const sections = [];
   if(mode === 'perTour'){
@@ -2404,7 +2474,7 @@ async function printTourStats(mode = 'cumulative'){
       sections.push(`
         <section class="print-page">
           <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
-          <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
+          <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${periodLabel}</p>
           ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetModel).outerHTML}
         </section>
       `);
@@ -2413,7 +2483,7 @@ async function printTourStats(mode = 'cumulative'){
     sections.push(`
       <section class="print-page">
         <h2>Kumulierte Statistik</h2>
-        <p class="meta">Zeitraum: ${monthLabel}</p>
+        <p class="meta">Zeitraum: ${periodLabel}</p>
         ${createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue, statsModel.cumulative.revenueTargetModel).outerHTML}
       </section>
     `);
@@ -2506,7 +2576,9 @@ async function printSingleTourStatsByDate(dateKey){
   const allTours = await getAllTours();
   const monthFilter = `${selectYear.value}-${selectMonth.value}`;
   const monthTours = allTours.filter(t => t.period === monthFilter);
-  const statsModel = buildTourdayStatsModels(monthTours);
+  const selectedRange = getSelectedStatsRange();
+  const statsTours = monthTours.filter(t => isTourWithinStatsRange(t, selectedRange));
+  const statsModel = buildTourdayStatsModels(statsTours);
   const day = statsModel.perDay.find(entry => entry.dateKey === dateKey);
 
   if(!day){
@@ -2515,10 +2587,11 @@ async function printSingleTourStatsByDate(dateKey){
   }
 
   const monthLabel = `${selectMonth.options[selectMonth.selectedIndex].text} ${selectYear.value}`;
+  const periodLabel = selectedRange.label === 'gesamter Monat' ? monthLabel : `${monthLabel} (${selectedRange.label})`;
   const sectionHtml = `
     <section class="print-page">
       <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
-      <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
+      <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${periodLabel}</p>
       ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetModel).outerHTML}
     </section>
   `;
@@ -2608,7 +2681,9 @@ function renderStatsSummary(tours){
   const statsContent = document.getElementById('statsContent');
   if(!statsContent) return;
 
-  const statsModel = buildTourdayStatsModels(tours);
+  const selectedRange = getSelectedStatsRange();
+  const filteredTours = tours.filter(t => isTourWithinStatsRange(t, selectedRange));
+  const statsModel = buildTourdayStatsModels(filteredTours);
 
   statsContent.innerHTML = '';
   statsContent.className = 'statsContentStack';
@@ -2958,6 +3033,25 @@ if(printStatsPerTourBtn){
   printStatsPerTourBtn.remove();
 }
 
+if(statsRangeFromInput){
+  statsRangeFromInput.addEventListener('change', ()=>{
+    updateStatsPeriodHint();
+    renderTours();
+  });
+}
+if(statsRangeToInput){
+  statsRangeToInput.addEventListener('change', ()=>{
+    updateStatsPeriodHint();
+    renderTours();
+  });
+}
+if(statsRangeResetBtn){
+  statsRangeResetBtn.addEventListener('click', ()=>{
+    syncStatsRangeToMonth();
+    renderTours();
+  });
+}
+
 bindById('printReport', 'click', ()=> window.print());
 
 
@@ -2985,6 +3079,7 @@ export async function init(){
   const yy = today.getFullYear();
   if(selectMonth) selectMonth.value = mm;
   if(selectYear) selectYear.value = yy;
+  syncStatsRangeToMonth();
 
   const dateInput = document.getElementById('date');
   if(dateInput) dateInput.value = today.toISOString().slice(0,10);
@@ -3025,6 +3120,7 @@ export async function init(){
 
   if(selectMonth){
     selectMonth.addEventListener('change', ()=> {
+      syncStatsRangeToMonth();
       renderTours();
       if(document.getElementById('sectionSettings')?.classList.contains('active')) populateSettingsSection();
     });
@@ -3034,6 +3130,7 @@ export async function init(){
 
   if(selectYear){
     selectYear.addEventListener('change', ()=> {
+      syncStatsRangeToMonth();
       renderTours();
       if(document.getElementById('sectionSettings')?.classList.contains('active')) populateSettingsSection();
     });
