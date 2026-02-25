@@ -386,6 +386,12 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   margin-top: 6px;
 }
 
+.statsApplyButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .statsBoard {
   margin-top: 10px;
   border: 1px solid #d7e6ff;
