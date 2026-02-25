@@ -45,6 +45,7 @@ const customerPrintToInput = document.getElementById('customerPrintTo');
 const statsRangeFromInput = document.getElementById('statsRangeFrom');
 const statsRangeToInput = document.getElementById('statsRangeTo');
 const statsRangeResetBtn = document.getElementById('statsRangeReset');
+let statsRangeApplyBtn = document.getElementById('statsRangeApply');
 const statsPeriodHint = document.getElementById('statsPeriodHint');
 const customerAddressSuggestionMap = new Map();
 let editingCustomerAgreementId = null;
@@ -52,6 +53,8 @@ let saveCustomerAgreementBtn;
 let printCustomerListBtn;
 let customerEditModal;
 let currentSort = { key:null, dir:'asc' };
+let appliedStatsRange = null;
+let statsRangeDirty = false;
 
 
 function renderAppVersion(){
@@ -2414,36 +2417,21 @@ function getMonthDateRange(){
   };
 }
 
-function syncStatsRangeToMonth(){
-  if(!statsRangeFromInput || !statsRangeToInput) return;
+function normalizeStatsRange(range, { writeToInputs = false } = {}){
   const monthRange = getMonthDateRange();
-  statsRangeFromInput.value = monthRange.from;
-  statsRangeToInput.value = monthRange.to;
-  updateStatsPeriodHint();
-}
-
-function getSelectedStatsRange(){
-  const monthRange = getMonthDateRange();
-  if(!statsRangeFromInput || !statsRangeToInput){
-    return { ...monthRange, monthRange, label: 'gesamter Monat' };
-  }
-
-  let from = statsRangeFromInput.value || monthRange.from;
-  let to = statsRangeToInput.value || monthRange.to;
+  let from = range?.from || monthRange.from;
+  let to = range?.to || monthRange.to;
 
   if(from > to){
     [from, to] = [to, from];
-    statsRangeFromInput.value = from;
-    statsRangeToInput.value = to;
   }
 
-  if(from < monthRange.from){
-    from = monthRange.from;
-    statsRangeFromInput.value = from;
-  }
-  if(to > monthRange.to){
-    to = monthRange.to;
-    statsRangeToInput.value = to;
+  if(from < monthRange.from) from = monthRange.from;
+  if(to > monthRange.to) to = monthRange.to;
+
+  if(writeToInputs){
+    if(statsRangeFromInput) statsRangeFromInput.value = from;
+    if(statsRangeToInput) statsRangeToInput.value = to;
   }
 
   const isFullMonth = from === monthRange.from && to === monthRange.to;
@@ -2454,6 +2442,51 @@ function getSelectedStatsRange(){
     : `${fromDate ? fromDate.toLocaleDateString('de-DE') : from} bis ${toDate ? toDate.toLocaleDateString('de-DE') : to}`;
 
   return { from, to, monthRange, label };
+}
+
+function getDraftStatsRange(){
+  if(!statsRangeFromInput || !statsRangeToInput){
+    return normalizeStatsRange({});
+  }
+  return normalizeStatsRange({
+    from: statsRangeFromInput.value,
+    to: statsRangeToInput.value,
+  }, { writeToInputs: true });
+}
+
+function syncStatsApplyButtonState(){
+  if(!statsRangeApplyBtn) return;
+  statsRangeApplyBtn.disabled = !statsRangeDirty;
+}
+
+function syncStatsRangeToMonth(){
+  const monthRange = getMonthDateRange();
+  if(statsRangeFromInput) statsRangeFromInput.value = monthRange.from;
+  if(statsRangeToInput) statsRangeToInput.value = monthRange.to;
+  appliedStatsRange = normalizeStatsRange(monthRange, { writeToInputs: true });
+  statsRangeDirty = false;
+  syncStatsApplyButtonState();
+  updateStatsPeriodHint();
+}
+
+function markStatsRangeAsDirty(){
+  statsRangeDirty = true;
+  syncStatsApplyButtonState();
+  updateStatsPeriodHint();
+}
+
+function applyStatsRangeSelection(){
+  appliedStatsRange = getDraftStatsRange();
+  statsRangeDirty = false;
+  syncStatsApplyButtonState();
+  updateStatsPeriodHint();
+}
+
+function getSelectedStatsRange(){
+  if(!appliedStatsRange){
+    appliedStatsRange = getDraftStatsRange();
+  }
+  return appliedStatsRange;
 }
 
 function isTourWithinStatsRange(tour, range){
@@ -2467,7 +2500,19 @@ function isTourWithinStatsRange(tour, range){
 function updateStatsPeriodHint(){
   if(!statsPeriodHint) return;
   const range = getSelectedStatsRange();
-  statsPeriodHint.textContent = `Zeitraum: ${range.label}`;
+  const pendingSuffix = statsRangeDirty ? ' (Änderung noch nicht übernommen)' : '';
+  statsPeriodHint.textContent = `Zeitraum: ${range.label}${pendingSuffix}`;
+}
+
+function ensureStatsRangeApplyButton(){
+  if(statsRangeApplyBtn || !statsRangeResetBtn) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'statsRangeApply';
+  btn.className = 'small statsApplyButton';
+  btn.textContent = 'Zeitraum übernehmen';
+  statsRangeResetBtn.insertAdjacentElement('afterend', btn);
+  statsRangeApplyBtn = btn;
 }
 
 async function printTourStats(mode = 'cumulative'){
@@ -3051,21 +3096,29 @@ if(printStatsPerTourBtn){
   printStatsPerTourBtn.remove();
 }
 
+ensureStatsRangeApplyButton();
+
 if(statsRangeFromInput){
   statsRangeFromInput.addEventListener('change', ()=>{
-    updateStatsPeriodHint();
-    renderTours();
+    getDraftStatsRange();
+    markStatsRangeAsDirty();
   });
 }
 if(statsRangeToInput){
   statsRangeToInput.addEventListener('change', ()=>{
-    updateStatsPeriodHint();
-    renderTours();
+    getDraftStatsRange();
+    markStatsRangeAsDirty();
   });
 }
 if(statsRangeResetBtn){
   statsRangeResetBtn.addEventListener('click', ()=>{
     syncStatsRangeToMonth();
+    renderTours();
+  });
+}
+if(statsRangeApplyBtn){
+  statsRangeApplyBtn.addEventListener('click', ()=>{
+    applyStatsRangeSelection();
     renderTours();
   });
 }
