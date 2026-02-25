@@ -2159,6 +2159,11 @@ function formatRevenueTargetDelta(deltaValue, targetValue){
   };
 }
 
+function getRevenueTargetValue(tour = {}){
+  const rawValue = tour.umsatzvorgabe ?? tour.umsatzVorgabe ?? 0;
+  return Number(rawValue) || 0;
+}
+
 function createStatsDashboard(totals, averageOrderValue, revenueTargetDelta){
   const dashboard = document.createElement('div');
   dashboard.className = 'statsDashboard';
@@ -2235,7 +2240,7 @@ function buildTourdayStatsModels(tours = []){
     return sum + base + rekl + guts;
   }, 0);
 
-  const totalRevenueTarget = tourdays.reduce((sum, t) => sum + Number(t.umsatzvorgabe || 0), 0);
+  const totalRevenueTarget = tourdays.reduce((sum, t) => sum + getRevenueTargetValue(t), 0);
   const revenueTargetDelta = totalOrderValue - totalRevenueTarget;
 
   const totalBuyingCustomersForOrderValue = totals.kauf;
@@ -2263,7 +2268,7 @@ function buildTourdayStatsModels(tours = []){
         const guts = Number(t.gutscheine || 0);
         return sum + base + rekl + guts;
       }, 0);
-      const dayRevenueTarget = entries.reduce((sum, t) => sum + Number(t.umsatzvorgabe || 0), 0);
+      const dayRevenueTarget = entries.reduce((sum, t) => sum + getRevenueTargetValue(t), 0);
       const dayRevenueTargetDelta = dayOrderValue - dayRevenueTarget;
       const dayBuyingCustomers = dayTotals.kauf;
       const dayAverageOrderValue = dayBuyingCustomers > 0 ? dayOrderValue / dayBuyingCustomers : 0;
