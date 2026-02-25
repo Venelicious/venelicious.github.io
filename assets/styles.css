@@ -362,6 +362,30 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   justify-content: flex-end;
 }
 
+.statsPeriodControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+  margin-top: 8px;
+}
+
+.statsPeriodControls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #4d6ea6;
+  font-size: 0.85rem;
+}
+
+.statsPeriodControls input {
+  min-width: 150px;
+}
+
+.statsPeriodHint {
+  margin-top: 6px;
+}
+
 .statsBoard {
   margin-top: 10px;
   border: 1px solid #d7e6ff;

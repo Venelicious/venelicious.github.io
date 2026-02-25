@@ -242,6 +242,16 @@
       <div>
         <h3>Statistik</h3>
         <p class="muted">Kumuliert</p>
+        <div class="statsPeriodControls">
+          <label for="statsRangeFrom">Von
+            <input id="statsRangeFrom" type="date" />
+          </label>
+          <label for="statsRangeTo">Bis
+            <input id="statsRangeTo" type="date" />
+          </label>
+          <button id="statsRangeReset" class="small" type="button">Ganzer Monat</button>
+        </div>
+        <p id="statsPeriodHint" class="muted statsPeriodHint">Zeitraum: gesamter Monat</p>
       </div>
       <div class="statsPrintActions">
         <button id="printStatsCumulative" class="small" type="button" aria-label="Kumulierte Statistik drucken" title="Kumulierte Statistik drucken">Kumuliert drucken</button>
