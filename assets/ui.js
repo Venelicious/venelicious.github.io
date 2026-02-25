@@ -1029,7 +1029,8 @@ async function saveTourObj(t){
   await renderTours();
 }
 async function getAllTours(){
-  return await idbGetAll('tours');
+  const tours = await idbGetAll('tours');
+  return tours.map((tour)=> normalizeTourRecord(tour));
 }
 async function clearAllData(){
   await idbClear('tours'); await idbClear('conf'); await idbClear('backups'); await idbClear('customerAgreements');
@@ -2456,9 +2457,11 @@ function getSelectedStatsRange(){
 }
 
 function isTourWithinStatsRange(tour, range){
-  const tourDate = String(tour?.date || '').slice(0,10);
-  if(!tourDate) return false;
-  return tourDate >= range.from && tourDate <= range.to;
+  const tourDate = parseDateInput(normalizeDateValue(tour?.date));
+  const fromDate = parseDateInput(range.from);
+  const toDate = parseDateInput(range.to);
+  if(!tourDate || !fromDate || !toDate) return false;
+  return tourDate >= fromDate && tourDate <= toDate;
 }
 
 function updateStatsPeriodHint(){
