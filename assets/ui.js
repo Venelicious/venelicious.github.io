@@ -338,6 +338,7 @@ function setActiveSection(sectionId){
 
 /* Jahre + Monatsselektoren auffüllen */
 (function populateYearsAndPaprov(){
+  if(!selectYear) return;
   const now = new Date();
   const cy = now.getFullYear();
   for(let y=cy-5;y<=cy+1;y++){
@@ -2982,10 +2983,14 @@ export async function init(){
   const today = new Date(); 
   const mm = String(today.getMonth()+1).padStart(2,'0');
   const yy = today.getFullYear();
-  selectMonth.value = mm; selectYear.value = yy;
-  document.getElementById('date').value = today.toISOString().slice(0,10);
-  document.getElementById('paprovMonth').value = `${yy}-${mm}`;
-  document.getElementById('lostCustomersMonth').value = `${yy}-${mm}`;
+  if(selectMonth) selectMonth.value = mm;
+  if(selectYear) selectYear.value = yy;
+
+  const dateInput = document.getElementById('date');
+  if(dateInput) dateInput.value = today.toISOString().slice(0,10);
+
+  if(paprovMonth) paprovMonth.value = `${yy}-${mm}`;
+  if(lostCustomersMonth) lostCustomersMonth.value = `${yy}-${mm}`;
   if(baseSalaryMonth) baseSalaryMonth.value = `${yy}-${mm}`;
   if(heimschlaeferMonth) heimschlaeferMonth.value = `${yy}-${mm}`;
 
@@ -3018,14 +3023,23 @@ export async function init(){
     });
   });
 
-  selectMonth.addEventListener('change', ()=> {
-    renderTours();
-    if(document.getElementById('sectionSettings').classList.contains('active')) populateSettingsSection();
-  });
-  selectYear.addEventListener('change', ()=> {
-    renderTours();
-    if(document.getElementById('sectionSettings').classList.contains('active')) populateSettingsSection();
-  });
+  if(selectMonth){
+    selectMonth.addEventListener('change', ()=> {
+      renderTours();
+      if(document.getElementById('sectionSettings')?.classList.contains('active')) populateSettingsSection();
+    });
+  } else {
+    console.warn('[ui] selectMonth nicht gefunden – Monatswechsel deaktiviert.');
+  }
+
+  if(selectYear){
+    selectYear.addEventListener('change', ()=> {
+      renderTours();
+      if(document.getElementById('sectionSettings')?.classList.contains('active')) populateSettingsSection();
+    });
+  } else {
+    console.warn('[ui] selectYear nicht gefunden – Jahreswechsel deaktiviert.');
+  }
 
   try {
     const conf = await loadConfObj();
