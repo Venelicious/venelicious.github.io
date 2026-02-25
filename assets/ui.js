@@ -2384,9 +2384,22 @@ function buildTourdayStatsModels(tours = []){
 
 function formatStatsDate(dateKey){
   if(dateKey === 'ohne-datum') return 'Ohne Datum';
-  const parsed = new Date(dateKey);
+  const parsed = new Date(`${dateKey}T00:00:00`);
   if(Number.isNaN(parsed.getTime())) return dateKey;
   return parsed.toLocaleDateString('de-DE');
+}
+
+function toDateInputValue(date){
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateInput(value){
+  if(!value) return null;
+  const parsed = new Date(`${value}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function getMonthDateRange(){
@@ -2395,8 +2408,8 @@ function getMonthDateRange(){
   const start = new Date(year, monthIndex, 1);
   const end = new Date(year, monthIndex + 1, 0);
   return {
-    from: start.toISOString().slice(0,10),
-    to: end.toISOString().slice(0,10),
+    from: toDateInputValue(start),
+    to: toDateInputValue(end),
   };
 }
 
@@ -2433,9 +2446,11 @@ function getSelectedStatsRange(){
   }
 
   const isFullMonth = from === monthRange.from && to === monthRange.to;
+  const fromDate = parseDateInput(from);
+  const toDate = parseDateInput(to);
   const label = isFullMonth
     ? 'gesamter Monat'
-    : `${new Date(from).toLocaleDateString('de-DE')} bis ${new Date(to).toLocaleDateString('de-DE')}`;
+    : `${fromDate ? fromDate.toLocaleDateString('de-DE') : from} bis ${toDate ? toDate.toLocaleDateString('de-DE') : to}`;
 
   return { from, to, monthRange, label };
 }
