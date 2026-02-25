@@ -149,6 +149,17 @@ function readDecimalInput(inputId){
   return parseDecimal(input.value);
 }
 
+
+function bindById(id, eventName, handler){
+  const element = document.getElementById(id);
+  if(!element){
+    console.warn(`[ui] Element mit ID "${id}" nicht gefunden; Listener für "${eventName}" wurde übersprungen.`);
+    return null;
+  }
+  element.addEventListener(eventName, handler);
+  return element;
+}
+
 function compareToursByDateDesc(a, b){
   const da = a?.date || '';
   const db = b?.date || '';
@@ -403,7 +414,7 @@ function createSumRow(label, value, { emphasize=false, style='' } = {}){
   row.append(labelSpan, valueSpan);
   return row;
 }
-document.getElementById('addActionBtn').addEventListener('click', (e)=>{
+bindById('addActionBtn', 'click', (e)=>{
   e.preventDefault();
   const p = document.getElementById('actPrice').value;
   const q = document.getElementById('actQty').value;
@@ -628,12 +639,12 @@ function createCustomerEditModal(){
 
   document.body.appendChild(customerEditModal);
 
-  document.getElementById('cancelCustomerEdit').addEventListener('click', ()=>{
+  bindById('cancelCustomerEdit', 'click', ()=>{
     customerEditModal.classList.remove('active');
     editingCustomerAgreementId = null;
   });
 
-  document.getElementById('saveCustomerEdit').addEventListener('click', async ()=>{
+  bindById('saveCustomerEdit', 'click', async ()=>{
     if(!editingCustomerAgreementId) return;
 
     const customerLastName = (document.getElementById('customerEditLastName').value || '').trim();
@@ -1203,14 +1214,14 @@ async function loadBackupsList(){
 }
 
 /* JSON Export/Import */
-document.getElementById('exportJson').addEventListener('click', async ()=>{
+bindById('exportJson', 'click', async ()=>{
   const tours = await getAllTours();
   const conf = await loadConfObj();
   const customerAgreements = await getAllCustomerAgreements();
   const payload = { ts: new Date().toISOString(), data: { tours, conf, customerAgreements } };
   downloadJson(payload, `provision_export_${payload.ts.replace(/[:.]/g,'-')}.json`);
 });
-document.getElementById('importJson').addEventListener('click', ()=> jsonInput.click());
+bindById('importJson', 'click', ()=> jsonInput?.click());
 jsonInput.addEventListener('change', async (ev)=>{
   const f = ev.target.files[0]; if(!f) return;
   const text = await f.text();
@@ -1243,7 +1254,7 @@ jsonInput.addEventListener('change', async (ev)=>{
 });
 
 /* CSV Export/Import (mit NK-Rate pro Monat) */
-document.getElementById('exportCsv').addEventListener('click', async ()=>{
+bindById('exportCsv', 'click', async ()=>{
   const allTours = await getAllTours();
   const conf = await loadConfObj();
   const monthFilter = `${selectYear.value}-${selectMonth.value}`;
@@ -1323,7 +1334,7 @@ csvInput.addEventListener('change', async (ev) => {
 });
 
 /* ========== Tour aus Formular speichern ========== */
-document.getElementById('addBtn').addEventListener('click', async ()=>{
+bindById('addBtn', 'click', async ()=>{
   const month = selectMonth.value;
   const year = selectYear.value;
   const t = {
@@ -1381,7 +1392,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
 });
 
 /* Formular leeren */
-document.getElementById('clearBtn').addEventListener('click', ()=>{
+bindById('clearBtn', 'click', ()=>{
   document.getElementById('tourId').value=''; document.getElementById('amount').value=''; document.getElementById('umsatzvorgabe').value='0.00';
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
@@ -1504,7 +1515,7 @@ if(netKvFundSelect){
   });
 }
 
-document.getElementById('saveSettings').addEventListener('click', async ()=>{
+bindById('saveSettings', 'click', async ()=>{
   const kvFundSelect = document.getElementById('netKvFund');
   const selectedKv = kvFundSelect ? kvFundSelect.value : 'custom';
   const kvZusatz = selectedKv !== 'custom' ? Number(selectedKv) : Number(document.getElementById('netKvZusatz').value || 0);
@@ -1618,7 +1629,7 @@ if(heimschlaeferMonthSelect){
 }
 
 /* PAPROV speichern/löschen */
-document.getElementById('savePaprov').addEventListener('click', async ()=>{
+bindById('savePaprov', 'click', async ()=>{
   const key = document.getElementById('paprovMonth').value;
   const v = Number(document.getElementById('paprovValue').value || 0);
   const conf = await loadConfObj();
@@ -1629,7 +1640,7 @@ document.getElementById('savePaprov').addEventListener('click', async ()=>{
   await renderTours();
   await triggerAutoBackup('paprov_saved');
 });
-document.getElementById('clearPaprov').addEventListener('click', async ()=>{
+bindById('clearPaprov', 'click', async ()=>{
   const key = document.getElementById('paprovMonth').value;
   const conf = await loadConfObj();
   conf.paprovPerMonth = conf.paprovPerMonth || {};
@@ -1640,14 +1651,14 @@ document.getElementById('clearPaprov').addEventListener('click', async ()=>{
   await renderTours();
   await triggerAutoBackup('paprov_cleared');
 });
-document.getElementById('paprovMonth').addEventListener('change', async ()=>{
+bindById('paprovMonth', 'change', async ()=>{
   const conf = await loadConfObj();
   const pm = document.getElementById('paprovMonth').value;
   document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[pm] !== undefined) ? conf.paprovPerMonth[pm] : 0;
 });
 
 /* Kundenmanagement speichern/löschen */
-document.getElementById('saveLostCustomers').addEventListener('click', async ()=>{
+bindById('saveLostCustomers', 'click', async ()=>{
   const key = document.getElementById('lostCustomersMonth').value;
   const v = Number(document.getElementById('lostCustomersValue').value || 0);
   const conf = await loadConfObj();
@@ -1658,7 +1669,7 @@ document.getElementById('saveLostCustomers').addEventListener('click', async ()=
   await renderTours();
   await triggerAutoBackup('lost_customers_saved');
 });
-document.getElementById('clearLostCustomers').addEventListener('click', async ()=>{
+bindById('clearLostCustomers', 'click', async ()=>{
   const key = document.getElementById('lostCustomersMonth').value;
   const conf = await loadConfObj();
   conf.lostCustomersPerMonth = conf.lostCustomersPerMonth || {};
@@ -1669,7 +1680,7 @@ document.getElementById('clearLostCustomers').addEventListener('click', async ()
   await renderTours();
   await triggerAutoBackup('lost_customers_cleared');
 });
-document.getElementById('lostCustomersMonth').addEventListener('change', async ()=>{
+bindById('lostCustomersMonth', 'change', async ()=>{
   const conf = await loadConfObj();
   const key = document.getElementById('lostCustomersMonth').value;
   document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, key);
@@ -2483,7 +2494,7 @@ async function printTourStats(mode = 'cumulative'){
       <h1>Tourenstatistik</h1>
       ${sections.join('')}
     </body>
-  </html>`);
+  </html>`;
 
   if(!openAndPrintDocument(printHtml)){
     alert('Druckfenster konnte nicht geöffnet werden.');
@@ -2585,7 +2596,7 @@ async function printSingleTourStatsByDate(dateKey){
       <h1>Tourenstatistik</h1>
       ${sectionHtml}
     </body>
-  </html>`);
+  </html>`;
 
   if(!openAndPrintDocument(printHtml)){
     alert('Druckfenster konnte nicht geöffnet werden.');
@@ -2695,8 +2706,8 @@ function openEditModalFor(entry, key){
   document.getElementById('editNote').value = entry.note || '';
   document.getElementById('editModal').classList.add('active');
 }
-document.getElementById('cancelEdit').addEventListener('click', ()=> { document.getElementById('editModal').classList.remove('active'); currentEditingKey = null; });
-document.getElementById('saveEdit').addEventListener('click', async ()=>{
+bindById('cancelEdit', 'click', ()=> { document.getElementById('editModal').classList.remove('active'); currentEditingKey = null; });
+bindById('saveEdit', 'click', async ()=>{
   if(currentEditingKey === null) return;
   const all = await idbGetAll('tours');
   const idx = all.findIndex(x=> x.idAuto === currentEditingKey);
@@ -2763,7 +2774,7 @@ document.getElementById('saveEdit').addEventListener('click', async ()=>{
 });
 
 /* ========== PDF Export ========== */
-document.getElementById('exportPdf').addEventListener('click', async () => {
+bindById('exportPdf', 'click', async () => {
   if(!window.jspdf || !window.jspdf.jsPDF){ alert('jsPDF nicht geladen'); return; }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'pt', format:'a4' });
@@ -2914,17 +2925,17 @@ document.getElementById('exportPdf').addEventListener('click', async () => {
 });
 
 /* Backups */
-document.getElementById('openBackups').addEventListener('click', ()=>{
+bindById('openBackups', 'click', ()=>{
   setActiveSection('sectionBackups');
 });
-document.getElementById('closeBackups').addEventListener('click', ()=> setActiveSection('sectionTours'));
-document.getElementById('clearBackups').addEventListener('click', async ()=>{
+bindById('closeBackups', 'click', ()=> setActiveSection('sectionTours'));
+bindById('clearBackups', 'click', async ()=>{
   if(!confirm('Alle Backups löschen?')) return;
   await idbClear('backups'); document.getElementById('backupsList').innerHTML = '<div class="muted">Keine Backups vorhanden</div>';
 });
 
 /* Reset / Print */
-document.getElementById('resetAll').addEventListener('click', async ()=>{
+bindById('resetAll', 'click', async ()=>{
   if(!confirm('Alle Touren und Einstellungen löschen?')) return;
   await clearAllData();
   await renderTours();
@@ -2946,11 +2957,11 @@ if(printStatsPerTourBtn){
   printStatsPerTourBtn.remove();
 }
 
-document.getElementById('printReport').addEventListener('click', ()=> window.print());
+bindById('printReport', 'click', ()=> window.print());
 
 
 /* CSV-Import Button */
-document.getElementById('importCsv').addEventListener('click', ()=> csvInput.click());
+bindById('importCsv', 'click', ()=> csvInput?.click());
 
 /* Sortier-Header initialisieren */
 document.querySelectorAll('#toursTable thead th[data-sort]').forEach(th=>{
