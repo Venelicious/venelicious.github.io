@@ -1271,6 +1271,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
     id: document.getElementById('tourId').value || '—',
     date: document.getElementById('date').value || new Date().toISOString().slice(0,10),
     amount: Number(document.getElementById('amount').value || 0),
+    umsatzvorgabe: Number(document.getElementById('umsatzvorgabe').value || 0),
     reklamation: Number(document.getElementById('reklamation').value || 0),
     gutscheine: Number(document.getElementById('gutscheine').value || 0),
     newC: Number(document.getElementById('newCustomers').value || 0),
@@ -1304,7 +1305,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
     period: `${year}-${month}`
   };
   await idbAdd('tours', t);
-  document.getElementById('tourId').value=''; document.getElementById('amount').value='';
+  document.getElementById('tourId').value=''; document.getElementById('amount').value=''; document.getElementById('umsatzvorgabe').value='0.00';
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
@@ -1322,7 +1323,7 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
 
 /* Formular leeren */
 document.getElementById('clearBtn').addEventListener('click', ()=>{
-  document.getElementById('tourId').value=''; document.getElementById('amount').value='';
+  document.getElementById('tourId').value=''; document.getElementById('amount').value=''; document.getElementById('umsatzvorgabe').value='0.00';
   document.getElementById('reklamation').value='0.00'; document.getElementById('gutscheine').value='0.00';
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
@@ -2144,7 +2145,21 @@ function mergeTourdayTotals(target, stats){
   target.verkaufteAktionen += stats.verkaufteAktionen;
 }
 
-function createStatsDashboard(totals, averageOrderValue){
+
+function formatRevenueTargetDelta(deltaValue, targetValue){
+  const safeDelta = Number(deltaValue) || 0;
+  const safeTarget = Number(targetValue) || 0;
+  const sign = safeDelta >= 0 ? '+' : '-';
+  const absDelta = Math.abs(safeDelta);
+  const percent = safeTarget > 0 ? (absDelta / safeTarget) * 100 : 0;
+
+  return {
+    className: safeDelta >= 0 ? 'statsRevenueTarget--above' : 'statsRevenueTarget--below',
+    valueText: `${sign}${absDelta.toFixed(2).replace('.', ',')} € (${percent.toFixed(2).replace('.', ',')}%)`,
+  };
+}
+
+function createStatsDashboard(totals, averageOrderValue, revenueTargetDelta){
   const dashboard = document.createElement('div');
   dashboard.className = 'statsDashboard';
 
@@ -2181,6 +2196,8 @@ function createStatsDashboard(totals, averageOrderValue){
 
   const highlightMetrics = document.createElement('div');
   highlightMetrics.className = 'statsHighlightMetrics';
+  const revenueTargetInfo = formatRevenueTargetDelta(revenueTargetDelta?.delta || 0, revenueTargetDelta?.target || 0);
+
   highlightMetrics.innerHTML = `
     <article class="statsHighlightBubble">
       <span>Auftragswert</span>
@@ -2189,6 +2206,10 @@ function createStatsDashboard(totals, averageOrderValue){
     <article class="statsHighlightBubble">
       <span>Aktionsquote</span>
       <strong>${aktionsquote} %</strong>
+    </article>
+    <article class="statsHighlightBubble statsRevenueTarget ${revenueTargetInfo.className}">
+      <span>Tagesumsatz - Vorgabe</span>
+      <strong>${revenueTargetInfo.valueText}</strong>
     </article>
   `;
   dashboard.appendChild(highlightMetrics);
@@ -2209,6 +2230,9 @@ function buildTourdayStatsModels(tours = []){
     const guts = Number(t.gutscheine || 0);
     return sum + base + rekl + guts;
   }, 0);
+
+  const totalRevenueTarget = tourdays.reduce((sum, t) => sum + Number(t.umsatzvorgabe || 0), 0);
+  const revenueTargetDelta = totalOrderValue - totalRevenueTarget;
 
   const totalBuyingCustomersForOrderValue = totals.kauf;
   const averageOrderValue = totalBuyingCustomersForOrderValue > 0
@@ -2235,6 +2259,8 @@ function buildTourdayStatsModels(tours = []){
         const guts = Number(t.gutscheine || 0);
         return sum + base + rekl + guts;
       }, 0);
+      const dayRevenueTarget = entries.reduce((sum, t) => sum + Number(t.umsatzvorgabe || 0), 0);
+      const dayRevenueTargetDelta = dayOrderValue - dayRevenueTarget;
       const dayBuyingCustomers = dayTotals.kauf;
       const dayAverageOrderValue = dayBuyingCustomers > 0 ? dayOrderValue / dayBuyingCustomers : 0;
 
@@ -2243,6 +2269,10 @@ function buildTourdayStatsModels(tours = []){
         entries,
         totals: dayTotals,
         averageOrderValue: dayAverageOrderValue,
+        revenueTargetDelta: {
+          delta: dayRevenueTargetDelta,
+          target: dayRevenueTarget,
+        },
       };
     });
 
@@ -2251,6 +2281,10 @@ function buildTourdayStatsModels(tours = []){
     cumulative: {
       totals,
       averageOrderValue,
+      revenueTargetDelta: {
+        delta: revenueTargetDelta,
+        target: totalRevenueTarget,
+      },
     },
     perDay,
   };
@@ -2283,7 +2317,7 @@ async function printTourStats(mode = 'cumulative'){
         <section class="print-page">
           <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
           <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
-          ${createStatsDashboard(day.totals, day.averageOrderValue).outerHTML}
+          ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetDelta).outerHTML}
         </section>
       `);
     });
@@ -2292,7 +2326,7 @@ async function printTourStats(mode = 'cumulative'){
       <section class="print-page">
         <h2>Kumulierte Statistik</h2>
         <p class="meta">Zeitraum: ${monthLabel}</p>
-        ${createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue).outerHTML}
+        ${createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue, statsModel.cumulative.revenueTargetDelta).outerHTML}
       </section>
     `);
   }
@@ -2355,6 +2389,8 @@ async function printTourStats(mode = 'cumulative'){
         }
         .statsHighlightBubble span { color: #204c95; font-weight: 700; }
         .statsHighlightBubble strong { color: #07387f; font-size: 1.2rem; }
+        .statsRevenueTarget--above strong { color: #12803a; }
+        .statsRevenueTarget--below strong { color: #c62828; }
         .statsOrderValueCard { border: 1px solid #d8e6ff; border-radius: 10px; padding: 10px; }
         .statsOrderValueCard strong { display:block; margin-top: 4px; font-size: 1.2rem; }
         @media print {
@@ -2395,7 +2431,7 @@ async function printSingleTourStatsByDate(dateKey){
     <section class="print-page">
       <h2>Tour vom ${formatStatsDate(day.dateKey)}</h2>
       <p class="meta">${day.entries.length} Tour${day.entries.length === 1 ? '' : 'en'} im Zeitraum ${monthLabel}</p>
-      ${createStatsDashboard(day.totals, day.averageOrderValue).outerHTML}
+      ${createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetDelta).outerHTML}
     </section>
   `;
 
@@ -2456,6 +2492,8 @@ async function printSingleTourStatsByDate(dateKey){
         }
         .statsHighlightBubble span { color: #204c95; font-weight: 700; }
         .statsHighlightBubble strong { color: #07387f; font-size: 1.2rem; }
+        .statsRevenueTarget--above strong { color: #12803a; }
+        .statsRevenueTarget--below strong { color: #c62828; }
         .statsOrderValueCard { border: 1px solid #d8e6ff; border-radius: 10px; padding: 10px; }
         .statsOrderValueCard strong { display:block; margin-top: 4px; font-size: 1.2rem; }
         @media print {
@@ -2489,7 +2527,7 @@ function renderStatsSummary(tours){
 
   const cumulativeSection = document.createElement('div');
   cumulativeSection.className = 'statsSection';
-  cumulativeSection.appendChild(createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue));
+  cumulativeSection.appendChild(createStatsDashboard(statsModel.cumulative.totals, statsModel.cumulative.averageOrderValue, statsModel.cumulative.revenueTargetDelta));
   statsContent.appendChild(cumulativeSection);
 
   if(!statsModel.tourdays.length){
@@ -2532,7 +2570,7 @@ function renderStatsSummary(tours){
     summaryActions.appendChild(printBtn);
     summary.append(summaryMain, summaryActions);
 
-    details.append(summary, createStatsDashboard(day.totals, day.averageOrderValue));
+    details.append(summary, createStatsDashboard(day.totals, day.averageOrderValue, day.revenueTargetDelta));
     perDayWrapper.appendChild(details);
   });
 
@@ -2549,6 +2587,7 @@ function openEditModalFor(entry, key){
   document.getElementById('editDate').value = entry.date || '';
   document.getElementById('editTourType').value = entry.tourType || 'tourentag';
   document.getElementById('editAmount').value = entry.amount || 0;
+  document.getElementById('editUmsatzvorgabe').value = entry.umsatzvorgabe || 0;
   document.getElementById('editReklamation').value = entry.reklamation || 0;
   document.getElementById('editGutscheine').value = entry.gutscheine || 0;
   document.getElementById('editNewC').value = entry.newC || 0;
@@ -2591,6 +2630,7 @@ document.getElementById('saveEdit').addEventListener('click', async ()=>{
   t.date = document.getElementById('editDate').value || t.date;
   t.tourType = document.getElementById('editTourType').value;
   t.amount = Number(document.getElementById('editAmount').value || 0);
+  t.umsatzvorgabe = Number(document.getElementById('editUmsatzvorgabe').value || 0);
   t.reklamation = Number(document.getElementById('editReklamation').value || 0);
   t.gutscheine = Number(document.getElementById('editGutscheine').value || 0);
   t.newC = Number(document.getElementById('editNewC').value || 0);
