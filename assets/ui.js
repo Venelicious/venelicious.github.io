@@ -2978,16 +2978,6 @@ export async function init(){
   if(baseSalaryMonth) baseSalaryMonth.value = `${yy}-${mm}`;
   if(heimschlaeferMonth) heimschlaeferMonth.value = `${yy}-${mm}`;
 
-  const conf = await loadConfObj();
-  document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, `${yy}-${mm}`);
-  document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[`${yy}-${mm}`]) ? conf.paprovPerMonth[`${yy}-${mm}`] : 0;
-  if(baseSalaryMonth) document.getElementById('baseSalaryValue').value = getBaseSalaryForPeriod(conf, `${yy}-${mm}`);
-  if(heimschlaeferMonth){
-    const heimschlaefer = getHeimschlaeferForPeriod(conf, `${yy}-${mm}`);
-    document.getElementById('heimschlaeferEnabled').checked = heimschlaefer.enabled;
-    document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
-  }
-
   renderSideMenuNavigation();
   renderAppVersion();
 
@@ -3026,8 +3016,32 @@ export async function init(){
     if(document.getElementById('sectionSettings').classList.contains('active')) populateSettingsSection();
   });
 
-  await renderCustomerAgreements();
-  await renderCustomerAddressSuggestions('');
+  try {
+    const conf = await loadConfObj();
+    document.getElementById('lostCustomersValue').value = getLostCustomersForPeriod(conf, `${yy}-${mm}`);
+    document.getElementById('paprovValue').value = (conf.paprovPerMonth && conf.paprovPerMonth[`${yy}-${mm}`]) ? conf.paprovPerMonth[`${yy}-${mm}`] : 0;
+    if(baseSalaryMonth) document.getElementById('baseSalaryValue').value = getBaseSalaryForPeriod(conf, `${yy}-${mm}`);
+    if(heimschlaeferMonth){
+      const heimschlaefer = getHeimschlaeferForPeriod(conf, `${yy}-${mm}`);
+      document.getElementById('heimschlaeferEnabled').checked = heimschlaefer.enabled;
+      document.getElementById('heimschlaeferNetto').value = heimschlaefer.netto;
+    }
+  } catch (err) {
+    console.error('Konfiguration konnte nicht geladen werden.', err);
+  }
+
+  try {
+    await renderCustomerAgreements();
+    await renderCustomerAddressSuggestions('');
+  } catch (err) {
+    console.error('Kundenbereich konnte nicht initialisiert werden.', err);
+  }
+
   setActiveSection(sectionFromHash() || 'sectionNewTour');
-  await renderTours();
+
+  try {
+    await renderTours();
+  } catch (err) {
+    console.error('Touren konnten nicht geladen werden.', err);
+  }
 }
