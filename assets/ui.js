@@ -56,6 +56,21 @@ function renderAppVersion(){
   appVersionLabel.textContent = `Version ${appVersion}`;
 }
 
+function parseDecimal(value){
+  if(value == null) return 0;
+  if(typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const normalized = String(value).trim().replace(',', '.');
+  if(!normalized) return 0;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function readDecimalInput(inputId){
+  const input = document.getElementById(inputId);
+  if(!input) return 0;
+  return parseDecimal(input.value);
+}
+
 function compareToursByDateDesc(a, b){
   const da = a?.date || '';
   const db = b?.date || '';
@@ -1193,7 +1208,7 @@ document.getElementById('exportCsv').addEventListener('click', async ()=>{
   const totalNKThisMonth = monthTours.reduce((s,t)=> s + Number(t.newC || 0), 0);
   const nkRate = getNeukundenRate(totalNKThisMonth, conf); // € pro NK
 
-  let csv = 'Datum;Tour;Art;Umsatz;Reklamation;Gutscheine;Neukunden;Neukunden€;Integrationen;Integr€;AktionsJSON;AktStk;AktEuro;Vertretung;Fahrt45;Period;PAPROV;Notiz\n';
+  let csv = 'Datum;Tour;Art;Umsatz;Umsatzvorgabe;Reklamation;Gutscheine;Neukunden;Neukunden€;Integrationen;Integr€;AktionsJSON;AktStk;AktEuro;Vertretung;Fahrt45;Period;PAPROV;Notiz\n';
   monthTours.forEach(t=>{
     const baseCents = toCents(t.amount || 0);
     const reklCents = toCents(t.reklamation || 0);
@@ -1205,7 +1220,7 @@ document.getElementById('exportCsv').addEventListener('click', async ()=>{
     const actionsPiece = (t.actions && t.actions.length) ? t.actions.reduce((s,a)=>s+Number(a.qty||0),0) : 0;
     const paprovVal = (t.tourType !== 'tourentag' && conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? conf.paprovPerMonth[t.period] : 0;
     const actionsJson = JSON.stringify(t.actions || []);
-    csv += `${t.date};${t.id};${t.tourType};${fromCents(totCents)};${fromCents(reklCents)};${fromCents(gutsCents)};${t.newC||0};${fromCents(nk)};${t.integrations||0};${fromCents(ip)};"${actionsJson.replace(/"/g,'""')}";${actionsPiece};${actionsSum.toFixed(2)};${t.vertretung?"JA":"NEIN"};${t.fahrt45?"JA":"NEIN"};${t.period};${paprovVal.toFixed(2)};"${(t.note||'').replace(/"/g,'""')}"\n`;
+    csv += `${t.date};${t.id};${t.tourType};${fromCents(totCents)};${getRevenueTargetValue(t).toFixed(2)};${fromCents(reklCents)};${fromCents(gutsCents)};${t.newC||0};${fromCents(nk)};${t.integrations||0};${fromCents(ip)};"${actionsJson.replace(/"/g,'""')}";${actionsPiece};${actionsSum.toFixed(2)};${t.vertretung?"JA":"NEIN"};${t.fahrt45?"JA":"NEIN"};${t.period};${paprovVal.toFixed(2)};"${(t.note||'').replace(/"/g,'""')}"\n`;
   });
   const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -1221,7 +1236,7 @@ csvInput.addEventListener('change', async (ev) => {
   if(rows.length < 2){ alert('Keine Daten gefunden'); return; }
   const header = rows[0].split(';').map(h=>h.trim());
   const col = name => header.indexOf(name);
-  const idx = { date: col("Datum"), id: col("Tour"), art: col("Art"), umsatz: col("Umsatz"), rekl: col("Reklamation"), guts: col("Gutscheine"), nk: col("Neukunden"), integ: col("Integrationen"), actions: col("AktionsJSON"), vert: col("Vertretung"), f45: col("Fahrt45"), per: col("Period"), note: col("Notiz") };
+  const idx = { date: col("Datum"), id: col("Tour"), art: col("Art"), umsatz: col("Umsatz"), umsatzvorgabe: col("Umsatzvorgabe"), rekl: col("Reklamation"), guts: col("Gutscheine"), nk: col("Neukunden"), integ: col("Integrationen"), actions: col("AktionsJSON"), vert: col("Vertretung"), f45: col("Fahrt45"), per: col("Period"), note: col("Notiz") };
   for(let i=1;i<rows.length;i++){
     const parts = rows[i].split(';');
     if(parts.length < 2) continue;
@@ -1244,9 +1259,10 @@ csvInput.addEventListener('change', async (ev) => {
       date: parts[idx.date] || new Date().toISOString().slice(0,10),
       id: parts[idx.id] || '—',
       tourType: parts[idx.art] || 'tourentag',
-      amount: Number((parts[idx.umsatz] || '0').replace(',','.')) || 0,
-      reklamation: Number((parts[idx.rekl] || '0').replace(',','.')) || 0,
-      gutscheine: Number((parts[idx.guts] || '0').replace(',','.')) || 0,
+      amount: parseDecimal(parts[idx.umsatz] || 0),
+      umsatzvorgabe: idx.umsatzvorgabe >= 0 ? parseDecimal(parts[idx.umsatzvorgabe] || 0) : 0,
+      reklamation: parseDecimal(parts[idx.rekl] || 0),
+      gutscheine: parseDecimal(parts[idx.guts] || 0),
       newC: Number(parts[idx.nk] || 0),
       integrations: Number(parts[idx.integ] || 0),
       actions: actions,
@@ -1270,10 +1286,10 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   const t = {
     id: document.getElementById('tourId').value || '—',
     date: document.getElementById('date').value || new Date().toISOString().slice(0,10),
-    amount: Number(document.getElementById('amount').value || 0),
-    umsatzvorgabe: Number(document.getElementById('umsatzvorgabe').value || 0),
-    reklamation: Number(document.getElementById('reklamation').value || 0),
-    gutscheine: Number(document.getElementById('gutscheine').value || 0),
+    amount: readDecimalInput('amount'),
+    umsatzvorgabe: readDecimalInput('umsatzvorgabe'),
+    reklamation: readDecimalInput('reklamation'),
+    gutscheine: readDecimalInput('gutscheine'),
     newC: Number(document.getElementById('newCustomers').value || 0),
     integrations: Number(document.getElementById('integrations').value || 0),
     schooldayCustomers: Number(document.getElementById('schooldayCustomers').value || 0),
@@ -2646,13 +2662,13 @@ document.getElementById('saveEdit').addEventListener('click', async ()=>{
   t.id = document.getElementById('editId').value || t.id;
   t.date = document.getElementById('editDate').value || t.date;
   t.tourType = document.getElementById('editTourType').value;
-  t.amount = Number(document.getElementById('editAmount').value || 0);
-  t.umsatzvorgabe = Number(document.getElementById('editUmsatzvorgabe').value || 0);
+  t.amount = readDecimalInput('editAmount');
+  t.umsatzvorgabe = readDecimalInput('editUmsatzvorgabe');
   if(Object.prototype.hasOwnProperty.call(t, 'umsatzVorgabe')){
     delete t.umsatzVorgabe;
   }
-  t.reklamation = Number(document.getElementById('editReklamation').value || 0);
-  t.gutscheine = Number(document.getElementById('editGutscheine').value || 0);
+  t.reklamation = readDecimalInput('editReklamation');
+  t.gutscheine = readDecimalInput('editGutscheine');
   t.newC = Number(document.getElementById('editNewC').value || 0);
   t.integrations = Number(document.getElementById('editIntegrations').value || 0);
   t.schooldayCustomers = Number(document.getElementById('editSchooldayCustomers').value || 0);
