@@ -1141,60 +1141,6 @@ async function populateSettingsSection(){
   document.getElementById('netAvRate').value = conf.netConfig.avRate ?? 0.013;
 }
 
-/* Migration von localStorage (falls noch alte Daten) */
-async function migrateFromLocalStorageIfPresent(){
-  const tourKeys = ['provision_tours_v3', 'provision_tours_v2', 'provision_tours_v1'];
-  const confKeys = ['provision_conf_v3', 'provision_conf_v2'];
-  const tRaw = tourKeys.map(key => localStorage.getItem(key)).find(val => val !== null);
-  const cRaw = confKeys.map(key => localStorage.getItem(key)).find(val => val !== null);
-  if(tRaw){
-    try{
-      const arr = JSON.parse(tRaw);
-      if(Array.isArray(arr)){
-        for(const t of arr){
-          await addTourRecord(t);
-        }
-      }
-      tourKeys.forEach(key => localStorage.removeItem(key));
-    }catch(e){}
-  }
-  if(cRaw){
-    try{
-      const cObj = JSON.parse(cRaw);
-      if(typeof cObj === 'object'){
-        const keys = ['lostCustomersPerMonth','paprovPerMonth'];
-        for(const k of keys){
-          if(cObj[k] !== undefined) await idbPut('conf', { k: k, v: cObj[k] });
-        }
-        if(cObj.lostCustomersAvg !== undefined && cObj.lostCustomersPerMonth === undefined){
-          const today = new Date();
-          const mm = String(today.getMonth()+1).padStart(2,'0');
-          await idbPut('conf', { k: 'lostCustomersPerMonth', v: { [`${today.getFullYear()}-${mm}`]: Number(cObj.lostCustomersAvg || 0) } });
-        }
-      }
-      confKeys.forEach(key => localStorage.removeItem(key));
-    }catch(e){}
-  }
-}
-
-
-async function migrateLegacyToursInDb(){
-  const tours = await idbGetAll('tours');
-  let hasChanges = false;
-
-  for(const tour of tours){
-    const normalizedTour = normalizeTourRecord(tour);
-    const before = JSON.stringify(tour);
-    const after = JSON.stringify(normalizedTour);
-    if(before !== after){
-      hasChanges = true;
-      await idbPut('tours', normalizedTour);
-    }
-  }
-
-  return hasChanges;
-}
-
 /* ========== Auto-Backup (lokal) ========== */
 let autoBackupTimeout = null;
 async function triggerAutoBackup(reason){
@@ -3022,9 +2968,6 @@ document.querySelectorAll('#toursTable thead th[data-sort]').forEach(th=>{
 
 /* ========== Init ========== */
 export async function init(){
-  await migrateFromLocalStorageIfPresent();
-  await migrateLegacyToursInDb();
-
   const today = new Date(); 
   const mm = String(today.getMonth()+1).padStart(2,'0');
   const yy = today.getFullYear();
