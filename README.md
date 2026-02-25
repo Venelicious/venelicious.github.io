@@ -124,12 +124,11 @@
           <input id="amount" type="number" step="0.01" placeholder="Gesamtumsatz"/>
         </label>
       </div>
-      <div>
-        <label>Umsatzvorgabe
-          <input id="umsatzvorgabe" type="number" step="0.01" min="0" value="0.00" placeholder="Tagesumsatz-Ziel"/>
-        </label>
-      </div>
     </div>
+
+    <label>Tagesspezifische Umsatzvorgabe
+      <input id="umsatzvorgabe" type="number" step="0.01" min="0" value="0.00" placeholder="Tagesumsatz-Ziel"/>
+    </label>
 
     <div class="row">
       <div>
