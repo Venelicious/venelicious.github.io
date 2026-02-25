@@ -631,6 +631,9 @@
       <div>
         <label>Umsatz<input type="number" step="0.01" id="editAmount"/></label>
       </div>
+      <div>
+        <label>Umsatzvorgabe<input type="number" id="editUmsatzvorgabe" step="0.01" min="0"/></label>
+      </div>
     </div>
 
     <div class="row">
@@ -685,9 +688,6 @@
           <label>KB<input type="number" id="editPrevDayKb"/></label>
         </div>
 
-        <div class="compact-metrics-row" style="margin-top:8px;">
-          <label>Umsatzvorgabe<input type="number" id="editUmsatzvorgabe" step="0.01" min="0"/></label>
-        </div>
       </section>
 
       <section class="entry-block compact-entry-block">

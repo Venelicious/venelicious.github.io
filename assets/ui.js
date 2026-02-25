@@ -2207,6 +2207,10 @@ function createStatsDashboard(totals, averageOrderValue, revenueTargetDelta){
       <span>Aktionsquote</span>
       <strong>${aktionsquote} %</strong>
     </article>
+    <article class="statsHighlightBubble">
+      <span>Umsatzvorgabe</span>
+      <strong>${Number(revenueTargetDelta?.target || 0).toFixed(2).replace('.', ',')} €</strong>
+    </article>
     <article class="statsHighlightBubble statsRevenueTarget ${revenueTargetInfo.className}">
       <span>Tagesumsatz - Vorgabe</span>
       <strong>${revenueTargetInfo.valueText}</strong>
