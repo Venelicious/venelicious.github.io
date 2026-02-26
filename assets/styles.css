@@ -534,7 +534,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 
 .statsMetricRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(6ch, 7ch);
+  grid-template-columns: minmax(0, 1fr) minmax(3ch, max-content) minmax(6ch, 7ch);
   gap: 8px;
   align-items: center;
   padding: 7px 0;
@@ -548,6 +548,8 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   color: #0b4aa3;
   font-weight: 700;
   text-align: right;
+  justify-self: end;
+  min-width: 3ch;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
