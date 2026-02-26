@@ -504,6 +504,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: nowrap;
   gap: 8px;
   padding: 10px 12px;
   border-bottom: 1px solid rgba(20, 115, 209, 0.15);
@@ -517,10 +518,14 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 
 .statsCardTotal {
   display: inline-flex;
+  flex-shrink: 0;
   padding: 4px 8px;
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.9rem;
+  line-height: 1;
+  white-space: nowrap;
+  word-break: keep-all;
   background: rgba(20, 115, 209, 0.14);
   color: #0f4da6;
 }
