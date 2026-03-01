@@ -2287,6 +2287,7 @@ function createStatsDashboard(totals, averageOrderValue, revenueTargetModel){
     ], 'statsCard--warning'),
   );
 
+  const verkaufteAktionen = formatStatsCount(totals.verkaufteAktionen);
   const aktionsquote = calculateActionRatePercent(totals.verkaufteAktionen, totals.kundenAnzahl);
 
   const highlightMetrics = document.createElement('div');
@@ -2307,7 +2308,7 @@ function createStatsDashboard(totals, averageOrderValue, revenueTargetModel){
     </article>
     <article class="statsHighlightBubble">
       <span>Aktionsquote</span>
-      <strong>${aktionsquote} %</strong>
+      <strong>${verkaufteAktionen} (${aktionsquote} %)</strong>
     </article>
   `;
   dashboard.appendChild(highlightMetrics);
