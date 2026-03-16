@@ -1766,6 +1766,15 @@ const MAX_DAILY_WORK_MINUTES = 10 * 60;
 const MIN_REST_MINUTES = 11 * 60;
 
 function computeWorktimeForTour(tour){
+  if(tour?.tourType === 'krank' || tour?.tourType === 'urlaub'){
+    return {
+      workMinutes: REGULAR_WORK_MINUTES,
+      fieldMinutes: 0,
+      breakMinutes: 0,
+      overtimeMinutes: 0
+    };
+  }
+
   const workStart = parseTimeToMinutes(tour.workStart);
   const tourStart = parseTimeToMinutes(tour.tourStart);
   const tourEnd = parseTimeToMinutes(tour.tourEnd);
