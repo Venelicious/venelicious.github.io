@@ -1761,6 +1761,10 @@ function formatTimeForDisplay(value){
   return value ? value : '—';
 }
 
+const REGULAR_WORK_MINUTES = (7 * 60) + 42;
+const MAX_DAILY_WORK_MINUTES = 10 * 60;
+const MIN_REST_MINUTES = 11 * 60;
+
 function computeWorktimeForTour(tour){
   const workStart = parseTimeToMinutes(tour.workStart);
   const tourStart = parseTimeToMinutes(tour.tourStart);
@@ -1778,7 +1782,16 @@ function computeWorktimeForTour(tour){
     fieldMinutes = Math.max(0, tourEnd - tourStart);
   }
 
-  return { workMinutes, fieldMinutes, breakMinutes };
+  const overtimeMinutes = Math.max(0, workMinutes - REGULAR_WORK_MINUTES);
+  return { workMinutes, fieldMinutes, breakMinutes, overtimeMinutes };
+}
+
+function toTimestampFromDateAndMinutes(dateValue, minutes){
+  if(!dateValue || !Number.isFinite(minutes)) return null;
+  const parsedDate = new Date(`${dateValue}T00:00:00`);
+  if(Number.isNaN(parsedDate.getTime())) return null;
+  parsedDate.setMinutes(parsedDate.getMinutes() + minutes);
+  return parsedDate.getTime();
 }
 
 function renderWorktime(tours){
@@ -1793,15 +1806,47 @@ function renderWorktime(tours){
   let totalWorkMinutes = 0;
   let totalFieldMinutes = 0;
   let totalBreakMinutes = 0;
+  let totalOvertimeMinutes = 0;
+
+  const restViolationByTourKey = new Set();
+  const toursByDateAsc = [...tours].sort((a, b)=> (a?.date || '').localeCompare(b?.date || ''));
+  let previousDayEndTimestamp = null;
+
+  toursByDateAsc.forEach((tour)=>{
+    const workStart = parseTimeToMinutes(tour.workStart);
+    const workEnd = parseTimeToMinutes(tour.workEnd);
+
+    const startTimestamp = toTimestampFromDateAndMinutes(tour.date, workStart);
+    const endTimestamp = toTimestampFromDateAndMinutes(tour.date, workEnd);
+
+    if(startTimestamp !== null && previousDayEndTimestamp !== null){
+      const restMinutes = Math.floor((startTimestamp - previousDayEndTimestamp) / 60000);
+      if(restMinutes < MIN_REST_MINUTES){
+        restViolationByTourKey.add(`${tour.date || ''}__${tour.id || ''}`);
+      }
+    }
+
+    if(startTimestamp !== null && endTimestamp !== null && endTimestamp > startTimestamp){
+      previousDayEndTimestamp = endTimestamp;
+    }
+  });
 
   sortedTours.forEach((tour) => {
     const metrics = computeWorktimeForTour(tour);
     totalWorkMinutes += metrics.workMinutes;
     totalFieldMinutes += metrics.fieldMinutes;
     totalBreakMinutes += metrics.breakMinutes;
+    totalOvertimeMinutes += metrics.overtimeMinutes;
+
+    const exceedsDailyMax = metrics.workMinutes > MAX_DAILY_WORK_MINUTES;
+    const tourKey = `${tour.date || ''}__${tour.id || ''}`;
+    const violatesRestTime = restViolationByTourKey.has(tourKey);
 
     const card = document.createElement('details');
     card.className = 'tour-bubble-card';
+    if(exceedsDailyMax || violatesRestTime){
+      card.classList.add('tour-bubble-card--warning');
+    }
 
     const summary = document.createElement('summary');
     summary.className = 'tour-bubble-summary';
@@ -1812,7 +1857,12 @@ function renderWorktime(tours){
     const dateLabel = tour.date ? new Date(tour.date).toLocaleDateString('de-DE') : 'Kein Datum';
     const title = document.createElement('div');
     title.className = 'tour-bubble-title';
-    title.textContent = `${dateLabel} · ${tour.id || '—'}`;
+    const markers = [];
+    if(exceedsDailyMax) markers.push('⛔ >10h');
+    if(violatesRestTime) markers.push('🌙 <11h Ruhezeit');
+    title.textContent = markers.length
+      ? `${dateLabel} · ${tour.id || '—'} · ${markers.join(' · ')}`
+      : `${dateLabel} · ${tour.id || '—'}`;
 
     const totalBadge = document.createElement('span');
     totalBadge.className = 'tour-type-badge';
@@ -1830,11 +1880,21 @@ function renderWorktime(tours){
       `Tourenende: ${formatTimeForDisplay(tour.tourEnd)}`,
       `Arbeitszeitende: ${formatTimeForDisplay(tour.workEnd)}`,
       `Arbeitszeit (abzgl. Pause): ${minutesToHoursLabel(metrics.workMinutes)}`,
+      `Überstunden: ${minutesToHoursLabel(metrics.overtimeMinutes)}`,
       `Außendienstzeit: ${minutesToHoursLabel(metrics.fieldMinutes)}`
     ];
+    if(exceedsDailyMax){
+      lines.push('⛔ Hinweis: Reguläre Tageshöchstarbeitszeit von 10 Stunden überschritten.');
+    }
+    if(violatesRestTime){
+      lines.push('🌙 Hinweis: Ruhezeit unter 11 Stunden (Markierung am frühen Arbeitsbeginn).');
+    }
     lines.forEach((line) => {
       const lineEl = document.createElement('div');
       lineEl.className = 'tour-bubble-detail-line';
+      if(line.startsWith('⛔') || line.startsWith('🌙')){
+        lineEl.classList.add('tour-bubble-detail-line--warning');
+      }
       lineEl.textContent = line;
       body.appendChild(lineEl);
     });
@@ -1845,8 +1905,10 @@ function renderWorktime(tours){
 
   summaryEl.append(
     createSumRow('❯ Arbeitszeit gesamt (abzgl. Pausen)', minutesToHoursLabel(totalWorkMinutes)),
+    createSumRow('❯ Überstunden gesamt', minutesToHoursLabel(totalOvertimeMinutes)),
     createSumRow('❯ Außendienstzeit gesamt', minutesToHoursLabel(totalFieldMinutes)),
-    createSumRow('❯ Pausen gesamt', `${totalBreakMinutes} Min`)
+    createSumRow('❯ Pausen gesamt', `${totalBreakMinutes} Min`),
+    createSumRow('❯ Markierungen', '⛔ Tageszeit > 10h · 🌙 Ruhezeit < 11h')
   );
 }
 
