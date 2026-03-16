@@ -1870,8 +1870,8 @@ function renderWorktime(tours){
     const title = document.createElement('div');
     title.className = 'tour-bubble-title';
     const markers = [];
-    if(exceedsDailyMax) markers.push('⛔ >10h');
-    if(violatesRestTime) markers.push('🌙 <11h Ruhezeit');
+    if(exceedsDailyMax) markers.push('⛔');
+    if(violatesRestTime) markers.push('🌙');
     title.textContent = markers.length
       ? `${dateLabel} · ${tour.id || '—'} · ${markers.join(' · ')}`
       : `${dateLabel} · ${tour.id || '—'}`;
@@ -1919,8 +1919,7 @@ function renderWorktime(tours){
     createSumRow('❯ Arbeitszeit gesamt (abzgl. Pausen)', minutesToHoursLabel(totalWorkMinutes)),
     createSumRow('❯ Überstunden gesamt', minutesToHoursLabel(totalOvertimeMinutes)),
     createSumRow('❯ Außendienstzeit gesamt', minutesToHoursLabel(totalFieldMinutes)),
-    createSumRow('❯ Pausen gesamt', `${totalBreakMinutes} Min`),
-    createSumRow('❯ Markierungen', '⛔ Tageszeit > 10h · 🌙 Ruhezeit < 11h')
+    createSumRow('❯ Pausen gesamt', `${totalBreakMinutes} Min`)
   );
 }
 
