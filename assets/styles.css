@@ -741,6 +741,11 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .tour-bubble-detail-line + .tour-bubble-detail-line { margin-top: 2px; }
 .tour-bubble-controls { margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px; }
 
+
+.tour-bubble-card--warning { border-color: #f1b9b9; box-shadow: 0 0 0 1px #ffd8d8 inset; }
+.tour-bubble-card--warning .tour-bubble-summary { background: #fff4f4; }
+.tour-bubble-detail-line--warning { color: #8b1d1d; font-weight: 600; }
+
 .tour-type-badge {
   display: inline-flex;
   align-items: center;
