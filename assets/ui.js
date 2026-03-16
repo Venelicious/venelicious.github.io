@@ -1753,8 +1753,11 @@ function parseTimeToMinutes(value){
 }
 
 function minutesToHoursLabel(minutes){
-  if(!Number.isFinite(minutes)) return '0,00 h';
-  return `${(minutes / 60).toFixed(2).replace('.', ',')} h`;
+  if(!Number.isFinite(minutes)) return '00:00 h';
+  const safeMinutes = Math.max(0, Math.round(minutes));
+  const hoursPart = Math.floor(safeMinutes / 60);
+  const minutesPart = safeMinutes % 60;
+  return `${String(hoursPart).padStart(2, '0')}:${String(minutesPart).padStart(2, '0')} h`;
 }
 
 function formatTimeForDisplay(value){
