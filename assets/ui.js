@@ -146,6 +146,11 @@ function normalizeTourRecord(tour = {}){
   normalized.actions = normalizeActionsValue(normalized.actions);
   normalized.vertretung = !!normalized.vertretung;
   normalized.fahrt45 = !!normalized.fahrt45;
+  normalized.workStart = normalized.workStart ? String(normalized.workStart) : '';
+  normalized.tourStart = normalized.tourStart ? String(normalized.tourStart) : '';
+  normalized.tourEnd = normalized.tourEnd ? String(normalized.tourEnd) : '';
+  normalized.workEnd = normalized.workEnd ? String(normalized.workEnd) : '';
+  normalized.breakMinutes = Number.isFinite(Number(normalized.breakMinutes)) ? Number(normalized.breakMinutes) : 45;
 
   return normalized;
 }
@@ -177,11 +182,12 @@ const NAVIGATION_STRUCTURE = [
   { index: 1, tabId: 'tabNewTour', sectionId: 'sectionNewTour', label: 'Neue Tour' },
   { index: 2, tabId: 'tabTours', sectionId: 'sectionTours', label: 'Touren' },
   { index: 3, tabId: 'tabSummary', sectionId: 'sectionSummary', label: 'Übersicht' },
-  { index: 4, tabId: 'tabStats', sectionId: 'sectionStats', label: 'Statistik' },
-  { index: 5, tabId: 'tabCustomers', sectionId: 'sectionCustomers', label: 'Kunden' },
-  { index: 6, tabId: 'tabSettings', sectionId: 'sectionSettings', label: 'Einstellungen' },
-  { index: 7, tabId: 'tabBackups', sectionId: 'sectionBackups', label: 'Backups' },
-  { index: 8, tabId: 'tabExport', sectionId: 'sectionExport', label: 'Export' }
+  { index: 4, tabId: 'tabWorktime', sectionId: 'sectionWorktime', label: 'Arbeitszeit' },
+  { index: 5, tabId: 'tabStats', sectionId: 'sectionStats', label: 'Statistik' },
+  { index: 6, tabId: 'tabCustomers', sectionId: 'sectionCustomers', label: 'Kunden' },
+  { index: 7, tabId: 'tabSettings', sectionId: 'sectionSettings', label: 'Einstellungen' },
+  { index: 8, tabId: 'tabBackups', sectionId: 'sectionBackups', label: 'Backups' },
+  { index: 9, tabId: 'tabExport', sectionId: 'sectionExport', label: 'Export' }
 ];
 
 const tabTargets = Object.fromEntries(NAVIGATION_STRUCTURE.map(item => [item.tabId, item.sectionId]));
@@ -212,7 +218,7 @@ function renderSideMenuNavigation(){
 
 function handleNavigationShortcuts(event){
   if(!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-  if(!/^Digit[1-8]$/.test(event.code)) return;
+  if(!/^Digit[1-9]$/.test(event.code)) return;
   const pressedIndex = Number(event.code.replace('Digit', ''));
   const target = NAVIGATION_STRUCTURE.find(item => item.index === pressedIndex);
   if(!target) return;
@@ -1271,7 +1277,7 @@ bindById('exportCsv', 'click', async ()=>{
   const totalNKThisMonth = monthTours.reduce((s,t)=> s + Number(t.newC || 0), 0);
   const nkRate = getNeukundenRate(totalNKThisMonth, conf); // € pro NK
 
-  let csv = 'Datum;Tour;Art;Umsatz;Umsatzvorgabe;Reklamation;Gutscheine;Neukunden;Neukunden€;Integrationen;Integr€;AktionsJSON;AktStk;AktEuro;Vertretung;Fahrt45;Period;PAPROV;Notiz\n';
+  let csv = 'Datum;Tour;Art;Umsatz;Umsatzvorgabe;Reklamation;Gutscheine;Neukunden;Neukunden€;Integrationen;Integr€;AktionsJSON;AktStk;AktEuro;Vertretung;Fahrt45;Arbeitszeitbeginn;Tourenstart;PauseMinuten;Tourenende;Arbeitszeitende;Period;PAPROV;Notiz\n';
   monthTours.forEach(t=>{
     const baseCents = toCents(t.amount || 0);
     const reklCents = toCents(t.reklamation || 0);
@@ -1283,7 +1289,7 @@ bindById('exportCsv', 'click', async ()=>{
     const actionsPiece = (t.actions && t.actions.length) ? t.actions.reduce((s,a)=>s+Number(a.qty||0),0) : 0;
     const paprovVal = (t.tourType !== 'tourentag' && conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? conf.paprovPerMonth[t.period] : 0;
     const actionsJson = JSON.stringify(t.actions || []);
-    csv += `${t.date};${t.id};${t.tourType};${fromCents(totCents)};${getRevenueTargetValue(t).toFixed(2)};${fromCents(reklCents)};${fromCents(gutsCents)};${t.newC||0};${fromCents(nk)};${t.integrations||0};${fromCents(ip)};"${actionsJson.replace(/"/g,'""')}";${actionsPiece};${actionsSum.toFixed(2)};${t.vertretung?"JA":"NEIN"};${t.fahrt45?"JA":"NEIN"};${t.period};${paprovVal.toFixed(2)};"${(t.note||'').replace(/"/g,'""')}"\n`;
+    csv += `${t.date};${t.id};${t.tourType};${fromCents(totCents)};${getRevenueTargetValue(t).toFixed(2)};${fromCents(reklCents)};${fromCents(gutsCents)};${t.newC||0};${fromCents(nk)};${t.integrations||0};${fromCents(ip)};"${actionsJson.replace(/"/g,'""')}";${actionsPiece};${actionsSum.toFixed(2)};${t.vertretung?"JA":"NEIN"};${t.fahrt45?"JA":"NEIN"};${t.workStart||''};${t.tourStart||''};${Number(t.breakMinutes ?? 45)};${t.tourEnd||''};${t.workEnd||''};${t.period};${paprovVal.toFixed(2)};"${(t.note||'').replace(/"/g,'""')}"\n`;
   });
   const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -1299,7 +1305,7 @@ csvInput.addEventListener('change', async (ev) => {
   if(rows.length < 2){ alert('Keine Daten gefunden'); return; }
   const header = rows[0].split(';').map(h=>h.trim());
   const col = name => header.indexOf(name);
-  const idx = { date: col("Datum"), id: col("Tour"), art: col("Art"), umsatz: col("Umsatz"), umsatzvorgabe: col("Umsatzvorgabe"), rekl: col("Reklamation"), guts: col("Gutscheine"), nk: col("Neukunden"), integ: col("Integrationen"), actions: col("AktionsJSON"), vert: col("Vertretung"), f45: col("Fahrt45"), per: col("Period"), note: col("Notiz") };
+  const idx = { date: col("Datum"), id: col("Tour"), art: col("Art"), umsatz: col("Umsatz"), umsatzvorgabe: col("Umsatzvorgabe"), rekl: col("Reklamation"), guts: col("Gutscheine"), nk: col("Neukunden"), integ: col("Integrationen"), actions: col("AktionsJSON"), vert: col("Vertretung"), f45: col("Fahrt45"), workStart: col("Arbeitszeitbeginn"), tourStart: col("Tourenstart"), breakMinutes: col("PauseMinuten"), tourEnd: col("Tourenende"), workEnd: col("Arbeitszeitende"), per: col("Period"), note: col("Notiz") };
   for(let i=1;i<rows.length;i++){
     const parts = rows[i].split(';');
     if(parts.length < 2) continue;
@@ -1331,6 +1337,11 @@ csvInput.addEventListener('change', async (ev) => {
       actions: actions,
       vertretung: (parts[idx.vert] || '').toUpperCase() === 'JA',
       fahrt45: (parts[idx.f45] || '').toUpperCase() === 'JA',
+      workStart: idx.workStart >= 0 ? (parts[idx.workStart] || '') : '',
+      tourStart: idx.tourStart >= 0 ? (parts[idx.tourStart] || '') : '',
+      breakMinutes: idx.breakMinutes >= 0 ? Number(parts[idx.breakMinutes] || 45) : 45,
+      tourEnd: idx.tourEnd >= 0 ? (parts[idx.tourEnd] || '') : '',
+      workEnd: idx.workEnd >= 0 ? (parts[idx.workEnd] || '') : '',
       period: parts[idx.per] || `${selectYear.value}-${selectMonth.value}`,
       note: parts[idx.note] || ''
     };
@@ -1380,6 +1391,11 @@ bindById('addBtn', 'click', async ()=>{
     vertretung: document.getElementById('vertretung').checked,
     fahrt45: document.getElementById('fahrt45').checked,
     note: document.getElementById('note').value || '',
+    workStart: document.getElementById('workStart').value || '',
+    tourStart: document.getElementById('tourStart').value || '',
+    breakMinutes: Number(document.getElementById('breakMinutes').value || 45),
+    tourEnd: document.getElementById('tourEnd').value || '',
+    workEnd: document.getElementById('workEnd').value || '',
     actions: Array.from(document.querySelectorAll('#actionsList .action-row')).map(r=>({ price: Number(r.querySelector('.actPrice').value||0), qty: Number(r.querySelector('.actQty').value||0) })).filter(a=>a.price>0 && a.qty>0),
     period: `${year}-${month}`
   };
@@ -1395,6 +1411,7 @@ bindById('addBtn', 'click', async ()=>{
   document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
   document.getElementById('threeCustomersKb').value=0; document.getElementById('threeCustomersCancelled').value=0; document.getElementById('threeCustomersPreordered').value=0;
   document.getElementById('note').value=''; renderActionsList([]);
+  document.getElementById('workStart').value=''; document.getElementById('tourStart').value=''; document.getElementById('breakMinutes').value=45; document.getElementById('tourEnd').value=''; document.getElementById('workEnd').value='';
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
   await renderTours();
   await triggerAutoBackup('tour_added');
@@ -1413,6 +1430,7 @@ bindById('clearBtn', 'click', ()=>{
   document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
   document.getElementById('threeCustomersKb').value=0; document.getElementById('threeCustomersCancelled').value=0; document.getElementById('threeCustomersPreordered').value=0;
   document.getElementById('note').value=''; renderActionsList([]);
+  document.getElementById('workStart').value=''; document.getElementById('tourStart').value=''; document.getElementById('breakMinutes').value=45; document.getElementById('tourEnd').value=''; document.getElementById('workEnd').value='';
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
 });
 
@@ -1721,6 +1739,115 @@ function mapTourTypeClass(type){
     urlaub: 'tour-type-urlaub'
   };
   return classes[type] || 'tour-type-tourentag';
+}
+
+function parseTimeToMinutes(value){
+  const raw = String(value || '').trim();
+  const m = raw.match(/^(\d{1,2}):(\d{2})$/);
+  if(!m) return null;
+  const hours = Number(m[1]);
+  const minutes = Number(m[2]);
+  if(!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  if(hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function minutesToHoursLabel(minutes){
+  if(!Number.isFinite(minutes)) return '0,00 h';
+  return `${(minutes / 60).toFixed(2).replace('.', ',')} h`;
+}
+
+function formatTimeForDisplay(value){
+  return value ? value : '—';
+}
+
+function computeWorktimeForTour(tour){
+  const workStart = parseTimeToMinutes(tour.workStart);
+  const tourStart = parseTimeToMinutes(tour.tourStart);
+  const tourEnd = parseTimeToMinutes(tour.tourEnd);
+  const workEnd = parseTimeToMinutes(tour.workEnd);
+  const breakMinutes = Math.max(0, Number(tour.breakMinutes || 0));
+
+  let workMinutes = 0;
+  if(workStart !== null && workEnd !== null && workEnd > workStart){
+    workMinutes = Math.max(0, workEnd - workStart - breakMinutes);
+  }
+
+  let fieldMinutes = 0;
+  if(tourStart !== null && tourEnd !== null && tourEnd > tourStart){
+    fieldMinutes = Math.max(0, tourEnd - tourStart);
+  }
+
+  return { workMinutes, fieldMinutes, breakMinutes };
+}
+
+function renderWorktime(tours){
+  const summaryEl = document.getElementById('worktimeSummary');
+  const listEl = document.getElementById('worktimeBubbleList');
+  if(!summaryEl || !listEl) return;
+
+  summaryEl.innerHTML = '';
+  listEl.innerHTML = '';
+
+  const sortedTours = [...tours].sort(compareToursByDateDesc);
+  let totalWorkMinutes = 0;
+  let totalFieldMinutes = 0;
+  let totalBreakMinutes = 0;
+
+  sortedTours.forEach((tour) => {
+    const metrics = computeWorktimeForTour(tour);
+    totalWorkMinutes += metrics.workMinutes;
+    totalFieldMinutes += metrics.fieldMinutes;
+    totalBreakMinutes += metrics.breakMinutes;
+
+    const card = document.createElement('details');
+    card.className = 'tour-bubble-card';
+
+    const summary = document.createElement('summary');
+    summary.className = 'tour-bubble-summary';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'tour-bubble-top-row';
+
+    const dateLabel = tour.date ? new Date(tour.date).toLocaleDateString('de-DE') : 'Kein Datum';
+    const title = document.createElement('div');
+    title.className = 'tour-bubble-title';
+    title.textContent = `${dateLabel} · ${tour.id || '—'}`;
+
+    const totalBadge = document.createElement('span');
+    totalBadge.className = 'tour-type-badge';
+    totalBadge.textContent = minutesToHoursLabel(metrics.workMinutes);
+
+    topRow.append(title, totalBadge);
+    summary.appendChild(topRow);
+
+    const body = document.createElement('div');
+    body.className = 'tour-bubble-body';
+    const lines = [
+      `Arbeitszeitbeginn: ${formatTimeForDisplay(tour.workStart)}`,
+      `Tourenstart: ${formatTimeForDisplay(tour.tourStart)}`,
+      `Pause: ${metrics.breakMinutes} Min`,
+      `Tourenende: ${formatTimeForDisplay(tour.tourEnd)}`,
+      `Arbeitszeitende: ${formatTimeForDisplay(tour.workEnd)}`,
+      `Arbeitszeit (abzgl. Pause): ${minutesToHoursLabel(metrics.workMinutes)}`,
+      `Außendienstzeit: ${minutesToHoursLabel(metrics.fieldMinutes)}`
+    ];
+    lines.forEach((line) => {
+      const lineEl = document.createElement('div');
+      lineEl.className = 'tour-bubble-detail-line';
+      lineEl.textContent = line;
+      body.appendChild(lineEl);
+    });
+
+    card.append(summary, body);
+    listEl.appendChild(card);
+  });
+
+  summaryEl.append(
+    createSumRow('❯ Arbeitszeit gesamt (abzgl. Pausen)', minutesToHoursLabel(totalWorkMinutes)),
+    createSumRow('❯ Außendienstzeit gesamt', minutesToHoursLabel(totalFieldMinutes)),
+    createSumRow('❯ Pausen gesamt', `${totalBreakMinutes} Min`)
+  );
 }
 
 /* ========== Render Tours + Summary (mit Sortierung) ========== */
@@ -2035,6 +2162,7 @@ async function renderTours(){
   );
 
   renderStatsSummary(tours);
+  renderWorktime(tours);
 }
 
 
@@ -2844,6 +2972,11 @@ function openEditModalFor(entry, key){
   document.getElementById('editFahrt45').checked = !!entry.fahrt45;
   document.getElementById('editActionsDetail').value = (entry.actions && entry.actions.length) ? JSON.stringify(entry.actions) : '';
   document.getElementById('editNote').value = entry.note || '';
+  document.getElementById('editWorkStart').value = entry.workStart || '';
+  document.getElementById('editTourStart').value = entry.tourStart || '';
+  document.getElementById('editBreakMinutes').value = Number(entry.breakMinutes ?? 45);
+  document.getElementById('editTourEnd').value = entry.tourEnd || '';
+  document.getElementById('editWorkEnd').value = entry.workEnd || '';
   document.getElementById('editModal').classList.add('active');
 }
 bindById('cancelEdit', 'click', ()=> { document.getElementById('editModal').classList.remove('active'); currentEditingKey = null; });
@@ -2889,6 +3022,11 @@ bindById('saveEdit', 'click', async ()=>{
   t.vertretung = document.getElementById('editVertretung').checked;
   t.fahrt45 = document.getElementById('editFahrt45').checked;
   t.note = document.getElementById('editNote').value || '';
+  t.workStart = document.getElementById('editWorkStart').value || '';
+  t.tourStart = document.getElementById('editTourStart').value || '';
+  t.breakMinutes = Number(document.getElementById('editBreakMinutes').value || 45);
+  t.tourEnd = document.getElementById('editTourEnd').value || '';
+  t.workEnd = document.getElementById('editWorkEnd').value || '';
   const ad = document.getElementById('editActionsDetail').value || '';
   let actions = [];
   if(ad.trim() !== ''){
