@@ -92,6 +92,7 @@
     <button type="button" id="tabNewTour" class="tabButton" data-section-id="sectionNewTour">Neue Tour</button>
     <button type="button" id="tabTours" class="tabButton" data-section-id="sectionTours">Touren</button>
     <button type="button" id="tabSummary" class="tabButton" data-section-id="sectionSummary">Übersicht</button>
+    <button type="button" id="tabWorktime" class="tabButton" data-section-id="sectionWorktime">Arbeitszeit</button>
     <button type="button" id="tabStats" class="tabButton" data-section-id="sectionStats">Statistik</button>
     <button type="button" id="tabCustomers" class="tabButton" data-section-id="sectionCustomers">Kunden</button>
     <button type="button" id="tabSettings" class="tabButton" data-section-id="sectionSettings">Einstellungen</button>
@@ -229,10 +230,51 @@
       <input id="note" placeholder="z.B. Neukunde, Aktion, Besonderheit"/>
     </label>
 
+    <div class="entry-grid" style="margin-top:12px">
+      <section class="entry-block">
+        <h4>Arbeitszeit</h4>
+        <div class="row">
+          <label>Arbeitszeitbeginn
+            <input id="workStart" type="time"/>
+          </label>
+          <label>Tourenstart
+            <input id="tourStart" type="time"/>
+          </label>
+        </div>
+        <div class="row">
+          <label>Pause (Minuten)
+            <input id="breakMinutes" type="number" min="0" step="1" value="45"/>
+          </label>
+          <label>Tourenende
+            <input id="tourEnd" type="time"/>
+          </label>
+        </div>
+        <div class="row">
+          <label>Arbeitszeitende
+            <input id="workEnd" type="time"/>
+          </label>
+          <div></div>
+        </div>
+      </section>
+    </div>
+
     <div class="controls">
       <button id="addBtn" class="small" aria-label="Tour speichern" title="Tour speichern">💾</button>
       <button id="clearBtn" class="small" aria-label="Formular leeren" title="Formular leeren">🧹</button>
     </div>
+  </div>
+</section>
+
+<section id="sectionWorktime" class="tabSection">
+  <div class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3>Arbeitszeit</h3>
+        <p class="muted">Monatsübersicht mit Arbeits-, Touren- und Pausenzeiten.</p>
+      </div>
+    </div>
+    <div id="worktimeSummary" class="summary" style="margin-bottom:12px"></div>
+    <div id="worktimeBubbleList" class="tours-bubble-list"></div>
   </div>
 </section>
 
@@ -732,6 +774,20 @@
     </label>
 
     <label>Notiz<input type="text" id="editNote"/></label>
+
+    <h4 style="margin-top:12px">Arbeitszeit</h4>
+    <div class="row">
+      <label>Arbeitszeitbeginn<input type="time" id="editWorkStart"/></label>
+      <label>Tourenstart<input type="time" id="editTourStart"/></label>
+    </div>
+    <div class="row">
+      <label>Pause (Minuten)<input type="number" id="editBreakMinutes" min="0" step="1" value="45"/></label>
+      <label>Tourenende<input type="time" id="editTourEnd"/></label>
+    </div>
+    <div class="row">
+      <label>Arbeitszeitende<input type="time" id="editWorkEnd"/></label>
+      <div></div>
+    </div>
 
     <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
       <button id="cancelEdit" class="small">Abbrechen</button>
