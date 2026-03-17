@@ -167,7 +167,10 @@
           <label>Absage<input id="tourdayCancelled" type="number" step="1" min="0" value="0"/></label>
           <label>Reservierung<input id="tourdayReserved" type="number" step="1" min="0" value="0"/></label>
         </div>
-        <p class="entry-block-hint" style="margin-top:8px;">Nachbearbeitung</p>
+      </section>
+
+      <section class="entry-block compact-entry-block">
+        <h4>Nachbearbeitung</h4>
         <div class="compact-metrics-row compact-metrics-row--five">
           <label>Vortag NE<input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
           <label>Kauf<input id="prevDayBought" type="number" step="1" min="0" value="0"/></label>
@@ -714,7 +717,10 @@
           <label>Absage<input id="tourdayCancelled" type="number" step="1" min="0" value="0"/></label>
           <label>Reservierung<input id="tourdayReserved" type="number" step="1" min="0" value="0"/></label>
         </div>
-        <p class="entry-block-hint" style="margin-top:8px;">Nachbearbeitung</p>
+      </section>
+
+      <section class="entry-block compact-entry-block">
+        <h4>Nachbearbeitung</h4>
         <div class="compact-metrics-row compact-metrics-row--five">
           <label>Vortag NE<input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
           <label>Kauf<input id="prevDayBought" type="number" step="1" min="0" value="0"/></label>
