@@ -158,18 +158,6 @@
       </section>
 
       <section class="entry-block compact-entry-block">
-        <h4>Integrationen</h4>
-        <div class="compact-metrics-row">
-          <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
-          <label>NE<input id="integrationUnreachable" type="number" step="1" min="0" value="0"/></label>
-          <label>KB<input id="integrationNoNeed" type="number" step="1" min="0" value="0"/></label>
-          <label>Absage<input id="integrationCancelled" type="number" step="1" min="0" value="0"/></label>
-          <label>Vorbestellt<input id="integrationPreordered" type="number" step="1" min="0" value="0"/></label>
-        </div>
-      </section>
-
-      <section class="entry-block compact-entry-block">
         <h4>Tourentag</h4>
         <div class="compact-metrics-row">
           <label>Anzahl<input id="schooldayCustomers" type="number" step="1" min="0" value="0"/></label>
@@ -187,7 +175,19 @@
           <label>KB<input id="prevDayKb" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
-
+      
+      <section class="entry-block compact-entry-block">
+        <h4>Integrationen</h4>
+        <div class="compact-metrics-row">
+          <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="integrationUnreachable" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="integrationNoNeed" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="integrationCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Vorbestellt<input id="integrationPreordered" type="number" step="1" min="0" value="0"/></label>
+        </div>
+      </section>
+      
       <section class="entry-block compact-entry-block">
         <h4>D3</h4>
         <div class="compact-metrics-row">
@@ -705,18 +705,6 @@
       </section>
 
       <section class="entry-block compact-entry-block">
-        <h4>Integrationen</h4>
-        <div class="compact-metrics-row">
-          <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
-          <label>NE<input id="integrationUnreachable" type="number" step="1" min="0" value="0"/></label>
-          <label>KB<input id="integrationNoNeed" type="number" step="1" min="0" value="0"/></label>
-          <label>Absage<input id="integrationCancelled" type="number" step="1" min="0" value="0"/></label>
-          <label>Vorbestellt<input id="integrationPreordered" type="number" step="1" min="0" value="0"/></label>
-        </div>
-      </section>
-
-      <section class="entry-block compact-entry-block">
         <h4>Tourentag</h4>
         <div class="compact-metrics-row">
           <label>Anzahl<input id="schooldayCustomers" type="number" step="1" min="0" value="0"/></label>
@@ -734,7 +722,19 @@
           <label>KB<input id="prevDayKb" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
-
+      
+      <section class="entry-block compact-entry-block">
+        <h4>Integrationen</h4>
+        <div class="compact-metrics-row">
+          <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="integrationUnreachable" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="integrationNoNeed" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="integrationCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Vorbestellt<input id="integrationPreordered" type="number" step="1" min="0" value="0"/></label>
+        </div>
+      </section>
+      
       <section class="entry-block compact-entry-block">
         <h4>D3</h4>
         <div class="compact-metrics-row">
