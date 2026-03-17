@@ -3009,47 +3009,72 @@ function renderStatsSummary(tours){
 
 /* ========== Edit-Modal ========== */
 let currentEditingKey = null;
+
+function getEditElement(id){
+  const direct = document.getElementById(id);
+  if(direct) return direct;
+  const fallbackId = id.replace(/^edit([A-Z])/, (_, first)=> first.toLowerCase());
+  return document.getElementById(fallbackId);
+}
+
+function setEditValue(id, value){
+  const el = getEditElement(id);
+  if(el) el.value = value;
+}
+
+function getEditValue(id, fallback = ''){
+  const el = getEditElement(id);
+  return el ? el.value : fallback;
+}
+
+function getEditChecked(id){
+  const el = getEditElement(id);
+  return !!el?.checked;
+}
+
 function openEditModalFor(entry, key){
   currentEditingKey = key;
-  document.getElementById('editId').value = entry.id || '';
-  document.getElementById('editDate').value = entry.date || '';
-  document.getElementById('editTourType').value = entry.tourType || 'tourentag';
-  document.getElementById('editAmount').value = entry.amount || 0;
-  document.getElementById('editUmsatzvorgabe').value = normalizeRevenueTargetField(entry);
-  document.getElementById('editReklamation').value = entry.reklamation || 0;
-  document.getElementById('editGutscheine').value = entry.gutscheine || 0;
-  document.getElementById('editNewC').value = entry.newC || 0;
-  document.getElementById('editIntegrations').value = entry.integrations || 0;
-  document.getElementById('editSchooldayCustomers').value = entry.schooldayCustomers || 0;
-  document.getElementById('editPrevDayUnreachable').value = entry.prevDayUnreachable || 0;
-  document.getElementById('editPrevDayBought').value = entry.prevDayBought || 0;
-  document.getElementById('editPrevDayNi').value = entry.prevDayNi || 0;
-  document.getElementById('editPrevDayKb').value = entry.prevDayKb || 0;
-  document.getElementById('editBuyingCustomers').value = entry.buyingCustomers || 0;
-  document.getElementById('editTourdayNi').value = entry.tourdayNi || 0;
-  document.getElementById('editTourdayKb').value = entry.tourdayKb || 0;
-  document.getElementById('editTourdayCancelled').value = entry.tourdayCancelled || 0;
-  document.getElementById('editTourdayReserved').value = entry.tourdayReserved || 0;
-  document.getElementById('editIntegrationBought').value = entry.integrationBought || 0;
-  document.getElementById('editIntegrationUnreachable').value = entry.integrationUnreachable || 0;
-  document.getElementById('editIntegrationNoNeed').value = entry.integrationNoNeed || 0;
-  document.getElementById('editIntegrationCancelled').value = entry.integrationCancelled || 0;
-  document.getElementById('editIntegrationPreordered').value = entry.integrationPreordered || 0;
-  document.getElementById('editThreeCustomersTotal').value = entry.threeCustomersTotal || 0;
-  document.getElementById('editThreeCustomersBought').value = entry.threeCustomersBought || 0;
-  document.getElementById('editThreeCustomersNi').value = entry.threeCustomersNi || 0;
-  document.getElementById('editThreeCustomersKb').value = entry.threeCustomersKb || 0;
-  document.getElementById('editThreeCustomersCancelled').value = entry.threeCustomersCancelled || 0;
-  document.getElementById('editThreeCustomersPreordered').value = entry.threeCustomersPreordered || 0;
-  document.getElementById('editVertretung').checked = !!entry.vertretung;
-  document.getElementById('editFahrt45').checked = !!entry.fahrt45;
-  document.getElementById('editActionsDetail').value = (entry.actions && entry.actions.length) ? JSON.stringify(entry.actions) : '';
-  document.getElementById('editNote').value = entry.note || '';
-  document.getElementById('editWorkStart').value = entry.workStart || '';
-  document.getElementById('editTourStart').value = entry.tourStart || '';
-  document.getElementById('editBreakMinutes').value = Number(entry.breakMinutes ?? 45);
-  document.getElementById('editTourEnd').value = entry.tourEnd || '';
-  document.getElementById('editWorkEnd').value = entry.workEnd || '';
+  setEditValue('editId', entry.id || '');
+  setEditValue('editDate', entry.date || '');
+  setEditValue('editTourType', entry.tourType || 'tourentag');
+  setEditValue('editAmount', entry.amount || 0);
+  setEditValue('editUmsatzvorgabe', normalizeRevenueTargetField(entry));
+  setEditValue('editReklamation', entry.reklamation || 0);
+  setEditValue('editGutscheine', entry.gutscheine || 0);
+  setEditValue('editNewC', entry.newC || 0);
+  setEditValue('editIntegrations', entry.integrations || 0);
+  setEditValue('editSchooldayCustomers', entry.schooldayCustomers || 0);
+  setEditValue('editPrevDayUnreachable', entry.prevDayUnreachable || 0);
+  setEditValue('editPrevDayBought', entry.prevDayBought || 0);
+  setEditValue('editPrevDayNi', entry.prevDayNi || 0);
+  setEditValue('editPrevDayKb', entry.prevDayKb || 0);
+  setEditValue('editBuyingCustomers', entry.buyingCustomers || 0);
+  setEditValue('editTourdayNi', entry.tourdayNi || 0);
+  setEditValue('editTourdayKb', entry.tourdayKb || 0);
+  setEditValue('editTourdayCancelled', entry.tourdayCancelled || 0);
+  setEditValue('editTourdayReserved', entry.tourdayReserved || 0);
+  setEditValue('editIntegrationBought', entry.integrationBought || 0);
+  setEditValue('editIntegrationUnreachable', entry.integrationUnreachable || 0);
+  setEditValue('editIntegrationNoNeed', entry.integrationNoNeed || 0);
+  setEditValue('editIntegrationCancelled', entry.integrationCancelled || 0);
+  setEditValue('editIntegrationPreordered', entry.integrationPreordered || 0);
+  setEditValue('editThreeCustomersTotal', entry.threeCustomersTotal || 0);
+  setEditValue('editThreeCustomersBought', entry.threeCustomersBought || 0);
+  setEditValue('editThreeCustomersNi', entry.threeCustomersNi || 0);
+  setEditValue('editThreeCustomersKb', entry.threeCustomersKb || 0);
+  setEditValue('editThreeCustomersCancelled', entry.threeCustomersCancelled || 0);
+  setEditValue('editThreeCustomersPreordered', entry.threeCustomersPreordered || 0);
+  const vertretungEl = getEditElement('editVertretung');
+  if(vertretungEl) vertretungEl.checked = !!entry.vertretung;
+  const fahrt45El = getEditElement('editFahrt45');
+  if(fahrt45El) fahrt45El.checked = !!entry.fahrt45;
+  setEditValue('editActionsDetail', (entry.actions && entry.actions.length) ? JSON.stringify(entry.actions) : '');
+  setEditValue('editNote', entry.note || '');
+  setEditValue('editWorkStart', entry.workStart || '');
+  setEditValue('editTourStart', entry.tourStart || '');
+  setEditValue('editBreakMinutes', Number(entry.breakMinutes ?? 45));
+  setEditValue('editTourEnd', entry.tourEnd || '');
+  setEditValue('editWorkEnd', entry.workEnd || '');
   document.getElementById('editModal').classList.add('active');
 }
 bindById('cancelEdit', 'click', ()=> { document.getElementById('editModal').classList.remove('active'); currentEditingKey = null; });
@@ -3059,9 +3084,9 @@ bindById('saveEdit', 'click', async ()=>{
   const idx = all.findIndex(x=> x.idAuto === currentEditingKey);
   if(idx === -1) return;
   const t = all[idx];
-  t.id = document.getElementById('editId').value || t.id;
-  t.date = document.getElementById('editDate').value || t.date;
-  t.tourType = document.getElementById('editTourType').value;
+  t.id = getEditValue('editId') || t.id;
+  t.date = getEditValue('editDate') || t.date;
+  t.tourType = getEditValue('editTourType');
   t.amount = readDecimalInput('editAmount');
   t.umsatzvorgabe = readDecimalInput('editUmsatzvorgabe');
   if(Object.prototype.hasOwnProperty.call(t, 'umsatzVorgabe')){
@@ -3071,36 +3096,36 @@ bindById('saveEdit', 'click', async ()=>{
   t.gutscheine = readDecimalInput('editGutscheine');
   t.newC = Number(document.getElementById('editNewC').value || 0);
   t.integrations = Number(document.getElementById('editIntegrations').value || 0);
-  t.schooldayCustomers = Number(document.getElementById('editSchooldayCustomers').value || 0);
-  t.prevDayUnreachable = Number(document.getElementById('editPrevDayUnreachable').value || 0);
-  t.prevDayBought = Number(document.getElementById('editPrevDayBought').value || 0);
-  t.prevDayNi = Number(document.getElementById('editPrevDayNi').value || 0);
-  t.prevDayKb = Number(document.getElementById('editPrevDayKb').value || 0);
-  t.buyingCustomers = Number(document.getElementById('editBuyingCustomers').value || 0);
-  t.tourdayNi = Number(document.getElementById('editTourdayNi').value || 0);
-  t.tourdayKb = Number(document.getElementById('editTourdayKb').value || 0);
-  t.tourdayCancelled = Number(document.getElementById('editTourdayCancelled').value || 0);
-  t.tourdayReserved = Number(document.getElementById('editTourdayReserved').value || 0);
-  t.integrationBought = Number(document.getElementById('editIntegrationBought').value || 0);
-  t.integrationUnreachable = Number(document.getElementById('editIntegrationUnreachable').value || 0);
-  t.integrationNoNeed = Number(document.getElementById('editIntegrationNoNeed').value || 0);
-  t.integrationCancelled = Number(document.getElementById('editIntegrationCancelled').value || 0);
-  t.integrationPreordered = Number(document.getElementById('editIntegrationPreordered').value || 0);
-  t.threeCustomersTotal = Number(document.getElementById('editThreeCustomersTotal').value || 0);
-  t.threeCustomersBought = Number(document.getElementById('editThreeCustomersBought').value || 0);
-  t.threeCustomersNi = Number(document.getElementById('editThreeCustomersNi').value || 0);
-  t.threeCustomersKb = Number(document.getElementById('editThreeCustomersKb').value || 0);
-  t.threeCustomersCancelled = Number(document.getElementById('editThreeCustomersCancelled').value || 0);
-  t.threeCustomersPreordered = Number(document.getElementById('editThreeCustomersPreordered').value || 0);
-  t.vertretung = document.getElementById('editVertretung').checked;
-  t.fahrt45 = document.getElementById('editFahrt45').checked;
-  t.note = document.getElementById('editNote').value || '';
-  t.workStart = document.getElementById('editWorkStart').value || '';
-  t.tourStart = document.getElementById('editTourStart').value || '';
-  t.breakMinutes = Number(document.getElementById('editBreakMinutes').value || 45);
-  t.tourEnd = document.getElementById('editTourEnd').value || '';
-  t.workEnd = document.getElementById('editWorkEnd').value || '';
-  const ad = document.getElementById('editActionsDetail').value || '';
+  t.schooldayCustomers = Number(getEditValue('editSchooldayCustomers', '0') || 0);
+  t.prevDayUnreachable = Number(getEditValue('editPrevDayUnreachable', '0') || 0);
+  t.prevDayBought = Number(getEditValue('editPrevDayBought', '0') || 0);
+  t.prevDayNi = Number(getEditValue('editPrevDayNi', '0') || 0);
+  t.prevDayKb = Number(getEditValue('editPrevDayKb', '0') || 0);
+  t.buyingCustomers = Number(getEditValue('editBuyingCustomers', '0') || 0);
+  t.tourdayNi = Number(getEditValue('editTourdayNi', '0') || 0);
+  t.tourdayKb = Number(getEditValue('editTourdayKb', '0') || 0);
+  t.tourdayCancelled = Number(getEditValue('editTourdayCancelled', '0') || 0);
+  t.tourdayReserved = Number(getEditValue('editTourdayReserved', '0') || 0);
+  t.integrationBought = Number(getEditValue('editIntegrationBought', '0') || 0);
+  t.integrationUnreachable = Number(getEditValue('editIntegrationUnreachable', '0') || 0);
+  t.integrationNoNeed = Number(getEditValue('editIntegrationNoNeed', '0') || 0);
+  t.integrationCancelled = Number(getEditValue('editIntegrationCancelled', '0') || 0);
+  t.integrationPreordered = Number(getEditValue('editIntegrationPreordered', '0') || 0);
+  t.threeCustomersTotal = Number(getEditValue('editThreeCustomersTotal', '0') || 0);
+  t.threeCustomersBought = Number(getEditValue('editThreeCustomersBought', '0') || 0);
+  t.threeCustomersNi = Number(getEditValue('editThreeCustomersNi', '0') || 0);
+  t.threeCustomersKb = Number(getEditValue('editThreeCustomersKb', '0') || 0);
+  t.threeCustomersCancelled = Number(getEditValue('editThreeCustomersCancelled', '0') || 0);
+  t.threeCustomersPreordered = Number(getEditValue('editThreeCustomersPreordered', '0') || 0);
+  t.vertretung = getEditChecked('editVertretung');
+  t.fahrt45 = getEditChecked('editFahrt45');
+  t.note = getEditValue('editNote') || '';
+  t.workStart = getEditValue('editWorkStart') || '';
+  t.tourStart = getEditValue('editTourStart') || '';
+  t.breakMinutes = Number(getEditValue('editBreakMinutes', '45') || 45);
+  t.tourEnd = getEditValue('editTourEnd') || '';
+  t.workEnd = getEditValue('editWorkEnd') || '';
+  const ad = getEditValue('editActionsDetail') || '';
   let actions = [];
   if(ad.trim() !== ''){
     try{
