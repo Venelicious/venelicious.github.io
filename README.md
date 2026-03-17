@@ -122,13 +122,13 @@
       </div>
       <div>
         <label>Umsatz
-          <input id="amount" type="number" step="0.01" placeholder="Gesamtumsatz"/>
+          <input id="amount" type="number" step="0.01" placeholder="0,00"/>
         </label>
       </div>
     </div>
 
-    <label>Tagesspezifische Umsatzvorgabe
-      <input id="umsatzvorgabe" type="number" step="0.01" min="0" value="0.00" placeholder="Tagesumsatz-Ziel"/>
+    <label>Umsatzvorgabe
+      <input id="umsatzvorgabe" type="number" step="0.01" min="0" value="0.00" placeholder="0,00"/>
     </label>
 
     <div class="row">
@@ -159,7 +159,6 @@
 
       <section class="entry-block compact-entry-block">
         <h4>Integrationen</h4>
-        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Vorbestellt</p>
         <div class="compact-metrics-row">
           <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
           <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
@@ -171,8 +170,7 @@
       </section>
 
       <section class="entry-block compact-entry-block">
-        <h4>Tourentag (normale Tour)</h4>
-        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Reservierung // Vortag NE</p>
+        <h4>Tourentag</h4>
         <div class="compact-metrics-row">
           <label>Anzahl<input id="schooldayCustomers" type="number" step="1" min="0" value="0"/></label>
           <label>Kauf<input id="buyingCustomers" type="number" step="1" min="0" value="0"/></label>
@@ -180,10 +178,10 @@
           <label>KB<input id="tourdayKb" type="number" step="1" min="0" value="0"/></label>
           <label>Absage<input id="tourdayCancelled" type="number" step="1" min="0" value="0"/></label>
           <label>Reservierung<input id="tourdayReserved" type="number" step="1" min="0" value="0"/></label>
-          <label>Vortag NE<input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
         </div>
-        <p class="entry-block-hint" style="margin-top:8px;">Vortag NE: Kauf // NE // KB</p>
+        <p class="entry-block-hint" style="margin-top:8px;">Nachbearbeitung</p>
         <div class="compact-metrics-row compact-metrics-row--five">
+          <label>Vortag NE<input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
           <label>Kauf<input id="prevDayBought" type="number" step="1" min="0" value="0"/></label>
           <label>NE<input id="prevDayNi" type="number" step="1" min="0" value="0"/></label>
           <label>KB<input id="prevDayKb" type="number" step="1" min="0" value="0"/></label>
@@ -191,8 +189,7 @@
       </section>
 
       <section class="entry-block compact-entry-block">
-        <h4>D3 Kunden</h4>
-        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Vorbestellt</p>
+        <h4>D3</h4>
         <div class="compact-metrics-row">
           <label>Anzahl<input id="threeCustomersTotal" type="number" step="1" min="0" value="0"/></label>
           <label>Kauf<input id="threeCustomersBought" type="number" step="1" min="0" value="0"/></label>
@@ -709,48 +706,44 @@
 
       <section class="entry-block compact-entry-block">
         <h4>Integrationen</h4>
-        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Vorbestellt</p>
         <div class="compact-metrics-row">
-          <label>Anzahl<input type="number" id="editIntegrations"/></label>
-          <label>Kauf<input type="number" id="editIntegrationBought"/></label>
-          <label>NE<input type="number" id="editIntegrationUnreachable"/></label>
-          <label>KB<input type="number" id="editIntegrationNoNeed"/></label>
-          <label>Absage<input type="number" id="editIntegrationCancelled"/></label>
-          <label>Vorbestellt<input type="number" id="editIntegrationPreordered"/></label>
+          <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="integrationUnreachable" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="integrationNoNeed" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="integrationCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Vorbestellt<input id="integrationPreordered" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
 
       <section class="entry-block compact-entry-block">
-        <h4>Tourentag (normale Tour)</h4>
-        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Reservierung // Vortag NE</p>
+        <h4>Tourentag</h4>
         <div class="compact-metrics-row">
-          <label>Anzahl<input type="number" id="editSchooldayCustomers"/></label>
-          <label>Kauf<input type="number" id="editBuyingCustomers"/></label>
-          <label>NE<input type="number" id="editTourdayNi"/></label>
-          <label>KB<input type="number" id="editTourdayKb"/></label>
-          <label>Absage<input type="number" id="editTourdayCancelled"/></label>
-          <label>Reservierung<input type="number" id="editTourdayReserved"/></label>
-          <label>Vortag NE<input type="number" id="editPrevDayUnreachable"/></label>
+          <label>Anzahl<input id="schooldayCustomers" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="buyingCustomers" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="tourdayNi" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="tourdayKb" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="tourdayCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Reservierung<input id="tourdayReserved" type="number" step="1" min="0" value="0"/></label>
         </div>
-        <p class="entry-block-hint" style="margin-top:8px;">Vortag NE: Kauf // NE // KB</p>
+        <p class="entry-block-hint" style="margin-top:8px;">Nachbearbeitung</p>
         <div class="compact-metrics-row compact-metrics-row--five">
-          <label>Kauf<input type="number" id="editPrevDayBought"/></label>
-          <label>NE<input type="number" id="editPrevDayNi"/></label>
-          <label>KB<input type="number" id="editPrevDayKb"/></label>
+          <label>Vortag NE<input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="prevDayBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="prevDayNi" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="prevDayKb" type="number" step="1" min="0" value="0"/></label>
         </div>
-
       </section>
 
       <section class="entry-block compact-entry-block">
-        <h4>D3 Kunden</h4>
-        <p class="entry-block-hint">Anzahl // Kauf // NE // KB // Absage // Vorbestellt</p>
+        <h4>D3</h4>
         <div class="compact-metrics-row">
-          <label>Anzahl<input type="number" id="editThreeCustomersTotal"/></label>
-          <label>Kauf<input type="number" id="editThreeCustomersBought"/></label>
-          <label>NE<input type="number" id="editThreeCustomersNi"/></label>
-          <label>KB<input type="number" id="editThreeCustomersKb"/></label>
-          <label>Absage<input type="number" id="editThreeCustomersCancelled"/></label>
-          <label>Vorbestellt<input type="number" id="editThreeCustomersPreordered"/></label>
+          <label>Anzahl<input id="threeCustomersTotal" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="threeCustomersBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="threeCustomersNi" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="threeCustomersKb" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="threeCustomersCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Vorbestellt<input id="threeCustomersPreordered" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
     </div>
