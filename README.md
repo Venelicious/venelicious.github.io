@@ -710,46 +710,46 @@
       <section class="entry-block compact-entry-block">
         <h4>Tourentag</h4>
         <div class="compact-metrics-row">
-          <label>Anzahl<input id="schooldayCustomers" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="buyingCustomers" type="number" step="1" min="0" value="0"/></label>
-          <label>NE<input id="tourdayNi" type="number" step="1" min="0" value="0"/></label>
-          <label>KB<input id="tourdayKb" type="number" step="1" min="0" value="0"/></label>
-          <label>Absage<input id="tourdayCancelled" type="number" step="1" min="0" value="0"/></label>
-          <label>Reservierung<input id="tourdayReserved" type="number" step="1" min="0" value="0"/></label>
+          <label>Anzahl<input id="editSchooldayCustomers" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="editBuyingCustomers" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="editTourdayNi" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="editTourdayKb" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="editTourdayCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Reservierung<input id="editTourdayReserved" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
 
       <section class="entry-block compact-entry-block">
         <h4>Nachbearbeitung</h4>
         <div class="compact-metrics-row compact-metrics-row--five">
-          <label>Vortag NE<input id="prevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="prevDayBought" type="number" step="1" min="0" value="0"/></label>
-          <label>NE<input id="prevDayNi" type="number" step="1" min="0" value="0"/></label>
-          <label>KB<input id="prevDayKb" type="number" step="1" min="0" value="0"/></label>
+          <label>Vortag NE<input id="editPrevDayUnreachable" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="editPrevDayBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="editPrevDayNi" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="editPrevDayKb" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
       
       <section class="entry-block compact-entry-block">
         <h4>Integrationen</h4>
         <div class="compact-metrics-row">
-          <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
-          <label>NE<input id="integrationUnreachable" type="number" step="1" min="0" value="0"/></label>
-          <label>KB<input id="integrationNoNeed" type="number" step="1" min="0" value="0"/></label>
-          <label>Absage<input id="integrationCancelled" type="number" step="1" min="0" value="0"/></label>
-          <label>Vorbestellt<input id="integrationPreordered" type="number" step="1" min="0" value="0"/></label>
+          <label>Anzahl<input id="editIntegrations" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="editIntegrationBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="editIntegrationUnreachable" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="editIntegrationNoNeed" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="editIntegrationCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Vorbestellt<input id="editIntegrationPreordered" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
       
       <section class="entry-block compact-entry-block">
         <h4>D3</h4>
         <div class="compact-metrics-row">
-          <label>Anzahl<input id="threeCustomersTotal" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="threeCustomersBought" type="number" step="1" min="0" value="0"/></label>
-          <label>NE<input id="threeCustomersNi" type="number" step="1" min="0" value="0"/></label>
-          <label>KB<input id="threeCustomersKb" type="number" step="1" min="0" value="0"/></label>
-          <label>Absage<input id="threeCustomersCancelled" type="number" step="1" min="0" value="0"/></label>
-          <label>Vorbestellt<input id="threeCustomersPreordered" type="number" step="1" min="0" value="0"/></label>
+          <label>Anzahl<input id="editThreeCustomersTotal" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf<input id="editThreeCustomersBought" type="number" step="1" min="0" value="0"/></label>
+          <label>NE<input id="editThreeCustomersNi" type="number" step="1" min="0" value="0"/></label>
+          <label>KB<input id="editThreeCustomersKb" type="number" step="1" min="0" value="0"/></label>
+          <label>Absage<input id="editThreeCustomersCancelled" type="number" step="1" min="0" value="0"/></label>
+          <label>Vorbestellt<input id="editThreeCustomersPreordered" type="number" step="1" min="0" value="0"/></label>
         </div>
       </section>
     </div>
