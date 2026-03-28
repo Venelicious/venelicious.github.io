@@ -209,6 +209,7 @@
         <option value="tourentag">Tourentag</option>
         <option value="werbetag">Werbetag</option>
         <option value="neukundentour">Neukundentour</option>
+        <option value="freizeitausgleich">Freizeitausgleich</option>
         <option value="krank">Krank</option>
         <option value="urlaub">Urlaub</option>
       </select>
@@ -216,6 +217,7 @@
 
     <label style="margin-top:10px;"><input type="checkbox" id="vertretung"/> Vertretung (+2% Provision)</label>
     <label><input type="checkbox" id="fahrt45"/> Entfernung >45 min (+0,25% Provision)</label>
+    <label><input type="checkbox" id="einbringung"/> Einbringung</label>
 
     <h4 style="margin-top:12px">Aktionen</h4>
     <div class="actions-list" id="actionsList"></div>
@@ -759,6 +761,7 @@
         <option value="tourentag">Tourentag</option>
         <option value="werbetag">Werbetag</option>
         <option value="neukundentour">Neukundentour</option>
+        <option value="freizeitausgleich">Freizeitausgleich</option>
         <option value="krank">Krank</option>
         <option value="urlaub">Urlaub</option>
       </select>
@@ -766,6 +769,7 @@
 
     <label style="margin-top:10px;"><input type="checkbox" id="editVertretung"/> Vertretung (+2%)</label>
     <label><input type="checkbox" id="editFahrt45"/> Entfernung &gt;45min (+0,25%)</label>
+    <label><input type="checkbox" id="editEinbringung"/> Einbringung</label>
 
     <h4 style="margin-top:12px">Aktionen</h4>
     <label>Aktionen-Details
