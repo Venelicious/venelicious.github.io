@@ -1773,6 +1773,13 @@ const REGULAR_WORK_MINUTES = (7 * 60) + 42;
 const MAX_DAILY_WORK_MINUTES = 10 * 60;
 const MIN_REST_MINUTES = 11 * 60;
 
+function minutesToSignedHoursLabel(minutes){
+  if(!Number.isFinite(minutes)) return '±00:00 h';
+  const sign = minutes < 0 ? '-' : '+';
+  const absoluteLabel = minutesToHoursLabel(Math.abs(minutes)).replace(' h', '');
+  return `${sign}${absoluteLabel} h`;
+}
+
 function computeWorktimeForTour(tour){
   if(tour?.tourType === 'krank' || tour?.tourType === 'urlaub'){
     return {
@@ -1811,24 +1818,12 @@ function toTimestampFromDateAndMinutes(dateValue, minutes){
   return parsedDate.getTime();
 }
 
-function renderWorktime(tours){
-  const summaryEl = document.getElementById('worktimeSummary');
-  const listEl = document.getElementById('worktimeBubbleList');
-  if(!summaryEl || !listEl) return;
-
-  summaryEl.innerHTML = '';
-  listEl.innerHTML = '';
-
+function collectWorktimeReportData(tours){
   const sortedTours = [...tours].sort(compareToursByDateDesc);
-  let totalWorkMinutes = 0;
-  let totalFieldMinutes = 0;
-  let totalBreakMinutes = 0;
-  let totalOvertimeMinutes = 0;
-
   const restViolationByTourKey = new Set();
   const toursByDateAsc = [...tours].sort((a, b)=> (a?.date || '').localeCompare(b?.date || ''));
-  let previousDayEndTimestamp = null;
 
+  let previousDayEndTimestamp = null;
   toursByDateAsc.forEach((tour)=>{
     const workStart = parseTimeToMinutes(tour.workStart);
     const workEnd = parseTimeToMinutes(tour.workEnd);
@@ -1848,7 +1843,14 @@ function renderWorktime(tours){
     }
   });
 
-  sortedTours.forEach((tour) => {
+  let totalWorkMinutes = 0;
+  let totalFieldMinutes = 0;
+  let totalBreakMinutes = 0;
+  let totalOvertimeMinutes = 0;
+  let maxDailyExceededCount = 0;
+  let restViolationCount = 0;
+
+  const reportRows = sortedTours.map((tour)=>{
     const metrics = computeWorktimeForTour(tour);
     totalWorkMinutes += metrics.workMinutes;
     totalFieldMinutes += metrics.fieldMinutes;
@@ -1856,8 +1858,209 @@ function renderWorktime(tours){
     totalOvertimeMinutes += metrics.overtimeMinutes;
 
     const exceedsDailyMax = metrics.workMinutes > MAX_DAILY_WORK_MINUTES;
+    if(exceedsDailyMax) maxDailyExceededCount += 1;
+
     const tourKey = `${tour.date || ''}__${tour.id || ''}`;
     const violatesRestTime = restViolationByTourKey.has(tourKey);
+    if(violatesRestTime) restViolationCount += 1;
+
+    const deltaToTarget = metrics.workMinutes - REGULAR_WORK_MINUTES;
+    return {
+      tour,
+      metrics,
+      exceedsDailyMax,
+      violatesRestTime,
+      deltaToTarget
+    };
+  });
+
+  const expectedMinutes = reportRows.length * REGULAR_WORK_MINUTES;
+  const balanceMinutes = totalWorkMinutes - expectedMinutes;
+
+  return {
+    reportRows,
+    totalWorkMinutes,
+    totalFieldMinutes,
+    totalBreakMinutes,
+    totalOvertimeMinutes,
+    expectedMinutes,
+    balanceMinutes,
+    maxDailyExceededCount,
+    restViolationCount
+  };
+}
+
+function buildWorktimeMonthlyReportHtml(data, meta = {}){
+  const {
+    reportRows,
+    totalWorkMinutes,
+    totalFieldMinutes,
+    totalBreakMinutes,
+    totalOvertimeMinutes,
+    expectedMinutes,
+    balanceMinutes,
+    maxDailyExceededCount,
+    restViolationCount
+  } = data;
+
+  const monthLabel = sanitizeForPdf(meta.monthLabel || 'Monat');
+  const period = sanitizeForPdf(meta.period || '');
+  const printedAt = new Date().toLocaleString('de-DE');
+  const targetLabel = minutesToHoursLabel(expectedMinutes);
+  const actualLabel = minutesToHoursLabel(totalWorkMinutes);
+  const balanceLabel = minutesToSignedHoursLabel(balanceMinutes);
+  const averageWorkLabel = reportRows.length ? minutesToHoursLabel(Math.round(totalWorkMinutes / reportRows.length)) : '00:00 h';
+
+  const rowsHtml = reportRows.map((row)=>{
+    const dateLabel = row.tour.date ? new Date(row.tour.date).toLocaleDateString('de-DE') : '—';
+    const warningParts = [];
+    if(row.exceedsDailyMax) warningParts.push('⛔ >10h');
+    if(row.violatesRestTime) warningParts.push('🌙 <11h Ruhezeit');
+    return `
+      <tr>
+        <td>${sanitizeForPdf(dateLabel)}</td>
+        <td>${sanitizeForPdf(row.tour.id || '—')}</td>
+        <td>${sanitizeForPdf(row.tour.tourType || '—')}</td>
+        <td>${minutesToHoursLabel(REGULAR_WORK_MINUTES)}</td>
+        <td>${minutesToHoursLabel(row.metrics.workMinutes)}</td>
+        <td>${minutesToSignedHoursLabel(row.deltaToTarget)}</td>
+        <td>${row.metrics.breakMinutes} Min</td>
+        <td>${minutesToHoursLabel(row.metrics.fieldMinutes)}</td>
+        <td>${sanitizeForPdf(warningParts.join(' · ') || '—')}</td>
+      </tr>
+    `;
+  }).join('');
+
+  return `<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>Arbeitszeit Monatsbericht</title>
+  <style>
+    :root {
+      --text: #10243f;
+      --muted: #4c6285;
+      --line: #d5dfef;
+      --head-bg: #1d3557;
+      --head-text: #ffffff;
+      --card-bg: #f5f9ff;
+      --warning-bg: #fff4df;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; color: var(--text); margin: 0; padding: 16px; }
+    h1 { margin: 0 0 4px; font-size: 1.35rem; }
+    .meta { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card-bg);
+      padding: 10px;
+    }
+    .card .label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .card .value { font-size: 1.05rem; font-weight: 700; }
+    .card.warning { background: var(--warning-bg); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--head-bg);
+      color: var(--head-text);
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+    }
+    @media print {
+      body { padding: 0; }
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Arbeitszeit-Monatsbericht</h1>
+  <p class="meta">Monat: ${monthLabel}${period ? ` (${period})` : ''}</p>
+  <p class="meta">Stand: ${sanitizeForPdf(printedAt)}</p>
+
+  <section class="cards">
+    <article class="card"><span class="label">Sollzeit gesamt</span><span class="value">${targetLabel}</span></article>
+    <article class="card"><span class="label">Istzeit gesamt</span><span class="value">${actualLabel}</span></article>
+    <article class="card"><span class="label">Mehr-/Minderarbeit</span><span class="value">${balanceLabel}</span></article>
+    <article class="card"><span class="label">Überstunden gesamt</span><span class="value">${minutesToHoursLabel(totalOvertimeMinutes)}</span></article>
+    <article class="card"><span class="label">Außendienstzeit</span><span class="value">${minutesToHoursLabel(totalFieldMinutes)}</span></article>
+    <article class="card"><span class="label">Pausen gesamt</span><span class="value">${totalBreakMinutes} Min</span></article>
+    <article class="card"><span class="label">Erfasste Tage</span><span class="value">${reportRows.length}</span></article>
+    <article class="card"><span class="label">Ø Istzeit pro Tag</span><span class="value">${averageWorkLabel}</span></article>
+    <article class="card warning"><span class="label">Warnungen</span><span class="value">${maxDailyExceededCount}× >10h · ${restViolationCount}× Ruhezeit</span></article>
+  </section>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Datum</th>
+        <th>Tour</th>
+        <th>Art</th>
+        <th>Soll</th>
+        <th>Ist</th>
+        <th>Delta</th>
+        <th>Pause</th>
+        <th>Außendienst</th>
+        <th>Hinweis</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml || '<tr><td colspan="9">Keine Arbeitszeitdaten im ausgewählten Monat.</td></tr>'}
+    </tbody>
+  </table>
+</body>
+</html>`;
+}
+
+async function printWorktimeMonthlyReport(){
+  const monthFilter = `${selectYear?.value || ''}-${selectMonth?.value || ''}`;
+  if(!/^\d{4}-\d{2}$/.test(monthFilter)){
+    alert('Monat/Jahr ist ungültig. Bitte Auswahl prüfen.');
+    return;
+  }
+
+  const allTours = await getAllTours();
+  const tours = allTours.filter((tour)=> tour.period === monthFilter);
+  const reportData = collectWorktimeReportData(tours);
+  const monthLabel = new Date(`${monthFilter}-01T00:00:00`).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+  const printHtml = buildWorktimeMonthlyReportHtml(reportData, { monthLabel, period: monthFilter });
+
+  if(!openAndPrintDocument(printHtml)){
+    alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
+  }
+}
+
+function renderWorktime(tours){
+  const summaryEl = document.getElementById('worktimeSummary');
+  const listEl = document.getElementById('worktimeBubbleList');
+  if(!summaryEl || !listEl) return;
+
+  summaryEl.innerHTML = '';
+  listEl.innerHTML = '';
+
+  const reportData = collectWorktimeReportData(tours);
+
+  reportData.reportRows.forEach((row) => {
+    const { tour, metrics, exceedsDailyMax, violatesRestTime } = row;
 
     const card = document.createElement('details');
     card.className = 'tour-bubble-card';
@@ -1921,10 +2124,12 @@ function renderWorktime(tours){
   });
 
   summaryEl.append(
-    createSumRow('❯ Arbeitszeit gesamt (abzgl. Pausen)', minutesToHoursLabel(totalWorkMinutes)),
-    createSumRow('❯ Überstunden gesamt', minutesToHoursLabel(totalOvertimeMinutes)),
-    createSumRow('❯ Außendienstzeit gesamt', minutesToHoursLabel(totalFieldMinutes)),
-    createSumRow('❯ Pausen gesamt', `${totalBreakMinutes} Min`)
+    createSumRow('❯ Sollzeit gesamt', minutesToHoursLabel(reportData.expectedMinutes)),
+    createSumRow('❯ Istzeit gesamt (abzgl. Pausen)', minutesToHoursLabel(reportData.totalWorkMinutes)),
+    createSumRow('❯ Mehr-/Minderarbeit', minutesToSignedHoursLabel(reportData.balanceMinutes)),
+    createSumRow('❯ Überstunden gesamt', minutesToHoursLabel(reportData.totalOvertimeMinutes)),
+    createSumRow('❯ Außendienstzeit gesamt', minutesToHoursLabel(reportData.totalFieldMinutes)),
+    createSumRow('❯ Pausen gesamt', `${reportData.totalBreakMinutes} Min`)
   );
 }
 
@@ -3374,6 +3579,13 @@ if(statsRangeApplyBtn){
     renderTours();
   });
 }
+
+bindById('printWorktimeMonthly', 'click', ()=>{
+  printWorktimeMonthlyReport().catch((err)=>{
+    console.error('Arbeitszeit-Monatsbericht drucken fehlgeschlagen', err);
+    alert('Arbeitszeit-Monatsbericht konnte nicht gedruckt werden.');
+  });
+});
 
 bindById('printReport', 'click', ()=> window.print());
 
