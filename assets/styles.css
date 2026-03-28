@@ -364,6 +364,13 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   justify-content: flex-end;
 }
 
+.worktimeActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .statsPeriodControls {
   display: flex;
   flex-wrap: wrap;

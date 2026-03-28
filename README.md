@@ -274,6 +274,9 @@
         <h3>Arbeitszeit</h3>
         <p class="muted">Monatsübersicht mit Arbeits-, Touren- und Pausenzeiten.</p>
       </div>
+      <div class="worktimeActions">
+        <button id="printWorktimeMonthly" class="small" type="button" aria-label="Monatsbericht Arbeitszeit drucken" title="Monatsbericht Arbeitszeit drucken">Monatsbericht drucken</button>
+      </div>
     </div>
     <div id="worktimeSummary" class="summary" style="margin-bottom:12px"></div>
     <div id="worktimeBubbleList" class="tours-bubble-list"></div>
