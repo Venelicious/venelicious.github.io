@@ -883,6 +883,24 @@ async function printCustomerAgreements(filter = {}){
 }
 
 function openAndPrintDocument(html, existingPopup = null){
+  const triggerPrint = (targetWindow)=> {
+    if(!targetWindow) return false;
+    const doPrint = ()=> {
+      try{
+        targetWindow.focus();
+        targetWindow.print();
+      }catch(err){
+        console.error('Drucken fehlgeschlagen', err);
+      }
+    };
+    if(typeof targetWindow.requestAnimationFrame === 'function'){
+      targetWindow.requestAnimationFrame(()=> window.setTimeout(doPrint, 150));
+    }else{
+      window.setTimeout(doPrint, 150);
+    }
+    return true;
+  };
+
   const popup = existingPopup && !existingPopup.closed ? existingPopup : window.open('', '_blank');
   const canUsePopup = popup && popup !== window;
 
@@ -896,9 +914,10 @@ function openAndPrintDocument(html, existingPopup = null){
 
     popup.addEventListener('afterprint', closePopup, { once: true });
     window.setTimeout(closePopup, 120000);
-    popup.focus();
-    popup.print();
-    return true;
+    if(typeof popup.addEventListener === 'function'){
+      popup.addEventListener('load', ()=> triggerPrint(popup), { once: true });
+    }
+    return triggerPrint(popup);
   }
 
   const frame = document.createElement('iframe');
@@ -930,9 +949,10 @@ function openAndPrintDocument(html, existingPopup = null){
 
   frameWindow.addEventListener('afterprint', cleanup, { once: true });
   window.setTimeout(cleanup, 120000);
-  frameWindow.focus();
-  frameWindow.print();
-  return true;
+  if(typeof frameWindow.addEventListener === 'function'){
+    frameWindow.addEventListener('load', ()=> triggerPrint(frameWindow), { once: true });
+  }
+  return triggerPrint(frameWindow);
 }
 
 async function renderCustomerAgreements(){
@@ -1898,7 +1918,6 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
     totalBreakMinutes,
     totalOvertimeMinutes,
     expectedMinutes,
-    balanceMinutes,
     maxDailyExceededCount,
     restViolationCount
   } = data;
@@ -1908,7 +1927,6 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
   const printedAt = new Date().toLocaleString('de-DE');
   const targetLabel = minutesToHoursLabel(expectedMinutes);
   const actualLabel = minutesToHoursLabel(totalWorkMinutes);
-  const balanceLabel = minutesToSignedHoursLabel(balanceMinutes);
   const averageWorkLabel = reportRows.length ? minutesToHoursLabel(Math.round(totalWorkMinutes / reportRows.length)) : '00:00 h';
 
   const rowsHtml = reportRows.map((row)=>{
@@ -2000,7 +2018,6 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
   <section class="cards">
     <article class="card"><span class="label">Sollzeit gesamt</span><span class="value">${targetLabel}</span></article>
     <article class="card"><span class="label">Istzeit gesamt</span><span class="value">${actualLabel}</span></article>
-    <article class="card"><span class="label">Mehr-/Minderarbeit</span><span class="value">${balanceLabel}</span></article>
     <article class="card"><span class="label">Überstunden gesamt</span><span class="value">${minutesToHoursLabel(totalOvertimeMinutes)}</span></article>
     <article class="card"><span class="label">Außendienstzeit</span><span class="value">${minutesToHoursLabel(totalFieldMinutes)}</span></article>
     <article class="card"><span class="label">Pausen gesamt</span><span class="value">${totalBreakMinutes} Min</span></article>
@@ -2136,7 +2153,6 @@ function renderWorktime(tours){
   summaryEl.append(
     createSumRow('❯ Sollzeit gesamt', minutesToHoursLabel(reportData.expectedMinutes)),
     createSumRow('❯ Istzeit gesamt (abzgl. Pausen)', minutesToHoursLabel(reportData.totalWorkMinutes)),
-    createSumRow('❯ Mehr-/Minderarbeit', minutesToSignedHoursLabel(reportData.balanceMinutes)),
     createSumRow('❯ Überstunden gesamt', minutesToHoursLabel(reportData.totalOvertimeMinutes)),
     createSumRow('❯ Außendienstzeit gesamt', minutesToHoursLabel(reportData.totalFieldMinutes)),
     createSumRow('❯ Pausen gesamt', `${reportData.totalBreakMinutes} Min`)
