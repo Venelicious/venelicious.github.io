@@ -146,6 +146,7 @@ function normalizeTourRecord(tour = {}){
   normalized.actions = normalizeActionsValue(normalized.actions);
   normalized.vertretung = !!normalized.vertretung;
   normalized.fahrt45 = !!normalized.fahrt45;
+  normalized.einbringung = !!normalized.einbringung;
   normalized.workStart = normalized.workStart ? String(normalized.workStart) : '';
   normalized.tourStart = normalized.tourStart ? String(normalized.tourStart) : '';
   normalized.tourEnd = normalized.tourEnd ? String(normalized.tourEnd) : '';
@@ -1277,7 +1278,7 @@ bindById('exportCsv', 'click', async ()=>{
   const totalNKThisMonth = monthTours.reduce((s,t)=> s + Number(t.newC || 0), 0);
   const nkRate = getNeukundenRate(totalNKThisMonth, conf); // € pro NK
 
-  let csv = 'Datum;Tour;Art;Umsatz;Umsatzvorgabe;Reklamation;Gutscheine;Neukunden;Neukunden€;Integrationen;Integr€;AktionsJSON;AktStk;AktEuro;Vertretung;Fahrt45;Arbeitszeitbeginn;Tourenstart;PauseMinuten;Tourenende;Arbeitszeitende;Period;PAPROV;Notiz\n';
+  let csv = 'Datum;Tour;Art;Umsatz;Umsatzvorgabe;Reklamation;Gutscheine;Neukunden;Neukunden€;Integrationen;Integr€;AktionsJSON;AktStk;AktEuro;Vertretung;Fahrt45;Einbringung;Arbeitszeitbeginn;Tourenstart;PauseMinuten;Tourenende;Arbeitszeitende;Period;PAPROV;Notiz\n';
   monthTours.forEach(t=>{
     const baseCents = toCents(t.amount || 0);
     const reklCents = toCents(t.reklamation || 0);
@@ -1289,7 +1290,7 @@ bindById('exportCsv', 'click', async ()=>{
     const actionsPiece = (t.actions && t.actions.length) ? t.actions.reduce((s,a)=>s+Number(a.qty||0),0) : 0;
     const paprovVal = (t.tourType !== 'tourentag' && conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? conf.paprovPerMonth[t.period] : 0;
     const actionsJson = JSON.stringify(t.actions || []);
-    csv += `${t.date};${t.id};${t.tourType};${fromCents(totCents)};${getRevenueTargetValue(t).toFixed(2)};${fromCents(reklCents)};${fromCents(gutsCents)};${t.newC||0};${fromCents(nk)};${t.integrations||0};${fromCents(ip)};"${actionsJson.replace(/"/g,'""')}";${actionsPiece};${actionsSum.toFixed(2)};${t.vertretung?"JA":"NEIN"};${t.fahrt45?"JA":"NEIN"};${t.workStart||''};${t.tourStart||''};${Number(t.breakMinutes ?? 45)};${t.tourEnd||''};${t.workEnd||''};${t.period};${paprovVal.toFixed(2)};"${(t.note||'').replace(/"/g,'""')}"\n`;
+    csv += `${t.date};${t.id};${t.tourType};${fromCents(totCents)};${getRevenueTargetValue(t).toFixed(2)};${fromCents(reklCents)};${fromCents(gutsCents)};${t.newC||0};${fromCents(nk)};${t.integrations||0};${fromCents(ip)};"${actionsJson.replace(/"/g,'""')}";${actionsPiece};${actionsSum.toFixed(2)};${t.vertretung?"JA":"NEIN"};${t.fahrt45?"JA":"NEIN"};${t.einbringung?"JA":"NEIN"};${t.workStart||''};${t.tourStart||''};${Number(t.breakMinutes ?? 45)};${t.tourEnd||''};${t.workEnd||''};${t.period};${paprovVal.toFixed(2)};"${(t.note||'').replace(/"/g,'""')}"\n`;
   });
   const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -1305,7 +1306,7 @@ csvInput.addEventListener('change', async (ev) => {
   if(rows.length < 2){ alert('Keine Daten gefunden'); return; }
   const header = rows[0].split(';').map(h=>h.trim());
   const col = name => header.indexOf(name);
-  const idx = { date: col("Datum"), id: col("Tour"), art: col("Art"), umsatz: col("Umsatz"), umsatzvorgabe: col("Umsatzvorgabe"), rekl: col("Reklamation"), guts: col("Gutscheine"), nk: col("Neukunden"), integ: col("Integrationen"), actions: col("AktionsJSON"), vert: col("Vertretung"), f45: col("Fahrt45"), workStart: col("Arbeitszeitbeginn"), tourStart: col("Tourenstart"), breakMinutes: col("PauseMinuten"), tourEnd: col("Tourenende"), workEnd: col("Arbeitszeitende"), per: col("Period"), note: col("Notiz") };
+  const idx = { date: col("Datum"), id: col("Tour"), art: col("Art"), umsatz: col("Umsatz"), umsatzvorgabe: col("Umsatzvorgabe"), rekl: col("Reklamation"), guts: col("Gutscheine"), nk: col("Neukunden"), integ: col("Integrationen"), actions: col("AktionsJSON"), vert: col("Vertretung"), f45: col("Fahrt45"), einbringung: col("Einbringung"), workStart: col("Arbeitszeitbeginn"), tourStart: col("Tourenstart"), breakMinutes: col("PauseMinuten"), tourEnd: col("Tourenende"), workEnd: col("Arbeitszeitende"), per: col("Period"), note: col("Notiz") };
   for(let i=1;i<rows.length;i++){
     const parts = rows[i].split(';');
     if(parts.length < 2) continue;
@@ -1337,6 +1338,7 @@ csvInput.addEventListener('change', async (ev) => {
       actions: actions,
       vertretung: (parts[idx.vert] || '').toUpperCase() === 'JA',
       fahrt45: (parts[idx.f45] || '').toUpperCase() === 'JA',
+      einbringung: idx.einbringung >= 0 ? (parts[idx.einbringung] || '').toUpperCase() === 'JA' : false,
       workStart: idx.workStart >= 0 ? (parts[idx.workStart] || '') : '',
       tourStart: idx.tourStart >= 0 ? (parts[idx.tourStart] || '') : '',
       breakMinutes: idx.breakMinutes >= 0 ? Number(parts[idx.breakMinutes] || 45) : 45,
@@ -1390,6 +1392,7 @@ bindById('addBtn', 'click', async ()=>{
     tourType: document.getElementById('tourType').value,
     vertretung: document.getElementById('vertretung').checked,
     fahrt45: document.getElementById('fahrt45').checked,
+    einbringung: document.getElementById('einbringung').checked,
     note: document.getElementById('note').value || '',
     workStart: document.getElementById('workStart').value || '',
     tourStart: document.getElementById('tourStart').value || '',
@@ -1412,7 +1415,7 @@ bindById('addBtn', 'click', async ()=>{
   document.getElementById('threeCustomersKb').value=0; document.getElementById('threeCustomersCancelled').value=0; document.getElementById('threeCustomersPreordered').value=0;
   document.getElementById('note').value=''; renderActionsList([]);
   document.getElementById('workStart').value=''; document.getElementById('tourStart').value=''; document.getElementById('breakMinutes').value=45; document.getElementById('tourEnd').value=''; document.getElementById('workEnd').value='';
-  document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
+  document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false; document.getElementById('einbringung').checked=false;
   await renderTours();
   await triggerAutoBackup('tour_added');
 });
@@ -1431,7 +1434,7 @@ bindById('clearBtn', 'click', ()=>{
   document.getElementById('threeCustomersKb').value=0; document.getElementById('threeCustomersCancelled').value=0; document.getElementById('threeCustomersPreordered').value=0;
   document.getElementById('note').value=''; renderActionsList([]);
   document.getElementById('workStart').value=''; document.getElementById('tourStart').value=''; document.getElementById('breakMinutes').value=45; document.getElementById('tourEnd').value=''; document.getElementById('workEnd').value='';
-  document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false;
+  document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false; document.getElementById('einbringung').checked=false;
 });
 
 saveCustomerAgreementBtn = document.getElementById('saveCustomerAgreement');
@@ -1724,6 +1727,7 @@ function mapTourTypeLabel(type){
     tourentag: 'Tourentag',
     werbetag: 'Werbetag',
     neukundentour: 'Neukundentour',
+    freizeitausgleich: 'Freizeitausgleich',
     krank: 'Krank',
     urlaub: 'Urlaub'
   };
@@ -1735,6 +1739,7 @@ function mapTourTypeClass(type){
     tourentag: 'tour-type-tourentag',
     werbetag: 'tour-type-werbetag',
     neukundentour: 'tour-type-neukundentour',
+    freizeitausgleich: 'tour-type-freizeitausgleich',
     krank: 'tour-type-krank',
     urlaub: 'tour-type-urlaub'
   };
@@ -1975,7 +1980,7 @@ async function renderTours(){
 
   // Totals
   let totalUmsatzAllCents = 0, totalVGRevenueCents=0, countVGTours=0, countNeukundentouren=0;
-  let totalIntegrationCents=0, totalSpesenCents=0, totalActionProvCents=0, totalPaprovCents=0, totalExtrasCents=0;
+  let totalIntegrationCents=0, totalSpesenCents=0, totalActionProvCents=0, totalPaprovCents=0, totalExtrasCents=0, totalFreizeitausgleichCents=0;
 
   for(const t of tours){
     const baseCents = toCents(t.amount || 0);
@@ -1999,6 +2004,8 @@ async function renderTours(){
     if(t.vertretung) extra += Math.round(tourTotalCents * 0.02);
     if(t.fahrt45) extra += Math.round(tourTotalCents * 0.0025);
     totalExtrasCents += extra;
+    if(t.einbringung) totalFreizeitausgleichCents -= toCents(130);
+    if(t.tourType === 'freizeitausgleich') totalFreizeitausgleichCents += toCents(130);
 
     if(t.tourType !== 'tourentag'){
       const paprovVal = (conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? toCents(conf.paprovPerMonth[t.period]) : 0;
@@ -2072,7 +2079,8 @@ async function renderTours(){
         `Spesen: ${fromCents(spC)}`,
         `Aktionen: ${actionsPieceCount} (${fromCents(actionsSumCents)})`,
         `Vertretung: ${t.vertretung ? 'Ja' : 'Nein'}`,
-        `Entfernung >45 Min: ${t.fahrt45 ? 'Ja' : 'Nein'}`
+        `Entfernung >45 Min: ${t.fahrt45 ? 'Ja' : 'Nein'}`,
+        `Einbringung: ${t.einbringung ? 'Ja' : 'Nein'}`
       ];
       detailParts.forEach(line=>{
         const detailLine = document.createElement('div');
@@ -2167,7 +2175,7 @@ async function renderTours(){
   const relevant = countVGTours + countNeukundentouren;
   const kmBonusCents = Math.round(rawKm * (totalTours>0 ? (relevant/totalTours) : 0));
 
-  const totalProvisionCents = vgProvisionCents + totalNeukCents + totalIntegrationCents + totalActionProvCents + totalPaprovCents + totalExtrasCents + kmBonusCents;
+  const totalProvisionCents = vgProvisionCents + totalNeukCents + totalIntegrationCents + totalActionProvCents + totalPaprovCents + totalExtrasCents + totalFreizeitausgleichCents + kmBonusCents;
   const baseSalaryCents = toCents(getBaseSalaryForPeriod(conf, monthFilter));
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
@@ -2197,6 +2205,7 @@ async function renderTours(){
     createSumRow('❯ Aktionen (10%)', `€ ${fromCents(totalActionProvCents)}`),
     createSumRow('❯ PAPROV', `€ ${fromCents(totalPaprovCents)}`),
     createSumRow('❯ Zusatzprovision', `€ ${fromCents(totalExtrasCents)}`),
+    createSumRow('❯ Freizeitausgleich', `€ ${fromCents(totalFreizeitausgleichCents)}`),
     createSumRow('❯ Kundenmanagement', `€ ${fromCents(kmBonusCents)}`),
   );
   summary.appendChild(document.createElement('hr'));
@@ -3068,6 +3077,8 @@ function openEditModalFor(entry, key){
   if(vertretungEl) vertretungEl.checked = !!entry.vertretung;
   const fahrt45El = getEditElement('editFahrt45');
   if(fahrt45El) fahrt45El.checked = !!entry.fahrt45;
+  const einbringungEl = getEditElement('editEinbringung');
+  if(einbringungEl) einbringungEl.checked = !!entry.einbringung;
   setEditValue('editActionsDetail', (entry.actions && entry.actions.length) ? JSON.stringify(entry.actions) : '');
   setEditValue('editNote', entry.note || '');
   setEditValue('editWorkStart', entry.workStart || '');
@@ -3119,6 +3130,7 @@ bindById('saveEdit', 'click', async ()=>{
   t.threeCustomersPreordered = Number(getEditValue('editThreeCustomersPreordered', '0') || 0);
   t.vertretung = getEditChecked('editVertretung');
   t.fahrt45 = getEditChecked('editFahrt45');
+  t.einbringung = getEditChecked('editEinbringung');
   t.note = getEditValue('editNote') || '';
   t.workStart = getEditValue('editWorkStart') || '';
   t.tourStart = getEditValue('editTourStart') || '';
@@ -3159,7 +3171,7 @@ bindById('exportPdf', 'click', async () => {
   const tours = (await getAllTours()).filter(t=>t.period === periodKey);
 
   let totalUmsatzAllCents=0, totalVGRevenueCents=0, countVGTours=0, countNeukundentouren=0;
-  let totalIntegrationCents=0, totalSpesenCents=0, totalActionProvCents=0, totalPaprovCents=0, totalExtrasCents=0;
+  let totalIntegrationCents=0, totalSpesenCents=0, totalActionProvCents=0, totalPaprovCents=0, totalExtrasCents=0, totalFreizeitausgleichCents=0;
   let totalNKCount = 0;
 
   tours.forEach(t=>{
@@ -3178,6 +3190,8 @@ bindById('exportPdf', 'click', async () => {
     if(t.vertretung) extra += Math.round(tourTotal * 0.02);
     if(t.fahrt45) extra += Math.round(tourTotal * 0.0025);
     totalExtrasCents += extra;
+    if(t.einbringung) totalFreizeitausgleichCents -= toCents(130);
+    if(t.tourType === 'freizeitausgleich') totalFreizeitausgleichCents += toCents(130);
     if(t.tourType !== 'tourentag'){
       const paprovVal = (conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? toCents(conf.paprovPerMonth[t.period]) : 0;
       totalPaprovCents += paprovVal;
@@ -3194,7 +3208,7 @@ bindById('exportPdf', 'click', async () => {
   const totalTours = tours.length;
   const relevant = countVGTours + countNeukundentouren;
   const kmBonus = Math.round(rawKm * (totalTours>0 ? (relevant/totalTours) : 0));
-  const totalProvisionCents = vgProvisionCents + totalNeukCents + totalIntegrationCents + totalActionProvCents + totalPaprovCents + totalExtrasCents + kmBonus;
+  const totalProvisionCents = vgProvisionCents + totalNeukCents + totalIntegrationCents + totalActionProvCents + totalPaprovCents + totalExtrasCents + totalFreizeitausgleichCents + kmBonus;
   const baseSalaryCents = toCents(getBaseSalaryForPeriod(conf, periodKey));
   const monthlyBeforeSpesenCents = Math.max(baseSalaryCents, totalProvisionCents);
   const brutto = monthlyBeforeSpesenCents/100;
@@ -3226,6 +3240,7 @@ bindById('exportPdf', 'click', async () => {
     ['Provision Aktionen (10%)', `€ ${fromCents(totalActionProvCents)}`],
     ['PAPROV (Monat)', `€ ${fromCents(totalPaprovCents)}`],
     ['Zusatzprovision (Vert./>45min)', `€ ${fromCents(totalExtrasCents)}`],
+    ['Freizeitausgleich', `€ ${fromCents(totalFreizeitausgleichCents)}`],
     ['Kundenmanagement (anteilig)', `€ ${fromCents(kmBonus)}`],
     ['Spesen (NETTO)', `€ ${fromCents(totalSpesenCents)}`],
     ['Provision gesamt (ohne Spesen)', `€ ${fromCents(totalProvisionCents)}`],
