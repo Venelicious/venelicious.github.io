@@ -882,8 +882,8 @@ async function printCustomerAgreements(filter = {}){
   }
 }
 
-function openAndPrintDocument(html){
-  const popup = window.open('', '_blank');
+function openAndPrintDocument(html, existingPopup = null){
+  const popup = existingPopup && !existingPopup.closed ? existingPopup : window.open('', '_blank');
   const canUsePopup = popup && popup !== window;
 
   if(canUsePopup){
@@ -2037,15 +2037,25 @@ async function printWorktimeMonthlyReport(){
     alert('Monat/Jahr ist ungültig. Bitte Auswahl prüfen.');
     return;
   }
-
-  const allTours = await getAllTours();
-  const tours = allTours.filter((tour)=> tour.period === monthFilter);
-  const reportData = collectWorktimeReportData(tours);
-  const monthLabel = new Date(`${monthFilter}-01T00:00:00`).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-  const printHtml = buildWorktimeMonthlyReportHtml(reportData, { monthLabel, period: monthFilter });
-
-  if(!openAndPrintDocument(printHtml)){
+  const popup = window.open('', '_blank');
+  if(!popup || popup === window){
     alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
+    return;
+  }
+  try{
+    const allTours = await getAllTours();
+    const tours = allTours.filter((tour)=> tour.period === monthFilter);
+    const reportData = collectWorktimeReportData(tours);
+    const monthLabel = new Date(`${monthFilter}-01T00:00:00`).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    const printHtml = buildWorktimeMonthlyReportHtml(reportData, { monthLabel, period: monthFilter });
+
+    if(!openAndPrintDocument(printHtml, popup)){
+      try { popup.close(); } catch(_err){ /* noop */ }
+      alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
+    }
+  }catch(err){
+    try { popup.close(); } catch(_err){ /* noop */ }
+    throw err;
   }
 }
 
