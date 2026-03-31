@@ -1995,6 +1995,8 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
       border-radius: 10px;
       background: var(--card-bg);
       padding: 10px;
+      break-inside: avoid-page;
+      page-break-inside: avoid;
     }
     .card .label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
     .card .value { font-size: 1.05rem; font-weight: 700; }
@@ -2008,7 +2010,9 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 8px;
+      -webkit-column-break-inside: avoid;
       break-inside: avoid;
+      break-inside: avoid-page;
       page-break-inside: avoid;
     }
     .entry-main {
@@ -2031,6 +2035,18 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
     }
     @media print {
       body { padding: 0; }
+      .cards,
+      .entries {
+        display: block;
+      }
+      .card,
+      .entry {
+        margin: 0 0 8px;
+      }
+      .card:last-child,
+      .entry:last-child {
+        margin-bottom: 0;
+      }
       * {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
