@@ -1951,7 +1951,12 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
   const printedAt = new Date().toLocaleString('de-DE');
   const targetLabel = minutesToHoursLabel(expectedMinutes);
   const actualLabel = minutesToHoursLabel(totalWorkMinutes);
-  const averageWorkLabel = reportRows.length ? minutesToHoursLabel(Math.round(totalWorkMinutes / reportRows.length)) : '00:00 h';
+  const nonWorkingDayCount = vacationAndCompCount + sickCount;
+  const adjustedWorkdayCount = Math.max(0, reportRows.length - nonWorkingDayCount);
+  const adjustedWorkMinutes = totalWorkMinutes - (nonWorkingDayCount * REGULAR_WORK_MINUTES);
+  const averageWorkLabel = adjustedWorkdayCount > 0
+    ? minutesToHoursLabel(Math.round(adjustedWorkMinutes / adjustedWorkdayCount))
+    : '00:00 h';
 
   const rowsHtml = reportRows.map((row)=>{
     const dateLabel = row.tour.date ? new Date(row.tour.date).toLocaleDateString('de-DE') : '—';
