@@ -2061,16 +2061,30 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
 </html>`;
 }
 
+function resolveTourMonthPeriod(tour){
+  const explicitPeriod = normalizePeriodValue(tour?.period, tour?.date);
+  if(explicitPeriod) return explicitPeriod;
+  const rawDate = String(tour?.date || '').trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return '';
+  return rawDate.slice(0, 7);
+}
+
+function filterToursForMonth(tours, monthFilter){
+  return (Array.isArray(tours) ? tours : []).filter((tour)=> resolveTourMonthPeriod(tour) === monthFilter);
+}
+
 async function printWorktimeMonthlyReport(){
   const monthFilter = `${selectYear?.value || ''}-${selectMonth?.value || ''}`;
   if(!/^\d{4}-\d{2}$/.test(monthFilter)){
     alert('Monat/Jahr ist ungültig. Bitte Auswahl prüfen.');
     return;
   }
+
   const popup = window.open('', '_blank');
   try{
     const allTours = await getAllTours();
-    const tours = allTours.filter((tour)=> tour.period === monthFilter);
+    const tours = filterToursForMonth(allTours, monthFilter)
+      .sort((a, b)=> String(a.date || '').localeCompare(String(b.date || '')));
     const reportData = collectWorktimeReportData(tours);
     const monthLabel = new Date(`${monthFilter}-01T00:00:00`).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
     const printHtml = buildWorktimeMonthlyReportHtml(reportData, { monthLabel, period: monthFilter });
