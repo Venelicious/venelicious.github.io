@@ -2577,14 +2577,15 @@ function createStatsMetricRow(label, value, total){
   row.className = 'statsMetricRow';
 
   const normalizedLabel = String(label || '').trim().toLowerCase();
-  const statusColorClass = {
-    kauf: 'statsMetric--kauf',
-    ne: 'statsMetric--ne',
-    kb: 'statsMetric--kb',
-    absage: 'statsMetric--absage',
-    reserviert: 'statsMetric--reservierung',
-    reservierung: 'statsMetric--reservierung'
-  }[normalizedLabel] || '';
+  const statusColorClass = normalizedLabel.startsWith('kauf')
+    ? 'statsMetric--kauf'
+    : ({
+      ne: 'statsMetric--ne',
+      kb: 'statsMetric--kb',
+      absage: 'statsMetric--absage',
+      reserviert: 'statsMetric--reservierung',
+      reservierung: 'statsMetric--reservierung'
+    }[normalizedLabel] || '');
   if(statusColorClass) row.classList.add(statusColorClass);
 
   const labelEl = document.createElement('span');
