@@ -1946,17 +1946,21 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
     if(row.exceedsDailyMax) warningParts.push('⛔ >10h');
     if(row.violatesRestTime) warningParts.push('🌙 <11h Ruhezeit');
     return `
-      <tr>
-        <td>${sanitizeForPdf(dateLabel)}</td>
-        <td>${sanitizeForPdf(row.tour.id || '—')}</td>
-        <td>${sanitizeForPdf(row.tour.tourType || '—')}</td>
-        <td>${minutesToHoursLabel(REGULAR_WORK_MINUTES)}</td>
-        <td>${minutesToHoursLabel(row.metrics.workMinutes)}</td>
-        <td>${minutesToSignedHoursLabel(row.deltaToTarget)}</td>
-        <td>${row.metrics.breakMinutes} Min</td>
-        <td>${minutesToHoursLabel(row.metrics.fieldMinutes)}</td>
-        <td>${sanitizeForPdf(warningParts.join(' · ') || '—')}</td>
-      </tr>
+      <article class="entry">
+        <div class="entry-main">
+          <strong>${sanitizeForPdf(dateLabel)}</strong>
+          <span>Tour ${sanitizeForPdf(row.tour.id || '—')}</span>
+          <span>${sanitizeForPdf(row.tour.tourType || '—')}</span>
+        </div>
+        <div class="entry-metrics">
+          <span><b>Soll:</b> ${minutesToHoursLabel(REGULAR_WORK_MINUTES)}</span>
+          <span><b>Ist:</b> ${minutesToHoursLabel(row.metrics.workMinutes)}</span>
+          <span><b>Delta:</b> ${minutesToSignedHoursLabel(row.deltaToTarget)}</span>
+          <span><b>Pause:</b> ${row.metrics.breakMinutes} Min</span>
+          <span><b>Außendienst:</b> ${minutesToHoursLabel(row.metrics.fieldMinutes)}</span>
+          <span><b>Hinweis:</b> ${sanitizeForPdf(warningParts.join(' · ') || '—')}</span>
+        </div>
+      </article>
     `;
   }).join('');
 
@@ -1976,6 +1980,7 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
       --warning-bg: #fff4df;
     }
     * { box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 10mm; }
     body { font-family: Arial, sans-serif; color: var(--text); margin: 0; padding: 16px; }
     h1 { margin: 0 0 4px; font-size: 1.35rem; }
     .meta { margin: 0; color: var(--muted); font-size: 0.9rem; }
@@ -1994,23 +1999,35 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
     .card .label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
     .card .value { font-size: 1.05rem; font-weight: 700; }
     .card.warning { background: var(--warning-bg); }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.86rem;
+    .entries {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
     }
-    th, td {
+    .entry {
       border: 1px solid var(--line);
-      padding: 6px 8px;
-      text-align: left;
-      vertical-align: top;
+      border-radius: 10px;
+      padding: 8px;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
-    th {
-      background: var(--head-bg);
-      color: var(--head-text);
-      font-weight: 700;
-      position: sticky;
-      top: 0;
+    .entry-main {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: baseline;
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+    }
+    .entry-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4px 10px;
+      font-size: 0.82rem;
+    }
+    .entry-metrics span {
+      border-top: 1px dashed #dfe6f2;
+      padding-top: 3px;
     }
     @media print {
       body { padding: 0; }
@@ -2037,24 +2054,9 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
     <article class="card warning"><span class="label">Warnungen</span><span class="value">${maxDailyExceededCount}× >10h · ${restViolationCount}× Ruhezeit</span></article>
   </section>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Datum</th>
-        <th>Tour</th>
-        <th>Art</th>
-        <th>Soll</th>
-        <th>Ist</th>
-        <th>Delta</th>
-        <th>Pause</th>
-        <th>Außendienst</th>
-        <th>Hinweis</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rowsHtml || '<tr><td colspan="9">Keine Arbeitszeitdaten im ausgewählten Monat.</td></tr>'}
-    </tbody>
-  </table>
+  <section class="entries">
+    ${rowsHtml || '<article class="entry">Keine Arbeitszeitdaten im ausgewählten Monat.</article>'}
+  </section>
 </body>
 </html>`;
 }
