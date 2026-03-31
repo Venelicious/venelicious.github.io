@@ -132,12 +132,22 @@ function normalizeTourRecord(tour = {}){
 
   normalized.newC = Number(normalized.newC || 0);
   normalized.integrations = Number(normalized.integrations || 0);
-  normalized.integrationBought = Number(
-    normalized.integrationBought
+  normalized.integrationBought15 = Number(
+    normalized.integrationBought15
+    ?? normalized.integrationBought
     ?? normalized.integrationKauf
     ?? normalized.integrations
     ?? 0
   );
+  normalized.integrationBought20 = Number(
+    normalized.integrationBought20
+    ?? normalized.integrationBought
+    ?? normalized.integrationKauf
+    ?? normalized.integrations
+    ?? 0
+  );
+  // Legacy-Feld für Abwärtskompatibilität behalten: entspricht Käufe >20€
+  normalized.integrationBought = normalized.integrationBought20;
   normalized.integrationUnreachable = Number(normalized.integrationUnreachable || 0);
   normalized.integrationNoNeed = Number(normalized.integrationNoNeed || 0);
   normalized.integrationCancelled = Number(normalized.integrationCancelled || 0);
@@ -1305,7 +1315,7 @@ bindById('exportCsv', 'click', async ()=>{
     const gutsCents = toCents(t.gutscheine || 0);
     const totCents = baseCents + reklCents + gutsCents;
     const nk = computeNeukundenBonusForTourCents(t.newC || 0, totalNKThisMonth, conf);
-    const ip = computeIntegrationCents(t.integrationBought || 0, conf);
+    const ip = computeIntegrationCents(t.integrationBought20 || 0, conf);
     const actionsSum = computeActionSum(t.actions || []);
     const actionsPiece = (t.actions && t.actions.length) ? t.actions.reduce((s,a)=>s+Number(a.qty||0),0) : 0;
     const paprovVal = (t.tourType !== 'tourentag' && conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? conf.paprovPerMonth[t.period] : 0;
@@ -1398,7 +1408,8 @@ bindById('addBtn', 'click', async ()=>{
     tourdayKb: Number(document.getElementById('tourdayKb').value || 0),
     tourdayCancelled: Number(document.getElementById('tourdayCancelled').value || 0),
     tourdayReserved: Number(document.getElementById('tourdayReserved').value || 0),
-    integrationBought: Number(document.getElementById('integrationBought').value || 0),
+    integrationBought15: Number(document.getElementById('integrationBought15').value || 0),
+    integrationBought20: Number(document.getElementById('integrationBought20').value || 0),
     integrationUnreachable: Number(document.getElementById('integrationUnreachable').value || 0),
     integrationNoNeed: Number(document.getElementById('integrationNoNeed').value || 0),
     integrationCancelled: Number(document.getElementById('integrationCancelled').value || 0),
@@ -1428,7 +1439,7 @@ bindById('addBtn', 'click', async ()=>{
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
   document.getElementById('prevDayBought').value=0; document.getElementById('prevDayNi').value=0; document.getElementById('prevDayKb').value=0;
-  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('tourdayCancelled').value=0; document.getElementById('tourdayReserved').value=0; document.getElementById('integrationBought').value=0;
+  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('tourdayCancelled').value=0; document.getElementById('tourdayReserved').value=0; document.getElementById('integrationBought15').value=0; document.getElementById('integrationBought20').value=0;
   document.getElementById('integrationUnreachable').value=0; document.getElementById('integrationNoNeed').value=0;
   document.getElementById('integrationCancelled').value=0; document.getElementById('integrationPreordered').value=0;
   document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
@@ -1447,7 +1458,7 @@ bindById('clearBtn', 'click', ()=>{
   document.getElementById('newCustomers').value=0; document.getElementById('integrations').value=0;
   document.getElementById('schooldayCustomers').value=0; document.getElementById('prevDayUnreachable').value=0;
   document.getElementById('prevDayBought').value=0; document.getElementById('prevDayNi').value=0; document.getElementById('prevDayKb').value=0;
-  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('tourdayCancelled').value=0; document.getElementById('tourdayReserved').value=0; document.getElementById('integrationBought').value=0;
+  document.getElementById('buyingCustomers').value=0; document.getElementById('tourdayNi').value=0; document.getElementById('tourdayKb').value=0; document.getElementById('tourdayCancelled').value=0; document.getElementById('tourdayReserved').value=0; document.getElementById('integrationBought15').value=0; document.getElementById('integrationBought20').value=0;
   document.getElementById('integrationUnreachable').value=0; document.getElementById('integrationNoNeed').value=0;
   document.getElementById('integrationCancelled').value=0; document.getElementById('integrationPreordered').value=0;
   document.getElementById('threeCustomersTotal').value=0; document.getElementById('threeCustomersBought').value=0; document.getElementById('threeCustomersNi').value=0;
@@ -2055,10 +2066,6 @@ async function printWorktimeMonthlyReport(){
     return;
   }
   const popup = window.open('', '_blank');
-  if(!popup || popup === window){
-    alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
-    return;
-  }
   try{
     const allTours = await getAllTours();
     const tours = allTours.filter((tour)=> tour.period === monthFilter);
@@ -2067,11 +2074,11 @@ async function printWorktimeMonthlyReport(){
     const printHtml = buildWorktimeMonthlyReportHtml(reportData, { monthLabel, period: monthFilter });
 
     if(!openAndPrintDocument(printHtml, popup)){
-      try { popup.close(); } catch(_err){ /* noop */ }
+      try { popup?.close(); } catch(_err){ /* noop */ }
       alert('Drucken wurde vom Browser blockiert. Bitte Pop-ups für diese Seite erlauben.');
     }
   }catch(err){
-    try { popup.close(); } catch(_err){ /* noop */ }
+    try { popup?.close(); } catch(_err){ /* noop */ }
     throw err;
   }
 }
@@ -2226,7 +2233,7 @@ async function renderTours(){
     }
     if(t.tourType === 'neukundentour') countNeukundentouren++;
 
-    totalIntegrationCents += computeIntegrationCents(t.integrationBought || 0, conf);
+    totalIntegrationCents += computeIntegrationCents(t.integrationBought20 || 0, conf);
     const spC = computeSpesenCentsForTour(t, conf);
     totalSpesenCents += spC;
     totalActionProvCents += computeActionProvisionCents(t.actions || []);
@@ -2305,7 +2312,7 @@ async function renderTours(){
         `D3: ${t.threeCustomersTotal || 0}`,
         `Tourentag K/NE/KB/A/R: ${t.buyingCustomers || 0}/${t.tourdayNi || 0}/${t.tourdayKb || 0}/${t.tourdayCancelled || 0}/${t.tourdayReserved || 0}`,
         `Nachbearbeitung K/NE/KB: ${t.prevDayBought || 0}/${t.prevDayNi || 0}/${t.prevDayKb || 0}`,
-        `Integration K/NE/KB/A/VB: ${t.integrationBought || 0}/${t.integrationUnreachable || 0}/${t.integrationNoNeed || 0}/${t.integrationCancelled || 0}/${t.integrationPreordered || 0}`,
+        `Integration K>15€/K>20€/NE/KB/A/VB: ${t.integrationBought15 || t.integrationBought || 0}/${t.integrationBought20 || t.integrationBought || 0}/${t.integrationUnreachable || 0}/${t.integrationNoNeed || 0}/${t.integrationCancelled || 0}/${t.integrationPreordered || 0}`,
         `D3 K/NE/KB/A/VB: ${t.threeCustomersBought || 0}/${t.threeCustomersNi || 0}/${t.threeCustomersKb || 0}/${t.threeCustomersCancelled || 0}/${t.threeCustomersPreordered || 0}`,
         `Spesen: ${fromCents(spC)}`,
         `Aktionen: ${actionsPieceCount} (${fromCents(actionsSumCents)})`,
@@ -2493,7 +2500,8 @@ function collectTourdayStats(t){
   const vortagKb = Number(t.prevDayKb || 0);
 
   const integrationAnzahl = Number(t.integrations || 0);
-  const integrationKauf = Number(t.integrationBought || 0);
+  const integrationKauf15 = Number(t.integrationBought15 || 0);
+  const integrationKauf20 = Number(t.integrationBought20 || t.integrationBought || 0);
   const integrationNe = Number(t.integrationUnreachable || 0);
   const integrationKb = Number(t.integrationNoNeed || 0);
   const integrationAbsage = Number(t.integrationCancelled || 0);
@@ -2521,7 +2529,8 @@ function collectTourdayStats(t){
     vortagNeStatus,
     vortagKb,
     integrationAnzahl,
-    integrationKauf,
+    integrationKauf15,
+    integrationKauf20,
     integrationNe,
     integrationKb,
     integrationAbsage,
@@ -2623,7 +2632,8 @@ function createEmptyTourdayTotals(){
     absage: 0,
     reserviert: 0,
     integrationAnzahl: 0,
-    integrationKauf: 0,
+    integrationKauf15: 0,
+    integrationKauf20: 0,
     integrationNe: 0,
     integrationKb: 0,
     integrationAbsage: 0,
@@ -2651,7 +2661,8 @@ function mergeTourdayTotals(target, stats){
   target.reserviert += stats.reserviert;
 
   target.integrationAnzahl += stats.integrationAnzahl;
-  target.integrationKauf += stats.integrationKauf;
+  target.integrationKauf15 += stats.integrationKauf15;
+  target.integrationKauf20 += stats.integrationKauf20;
   target.integrationNe += stats.integrationNe;
   target.integrationKb += stats.integrationKb;
   target.integrationAbsage += stats.integrationAbsage;
@@ -2713,7 +2724,8 @@ function createStatsDashboard(totals, averageOrderValue, revenueTargetModel){
       { label: 'KB', value: totals.vortagKb },
     ], 'statsCard--secondary'),
     createStatsCard('Integrationen', totals.integrationAnzahl, [
-      { label: 'Kauf', value: totals.integrationKauf },
+      { label: 'Kauf >15€', value: totals.integrationKauf15 },
+      { label: 'Kauf >20€', value: totals.integrationKauf20 },
       { label: 'NE', value: totals.integrationNe },
       { label: 'KB', value: totals.integrationKb },
       { label: 'Absage', value: totals.integrationAbsage },
@@ -3293,7 +3305,8 @@ function openEditModalFor(entry, key){
   setEditValue('editTourdayKb', entry.tourdayKb || 0);
   setEditValue('editTourdayCancelled', entry.tourdayCancelled || 0);
   setEditValue('editTourdayReserved', entry.tourdayReserved || 0);
-  setEditValue('editIntegrationBought', entry.integrationBought || 0);
+  setEditValue('editIntegrationBought15', entry.integrationBought15 || entry.integrationBought || 0);
+  setEditValue('editIntegrationBought20', entry.integrationBought20 || entry.integrationBought || 0);
   setEditValue('editIntegrationUnreachable', entry.integrationUnreachable || 0);
   setEditValue('editIntegrationNoNeed', entry.integrationNoNeed || 0);
   setEditValue('editIntegrationCancelled', entry.integrationCancelled || 0);
@@ -3348,7 +3361,9 @@ bindById('saveEdit', 'click', async ()=>{
   t.tourdayKb = Number(getEditValue('editTourdayKb', '0') || 0);
   t.tourdayCancelled = Number(getEditValue('editTourdayCancelled', '0') || 0);
   t.tourdayReserved = Number(getEditValue('editTourdayReserved', '0') || 0);
-  t.integrationBought = Number(getEditValue('editIntegrationBought', '0') || 0);
+  t.integrationBought15 = Number(getEditValue('editIntegrationBought15', '0') || 0);
+  t.integrationBought20 = Number(getEditValue('editIntegrationBought20', '0') || 0);
+  t.integrationBought = t.integrationBought20;
   t.integrationUnreachable = Number(getEditValue('editIntegrationUnreachable', '0') || 0);
   t.integrationNoNeed = Number(getEditValue('editIntegrationNoNeed', '0') || 0);
   t.integrationCancelled = Number(getEditValue('editIntegrationCancelled', '0') || 0);
@@ -3414,7 +3429,7 @@ bindById('exportPdf', 'click', async () => {
     if(t.tourType==='tourentag'){ totalVGRevenueCents += tourTotal; countVGTours++; }
     if(t.tourType==='neukundentour') countNeukundentouren++;
     totalNKCount += Number(t.newC || 0);
-    totalIntegrationCents += computeIntegrationCents(t.integrationBought||0,conf);
+    totalIntegrationCents += computeIntegrationCents(t.integrationBought20||0,conf);
     totalSpesenCents += computeSpesenCentsForTour(t,conf);
     totalActionProvCents += computeActionProvisionCents(t.actions||[]);
     let extra=0;
