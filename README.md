@@ -183,7 +183,8 @@
         <h4>Integrationen</h4>
         <div class="compact-metrics-row">
           <label>Anzahl<input id="integrations" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="integrationBought" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf &gt;15€<input id="integrationBought15" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf &gt;20€<input id="integrationBought20" type="number" step="1" min="0" value="0"/></label>
           <label>NE<input id="integrationUnreachable" type="number" step="1" min="0" value="0"/></label>
           <label>KB<input id="integrationNoNeed" type="number" step="1" min="0" value="0"/></label>
           <label>Absage<input id="integrationCancelled" type="number" step="1" min="0" value="0"/></label>
@@ -738,7 +739,8 @@
         <h4>Integrationen</h4>
         <div class="compact-metrics-row">
           <label>Anzahl<input id="editIntegrations" type="number" step="1" min="0" value="0"/></label>
-          <label>Kauf<input id="editIntegrationBought" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf &gt;15€<input id="editIntegrationBought15" type="number" step="1" min="0" value="0"/></label>
+          <label>Kauf &gt;20€<input id="editIntegrationBought20" type="number" step="1" min="0" value="0"/></label>
           <label>NE<input id="editIntegrationUnreachable" type="number" step="1" min="0" value="0"/></label>
           <label>KB<input id="editIntegrationNoNeed" type="number" step="1" min="0" value="0"/></label>
           <label>Absage<input id="editIntegrationCancelled" type="number" step="1" min="0" value="0"/></label>
