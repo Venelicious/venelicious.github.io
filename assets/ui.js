@@ -1880,6 +1880,8 @@ function collectWorktimeReportData(tours){
   let totalOvertimeMinutes = 0;
   let maxDailyExceededCount = 0;
   let restViolationCount = 0;
+  let vacationAndCompCount = 0;
+  let sickCount = 0;
 
   const reportRows = sortedTours.map((tour)=>{
     const metrics = computeWorktimeForTour(tour);
@@ -1896,6 +1898,13 @@ function collectWorktimeReportData(tours){
     if(violatesRestTime) restViolationCount += 1;
 
     const deltaToTarget = metrics.workMinutes - REGULAR_WORK_MINUTES;
+    const tourType = String(tour?.tourType || '').trim().toLowerCase();
+    if(tourType === 'urlaub' || tourType === 'freizeitausgleich'){
+      vacationAndCompCount += 1;
+    }
+    if(tourType === 'krank'){
+      sickCount += 1;
+    }
     return {
       tour,
       metrics,
@@ -1917,7 +1926,9 @@ function collectWorktimeReportData(tours){
     expectedMinutes,
     balanceMinutes,
     maxDailyExceededCount,
-    restViolationCount
+    restViolationCount,
+    vacationAndCompCount,
+    sickCount
   };
 }
 
@@ -1930,7 +1941,9 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
     totalOvertimeMinutes,
     expectedMinutes,
     maxDailyExceededCount,
-    restViolationCount
+    restViolationCount,
+    vacationAndCompCount,
+    sickCount
   } = data;
 
   const monthLabel = sanitizeForPdf(meta.monthLabel || 'Monat');
@@ -2066,6 +2079,8 @@ function buildWorktimeMonthlyReportHtml(data, meta = {}){
     <article class="card"><span class="label">Außendienstzeit</span><span class="value">${minutesToHoursLabel(totalFieldMinutes)}</span></article>
     <article class="card"><span class="label">Pausen gesamt</span><span class="value">${totalBreakMinutes} Min</span></article>
     <article class="card"><span class="label">Erfasste Tage</span><span class="value">${reportRows.length}</span></article>
+    <article class="card"><span class="label">Urlaub/Freizeitausgleich</span><span class="value">${vacationAndCompCount}</span></article>
+    <article class="card"><span class="label">Krankheit</span><span class="value">${sickCount}</span></article>
     <article class="card"><span class="label">Ø Istzeit pro Tag</span><span class="value">${averageWorkLabel}</span></article>
     <article class="card warning"><span class="label">Warnungen</span><span class="value">${maxDailyExceededCount}× >10h · ${restViolationCount}× Ruhezeit</span></article>
   </section>
