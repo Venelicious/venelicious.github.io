@@ -731,6 +731,9 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
 .right { margin-left: auto; }
 
 .customer-agreements-list { display: grid; gap: 10px; }
+.customer-filter-row { display: flex; gap: 8px; margin: 10px 0 6px; align-items: center; }
+.customer-filter-input { flex: 1; min-width: 220px; }
+.customer-filter-count { margin-bottom: 8px; font-size: 0.88rem; }
 .customer-agreement-card { border: 1px solid #cfe2ff; border-radius: 4px; background: #fff; padding: 10px; }
 .customer-agreement-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .customer-agreement-title { font-weight: 700; }
@@ -829,6 +832,7 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   .headerCompactPeriodFields { gap: 4px; }
   .headerCompactPeriodFields select { min-width: 21px; font-size: 0.18rem; padding: 1px 2px; }
   .tabButton { font-size: 0.82rem; padding: 8px 10px; }
+  .customer-filter-row { flex-direction: column; align-items: stretch; }
   .customer-agreement-top-row { flex-direction: column; align-items: flex-start; }
   .tour-bubble-top-row { flex-direction: column; align-items: flex-start; }
 }

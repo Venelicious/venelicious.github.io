@@ -52,6 +52,9 @@ let editingCustomerAgreementId = null;
 let saveCustomerAgreementBtn;
 let printCustomerListBtn;
 let customerEditModal;
+let customerFilterInput;
+let customerFilterCountHint;
+let customerFilterQuery = '';
 let currentSort = { key:null, dir:'asc' };
 let appliedStatsRange = null;
 let statsRangeDirty = false;
@@ -967,9 +970,11 @@ function openAndPrintDocument(html, existingPopup = null){
 
 async function renderCustomerAgreements(){
   if(!customerAgreementsList) return;
+  ensureCustomerAgreementFilter();
   const agreements = await getAllCustomerAgreements();
   if(!agreements.length){
     customerAgreementsList.innerHTML = '<div class="muted">Noch keine Kundenabsprachen gespeichert.</div>';
+    if(customerFilterCountHint) customerFilterCountHint.textContent = '';
     return;
   }
 
@@ -986,8 +991,25 @@ async function renderCustomerAgreements(){
     return (a.since || '').localeCompare((b.since || ''));
   });
 
+  const normalizedQuery = customerFilterQuery.trim().toLocaleLowerCase('de-DE');
+  const filteredAgreements = normalizedQuery
+    ? agreements.filter((agreement)=> buildCustomerAgreementSearchText(agreement).includes(normalizedQuery))
+    : agreements;
+
+  if(customerFilterCountHint){
+    const infoText = normalizedQuery
+      ? `${filteredAgreements.length} von ${agreements.length} Kundenabsprachen angezeigt`
+      : `${agreements.length} Kundenabsprachen`;
+    customerFilterCountHint.textContent = infoText;
+  }
+
+  if(!filteredAgreements.length){
+    customerAgreementsList.innerHTML = '<div class="muted">Keine Kundenabsprachen passend zum Filter gefunden.</div>';
+    return;
+  }
+
   customerAgreementsList.innerHTML = '';
-  agreements.forEach(agreement=>{
+  filteredAgreements.forEach(agreement=>{
     const card = document.createElement('div');
     card.className = 'customer-agreement-card';
 
@@ -1055,6 +1077,53 @@ async function renderCustomerAgreements(){
     card.append(topRow, meta, note, controls);
     customerAgreementsList.appendChild(card);
   });
+}
+
+function buildCustomerAgreementSearchText(agreement){
+  return [
+    agreement.customerNumber || '',
+    agreement.customerLastName || '',
+    agreement.customerFirstName || '',
+    agreement.customerStreet || '',
+    agreement.customerHouseNumber || '',
+    agreement.customerPostalCode || '',
+    agreement.customerCity || '',
+    mapAgreementTypeLabel(agreement.type),
+    agreement.note || ''
+  ].join(' ').toLocaleLowerCase('de-DE');
+}
+
+function ensureCustomerAgreementFilter(){
+  if(customerFilterInput || !customerAgreementsList) return;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'customer-filter-row';
+
+  customerFilterInput = document.createElement('input');
+  customerFilterInput.type = 'search';
+  customerFilterInput.className = 'customer-filter-input';
+  customerFilterInput.placeholder = 'Kunden filtern (Name, Nr., Adresse, Notiz …)';
+  customerFilterInput.setAttribute('aria-label', 'Kundenliste filtern');
+  customerFilterInput.addEventListener('input', ()=>{
+    customerFilterQuery = customerFilterInput.value || '';
+    renderCustomerAgreements().catch(err => console.error('Kundenfilter anwenden fehlgeschlagen', err));
+  });
+
+  const clearBtn = document.createElement('button');
+  clearBtn.type = 'button';
+  clearBtn.className = 'small';
+  clearBtn.textContent = 'Filter löschen';
+  clearBtn.addEventListener('click', ()=>{
+    customerFilterQuery = '';
+    customerFilterInput.value = '';
+    renderCustomerAgreements().catch(err => console.error('Kundenfilter zurücksetzen fehlgeschlagen', err));
+  });
+
+  customerFilterCountHint = document.createElement('div');
+  customerFilterCountHint.className = 'muted customer-filter-count';
+
+  wrapper.append(customerFilterInput, clearBtn);
+  customerAgreementsList.insertAdjacentElement('beforebegin', wrapper);
+  wrapper.insertAdjacentElement('afterend', customerFilterCountHint);
 }
 
 /* ========== Data-Operationen via IndexedDB ========== */
