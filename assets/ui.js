@@ -1881,7 +1881,7 @@ function minutesToSignedHoursLabel(minutes){
 }
 
 function computeWorktimeForTour(tour){
-  if(tour?.tourType === 'krank' || tour?.tourType === 'urlaub'){
+  if(tour?.tourType === 'krank' || tour?.tourType === 'urlaub' || tour?.tourType === 'freizeitausgleich'){
     return {
       workMinutes: REGULAR_WORK_MINUTES,
       fieldMinutes: 0,
