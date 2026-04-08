@@ -1387,7 +1387,7 @@ bindById('exportCsv', 'click', async ()=>{
     const ip = computeIntegrationCents(t.integrationBought20 || 0, conf);
     const actionsSum = computeActionSum(t.actions || []);
     const actionsPiece = (t.actions && t.actions.length) ? t.actions.reduce((s,a)=>s+Number(a.qty||0),0) : 0;
-    const paprovVal = (t.tourType !== 'tourentag' && conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? conf.paprovPerMonth[t.period] : 0;
+    const paprovVal = (t.tourType !== 'tourentag' && t.tourType !== 'freizeitausgleich' && conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? conf.paprovPerMonth[t.period] : 0;
     const actionsJson = JSON.stringify(t.actions || []);
     csv += `${t.date};${t.id};${t.tourType};${fromCents(totCents)};${getRevenueTargetValue(t).toFixed(2)};${fromCents(reklCents)};${fromCents(gutsCents)};${t.newC||0};${fromCents(nk)};${t.integrations||0};${fromCents(ip)};"${actionsJson.replace(/"/g,'""')}";${actionsPiece};${actionsSum.toFixed(2)};${t.vertretung?"JA":"NEIN"};${t.fahrt45?"JA":"NEIN"};${t.einbringung?"JA":"NEIN"};${t.workStart||''};${t.tourStart||''};${Number(t.breakMinutes ?? 45)};${t.tourEnd||''};${t.workEnd||''};${t.period};${paprovVal.toFixed(2)};"${(t.note||'').replace(/"/g,'""')}"\n`;
   });
@@ -2366,7 +2366,7 @@ async function renderTours(){
     if(t.einbringung) totalFreizeitausgleichCents -= toCents(130);
     if(t.tourType === 'freizeitausgleich') totalFreizeitausgleichCents += toCents(130);
 
-    if(t.tourType !== 'tourentag'){
+    if(t.tourType !== 'tourentag' && t.tourType !== 'freizeitausgleich'){
       const paprovVal = (conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? toCents(conf.paprovPerMonth[t.period]) : 0;
       totalPaprovCents += paprovVal;
     }
@@ -2543,7 +2543,7 @@ async function renderTours(){
   const heimschlaefer = getHeimschlaeferForPeriod(conf, monthFilter);
   const heimschlaeferNettoCents = heimschlaefer.enabled ? toCents(heimschlaefer.netto) : 0;
   const payoutNettoCents = heimschlaefer.enabled ? heimschlaeferNettoCents : nettoFromBruttoCents;
-  const finalPayoutCents = nettoFromBruttoCents + payoutNettoCents + totalSpesenCents;
+  const finalPayoutCents = payoutNettoCents + totalSpesenCents;
 
   const { rv, av, kv, pv, lohnsteuer, soli, kirche, bav } = netResult.breakdown;
 
@@ -3560,7 +3560,7 @@ bindById('exportPdf', 'click', async () => {
     totalExtrasCents += extra;
     if(t.einbringung) totalFreizeitausgleichCents -= toCents(130);
     if(t.tourType === 'freizeitausgleich') totalFreizeitausgleichCents += toCents(130);
-    if(t.tourType !== 'tourentag'){
+    if(t.tourType !== 'tourentag' && t.tourType !== 'freizeitausgleich'){
       const paprovVal = (conf.paprovPerMonth && conf.paprovPerMonth[t.period]) ? toCents(conf.paprovPerMonth[t.period]) : 0;
       totalPaprovCents += paprovVal;
     }
