@@ -829,9 +829,9 @@ async function printCustomerAgreements(filter = {}){
       overflow-wrap: anywhere;
       word-break: break-word;
     }
-    tr {
-      break-inside: avoid-page;
-      page-break-inside: avoid;
+    table, thead, tbody, tr, th, td {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
     .note-cell { white-space: pre-wrap; }
     th {
@@ -2542,7 +2542,7 @@ async function renderTours(){
   const nettoFromBruttoCents = Math.round(netResult.netto*100);
   const heimschlaefer = getHeimschlaeferForPeriod(conf, monthFilter);
   const heimschlaeferNettoCents = heimschlaefer.enabled ? toCents(heimschlaefer.netto) : 0;
-  const payoutNettoCents = heimschlaefer.enabled ? heimschlaeferNettoCents : nettoFromBruttoCents;
+  const payoutNettoCents = nettoFromBruttoCents + heimschlaeferNettoCents;
   const finalPayoutCents = payoutNettoCents + totalSpesenCents;
 
   const { rv, av, kv, pv, lohnsteuer, soli, kirche, bav } = netResult.breakdown;
@@ -3584,7 +3584,7 @@ bindById('exportPdf', 'click', async () => {
   const nettoFromBruttoCents = Math.round(netResult.netto*100);
   const heimschlaefer = getHeimschlaeferForPeriod(conf, periodKey);
   const heimschlaeferNettoCents = heimschlaefer.enabled ? toCents(heimschlaefer.netto) : 0;
-  const payoutNettoCents = heimschlaefer.enabled ? heimschlaeferNettoCents : nettoFromBruttoCents;
+  const payoutNettoCents = nettoFromBruttoCents + heimschlaeferNettoCents;
   const finalPayoutCents = payoutNettoCents + totalSpesenCents;
 
   doc.setFillColor(11,37,69); doc.rect(0,0,doc.internal.pageSize.width,70,'F');
@@ -3595,6 +3595,9 @@ bindById('exportPdf', 'click', async () => {
 
   let y = 100; doc.setFontSize(11);
   const left = 40, colXVal = 380;
+  const payoutLabel = heimschlaefer.enabled
+    ? 'End-Auszahlung (Netto + Heimschläfer + Spesen)'
+    : 'End-Auszahlung (Netto + Spesen)';
   const summaryRows = [
     ['Anzahl Touren (Monat)', `${totalTours}`],
     ['Tourentage (VG)', `${countVGTours}`],
@@ -3616,7 +3619,7 @@ bindById('exportPdf', 'click', async () => {
     ['Monatsbrutto (für Netto)', `€ ${fromCents(monthlyBeforeSpesenCents)}`],
     ['Betriebliche Altersvorsorge', `€ ${netResult.breakdown.bav.toFixed(2)}`],
     ['Netto (ohne Spesen)', `€ ${fromCents(nettoFromBruttoCents)}`],
-    ['End-Auszahlung (Netto + Spesen)', `€ ${fromCents(finalPayoutCents)}`]
+    [payoutLabel, `€ ${fromCents(finalPayoutCents)}`]
   ];
   if(heimschlaefer.enabled){
     summaryRows.splice(summaryRows.length - 1, 0, ['Heimschläfer-Netto', `€ ${fromCents(heimschlaeferNettoCents)}`]);
