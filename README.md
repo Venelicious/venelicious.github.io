@@ -445,10 +445,28 @@
 
     <div class="row">
       <label>Name
-        <input id="nkName" placeholder="z.B. Max Mustermann" />
+        <input id="nkLastName" placeholder="z.B. Mustermann" />
       </label>
-      <label>Adresse
-        <input id="nkAddress" placeholder="z.B. Musterstraße 12, 12345 Musterstadt" />
+      <label>Vorname
+        <input id="nkFirstName" placeholder="z.B. Max" />
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Straße
+        <input id="nkStreet" placeholder="z.B. Musterstraße" />
+      </label>
+      <label>Hausnummer
+        <input id="nkHouseNumber" placeholder="z.B. 12a" />
+      </label>
+    </div>
+
+    <div class="row">
+      <label>PLZ
+        <input id="nkPostalCode" placeholder="z.B. 12345" />
+      </label>
+      <label>Ort
+        <input id="nkCity" placeholder="z.B. Musterstadt" />
       </label>
     </div>
 
@@ -493,7 +511,7 @@
       <button id="clearNeukundeBtn" class="small" type="button" aria-label="Neukundenformular leeren" title="Neukundenformular leeren">🧹</button>
     </div>
 
-    <h4 style="margin-top:14px">Gespeicherte Neukunden</h4>
+    <div style="display:flex;gap:8px;margin-top:14px;align-items:center;justify-content:space-between"><h4 style="margin:0">Gespeicherte Neukunden</h4><div style="display:flex;gap:8px"><button id="printNkListBtn" class="small" type="button" title="Neukundenliste drucken">🖨️ Liste</button></div></div>
     <div id="nkLeadsList" class="customer-agreements-list"></div>
   </div>
 </section>

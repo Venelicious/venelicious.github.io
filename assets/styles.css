@@ -853,3 +853,14 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   .compact-metrics-row,
   .compact-metrics-row--five { grid-template-columns: repeat(2, minmax(80px, 1fr)); }
 }
+
+.neukunden-tile summary{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  list-style:none;
+}
+.neukunden-tile summary::-webkit-details-marker{display:none;}
+.neukunden-tile{padding:10px;}
+.neukunden-tile > *:not(summary){margin-top:6px;}

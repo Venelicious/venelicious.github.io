@@ -567,13 +567,43 @@ function getNeukundenLeadItems(){
 }
 
 function clearNeukundenForm(){
-  const ids = ['nkName','nkAddress','nkPhone','nkEmail','nkPreferredDate','nkPreferredTimeFrom','nkPreferredTimeTo'];
+  const ids = ['nkLastName','nkFirstName','nkStreet','nkHouseNumber','nkPostalCode','nkCity','nkPhone','nkEmail','nkPreferredDate','nkPreferredTimeFrom','nkPreferredTimeTo'];
   ids.forEach((id)=>{ const el = document.getElementById(id); if(el) el.value = ''; });
   const list = document.getElementById('nkItemsList');
   if(list) list.innerHTML = '';
   updateNeukundenItemsSummary();
 }
 
+
+
+function formatNkFullName(lead){
+  return [lead.lastName || '', lead.firstName || ''].filter(Boolean).join(', ') || '—';
+}
+
+function formatNkAddress(lead){
+  const line1 = [lead.street || '', lead.houseNumber || ''].filter(Boolean).join(' ');
+  const line2 = [lead.postalCode || '', lead.city || ''].filter(Boolean).join(' ');
+  return [line1, line2].filter(Boolean).join(', ') || '—';
+}
+
+async function printNeukundenLeads(leadId = null){
+  const leads = await getAllNeukundenLeads();
+  const filtered = leadId == null ? leads : leads.filter((lead)=> lead.idAuto === leadId);
+  if(!filtered.length){ alert('Keine Neukunden zum Drucken vorhanden.'); return; }
+  const rows = filtered.map((lead)=>{
+    const items = (lead.items || []).map((item,idx)=> `<li>${idx+1}. ${sanitizeForPdf(item.articleNumber||'—')} · ${Number(item.qty||0)} × € ${Number(item.price||0).toFixed(2).replace('.', ',')}</li>`).join('');
+    return `<article style="border:1px solid #c7d0db;border-radius:8px;padding:10px;margin-bottom:10px;break-inside:avoid;">
+      <h3 style="margin:0 0 6px;">${sanitizeForPdf(formatNkFullName(lead))}</h3>
+      <div>Adresse: ${sanitizeForPdf(formatNkAddress(lead))}</div>
+      <div>Telefon: ${sanitizeForPdf(lead.phone||'—')} · E-Mail: ${sanitizeForPdf(lead.email||'—')}</div>
+      <div>Wunschtermin: ${sanitizeForPdf(lead.preferredDate||'—')} ${sanitizeForPdf(lead.preferredTimeFrom||'')} ${lead.preferredTimeTo ? '– '+sanitizeForPdf(lead.preferredTimeTo):''}</div>
+      <div>Erfasst: ${sanitizeForPdf(lead.createdAt ? new Date(lead.createdAt).toLocaleString('de-DE') : '—')}</div>
+      <ul>${items || '<li>Keine Positionen</li>'}</ul>
+    </article>`;
+  }).join('');
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Neukunden-Erstauslieferungsliste</title></head><body><h2>Neukunden-Erstauslieferungsliste</h2>${rows}<script>window.onload=()=>window.print();</script></body></html>`;
+  openAndPrintDocument(html);
+}
 async function renderNeukundenLeads(){
   neukundenLeadsList = neukundenLeadsList || document.getElementById('nkLeadsList');
   if(!neukundenLeadsList) return;
@@ -589,32 +619,37 @@ async function renderNeukundenLeads(){
   leads.forEach((lead)=>{
     const itemCount = (lead.items || []).reduce((sum, item)=> sum + Number(item.qty || 0), 0);
     const total = (lead.items || []).reduce((sum, item)=> sum + (Number(item.qty || 0) * Number(item.price || 0)), 0);
-    const itemsOverview = (lead.items || [])
-      .filter((item)=> item && (item.articleNumber || Number(item.qty || 0) > 0 || Number(item.price || 0) > 0))
-      .map((item, index)=>{
-        const article = sanitizeForPdf(item.articleNumber || '—');
-        const qty = Number(item.qty || 0);
-        const price = Number(item.price || 0).toFixed(2).replace('.', ',');
-        return `${index + 1}. ${article} · ${qty} × € ${price}`;
-      })
-      .join('<br>');
-
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="cardHeader"><strong>${sanitizeForPdf(lead.name || '—')}</strong><span class="muted">${sanitizeForPdf(lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('de-DE') : '—')}</span></div>
-      <div class="muted">${sanitizeForPdf(lead.address || '—')}</div>
+    const card = document.createElement('details');
+    card.className = 'card neukunden-tile';
+    card.innerHTML = `<summary><strong>${sanitizeForPdf(formatNkFullName(lead))}</strong><span class="muted">${sanitizeForPdf(lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('de-DE') : '—')}</span></summary>
+      <div class="muted">${sanitizeForPdf(formatNkAddress(lead))}</div>
       <div class="muted">${sanitizeForPdf(lead.phone || '—')} · ${sanitizeForPdf(lead.email || '—')}</div>
       <div class="muted">Wunschtermin: ${sanitizeForPdf(lead.preferredDate || '—')} ${sanitizeForPdf(lead.preferredTimeFrom || '')} ${lead.preferredTimeTo ? '– ' + sanitizeForPdf(lead.preferredTimeTo) : ''}</div>
       <div class="muted">Erstbestellung: ${itemCount} Artikel · € ${total.toFixed(2).replace('.', ',')}</div>
-      <div class="muted neukunden-items-overview">${itemsOverview || 'Positionen: —'}</div>
-      <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="small" type="button" data-nk-delete="${lead.idAuto}">🗑️</button></div>
-    `;
-    card.querySelector('[data-nk-delete]')?.addEventListener('click', async ()=>{
-      if(!confirm('Neukunden-Eintrag löschen?')) return;
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px"><button class="small" type="button" data-nk-print="${lead.idAuto}">🖨️</button><button class="small" type="button" data-nk-edit="${lead.idAuto}">✏️</button><button class="small" type="button" data-nk-delete="${lead.idAuto}">🗑️</button></div>`;
+
+    card.querySelector('[data-nk-print]')?.addEventListener('click', async (ev)=>{ ev.preventDefault(); await printNeukundenLeads(lead.idAuto); });
+    card.querySelector('[data-nk-edit]')?.addEventListener('click', async (ev)=>{ ev.preventDefault();
+      document.getElementById('nkLastName').value = lead.lastName || '';
+      document.getElementById('nkFirstName').value = lead.firstName || '';
+      document.getElementById('nkStreet').value = lead.street || '';
+      document.getElementById('nkHouseNumber').value = lead.houseNumber || '';
+      document.getElementById('nkPostalCode').value = lead.postalCode || '';
+      document.getElementById('nkCity').value = lead.city || '';
+      document.getElementById('nkPhone').value = lead.phone || '';
+      document.getElementById('nkEmail').value = lead.email || '';
+      document.getElementById('nkPreferredDate').value = lead.preferredDate || '';
+      document.getElementById('nkPreferredTimeFrom').value = lead.preferredTimeFrom || '';
+      document.getElementById('nkPreferredTimeTo').value = lead.preferredTimeTo || '';
+      const list = document.getElementById('nkItemsList'); list.innerHTML='';
+      (lead.items||[]).forEach((item)=> list.appendChild(createNeukundenPositionRow(item.articleNumber||'', item.price||'', item.qty||'')));
+      if(!(lead.items||[]).length) list.appendChild(createNeukundenPositionRow());
+      updateNeukundenItemsSummary();
       await idbDelete('neukundenLeads', lead.idAuto);
-      await renderNeukundenLeads();
-      await triggerAutoBackup('neukunden_deleted');
+    });
+    card.querySelector('[data-nk-delete]')?.addEventListener('click', async (ev)=>{
+      ev.preventDefault(); if(!confirm('Neukunden-Eintrag löschen?')) return;
+      await idbDelete('neukundenLeads', lead.idAuto); await renderNeukundenLeads(); await triggerAutoBackup('neukunden_deleted');
     });
     neukundenLeadsList.appendChild(card);
   });
@@ -1708,8 +1743,12 @@ const saveNeukundeBtn = document.getElementById('saveNeukundeBtn');
 if(saveNeukundeBtn){
   saveNeukundeBtn.addEventListener('click', async ()=>{
     const lead = {
-      name: (document.getElementById('nkName')?.value || '').trim(),
-      address: (document.getElementById('nkAddress')?.value || '').trim(),
+      lastName: (document.getElementById('nkLastName')?.value || '').trim(),
+      firstName: (document.getElementById('nkFirstName')?.value || '').trim(),
+      street: (document.getElementById('nkStreet')?.value || '').trim(),
+      houseNumber: (document.getElementById('nkHouseNumber')?.value || '').trim(),
+      postalCode: (document.getElementById('nkPostalCode')?.value || '').trim(),
+      city: (document.getElementById('nkCity')?.value || '').trim(),
       phone: (document.getElementById('nkPhone')?.value || '').trim(),
       email: (document.getElementById('nkEmail')?.value || '').trim(),
       preferredDate: document.getElementById('nkPreferredDate')?.value || '',
@@ -1719,8 +1758,8 @@ if(saveNeukundeBtn){
       createdAt: new Date().toISOString()
     };
 
-    if(!lead.name){
-      alert('Bitte mindestens den Namen des Neukunden eingeben.');
+    if(!lead.lastName && !lead.firstName){
+      alert('Bitte mindestens Namen oder Vornamen des Neukunden eingeben.');
       return;
     }
 
@@ -4070,3 +4109,6 @@ export async function init(){
     console.error('Touren konnten nicht geladen werden.', err);
   }
 }
+
+const printNkListBtn = document.getElementById('printNkListBtn');
+if(printNkListBtn){ printNkListBtn.addEventListener('click', ()=>{ printNeukundenLeads().catch(err=>{ console.error(err); alert('Neukundenliste konnte nicht gedruckt werden.'); }); }); }
