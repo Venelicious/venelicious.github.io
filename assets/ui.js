@@ -54,6 +54,7 @@ let printCustomerListBtn;
 let customerEditModal;
 let customerFilterInput;
 let customerFilterCountHint;
+let neukundenLeadsList = document.getElementById('nkLeadsList');
 let customerFilterQuery = '';
 let currentSort = { key:null, dir:'asc' };
 let appliedStatsRange = null;
@@ -529,6 +530,85 @@ bindById('addNkItemBtn', 'click', (event)=>{
   updateNeukundenItemsSummary();
 });
 
+
+
+async function ensureNeukundenLeadsStore(){
+  const db = await openDb();
+  if(db.objectStoreNames.contains('neukundenLeads')) return;
+
+  db.close();
+  const nextVersion = db.version + 1;
+  await new Promise((resolve, reject)=>{
+    const req = indexedDB.open(db.name, nextVersion);
+    req.onupgradeneeded = (ev)=>{
+      const upgradeDb = ev.target.result;
+      if(!upgradeDb.objectStoreNames.contains('neukundenLeads')){
+        upgradeDb.createObjectStore('neukundenLeads', { keyPath: 'idAuto', autoIncrement: true });
+      }
+    };
+    req.onsuccess = ()=>{ req.result.close(); resolve(true); };
+    req.onerror = ()=> reject(req.error);
+  });
+}
+
+async function getAllNeukundenLeads(){
+  await ensureNeukundenLeadsStore();
+  return await idbGetAll('neukundenLeads');
+}
+
+function getNeukundenLeadItems(){
+  return Array.from(document.querySelectorAll('#nkItemsList .neukunden-position-row'))
+    .map((row)=>({
+      articleNumber: (row.querySelector('.nkArticle')?.value || '').trim(),
+      price: Number(row.querySelector('.nkPrice')?.value || 0),
+      qty: Number(row.querySelector('.nkQty')?.value || 0),
+    }))
+    .filter((item)=> item.articleNumber || (item.price > 0 && item.qty > 0));
+}
+
+function clearNeukundenForm(){
+  const ids = ['nkName','nkAddress','nkPhone','nkEmail','nkPreferredDate','nkPreferredTimeFrom','nkPreferredTimeTo'];
+  ids.forEach((id)=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+  const list = document.getElementById('nkItemsList');
+  if(list) list.innerHTML = '';
+  updateNeukundenItemsSummary();
+}
+
+async function renderNeukundenLeads(){
+  neukundenLeadsList = neukundenLeadsList || document.getElementById('nkLeadsList');
+  if(!neukundenLeadsList) return;
+  const leads = await getAllNeukundenLeads();
+  leads.sort((a,b)=> (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+  if(!leads.length){
+    neukundenLeadsList.innerHTML = '<div class="muted">Noch keine Neukunden gespeichert.</div>';
+    return;
+  }
+
+  neukundenLeadsList.innerHTML = '';
+  leads.forEach((lead)=>{
+    const itemCount = (lead.items || []).reduce((sum, item)=> sum + Number(item.qty || 0), 0);
+    const total = (lead.items || []).reduce((sum, item)=> sum + (Number(item.qty || 0) * Number(item.price || 0)), 0);
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="cardHeader"><strong>${sanitizeForPdf(lead.name || '—')}</strong><span class="muted">${sanitizeForPdf(lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('de-DE') : '—')}</span></div>
+      <div class="muted">${sanitizeForPdf(lead.address || '—')}</div>
+      <div class="muted">${sanitizeForPdf(lead.phone || '—')} · ${sanitizeForPdf(lead.email || '—')}</div>
+      <div class="muted">Wunschtermin: ${sanitizeForPdf(lead.preferredDate || '—')} ${sanitizeForPdf(lead.preferredTimeFrom || '')} ${lead.preferredTimeTo ? '– ' + sanitizeForPdf(lead.preferredTimeTo) : ''}</div>
+      <div class="muted">Erstbestellung: ${itemCount} Artikel · € ${total.toFixed(2).replace('.', ',')}</div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="small" type="button" data-nk-delete="${lead.idAuto}">🗑️</button></div>
+    `;
+    card.querySelector('[data-nk-delete]')?.addEventListener('click', async ()=>{
+      if(!confirm('Neukunden-Eintrag löschen?')) return;
+      await idbDelete('neukundenLeads', lead.idAuto);
+      await renderNeukundenLeads();
+      await triggerAutoBackup('neukunden_deleted');
+    });
+    neukundenLeadsList.appendChild(card);
+  });
+}
+
 async function ensureCustomerAgreementsStore(){
   const db = await openDb();
   if(db.objectStoreNames.contains('customerAgreements')) return;
@@ -793,6 +873,7 @@ function createCustomerEditModal(){
     editingCustomerAgreementId = null;
     await renderCustomerAgreements();
     await renderCustomerAddressSuggestions('');
+    await renderNeukundenLeads();
     await triggerAutoBackup('customer_agreement_saved');
   });
 
@@ -1611,6 +1692,40 @@ bindById('clearBtn', 'click', ()=>{
   document.getElementById('vertretung').checked=false; document.getElementById('fahrt45').checked=false; document.getElementById('einbringung').checked=false;
 });
 
+
+const saveNeukundeBtn = document.getElementById('saveNeukundeBtn');
+if(saveNeukundeBtn){
+  saveNeukundeBtn.addEventListener('click', async ()=>{
+    const lead = {
+      name: (document.getElementById('nkName')?.value || '').trim(),
+      address: (document.getElementById('nkAddress')?.value || '').trim(),
+      phone: (document.getElementById('nkPhone')?.value || '').trim(),
+      email: (document.getElementById('nkEmail')?.value || '').trim(),
+      preferredDate: document.getElementById('nkPreferredDate')?.value || '',
+      preferredTimeFrom: document.getElementById('nkPreferredTimeFrom')?.value || '',
+      preferredTimeTo: document.getElementById('nkPreferredTimeTo')?.value || '',
+      items: getNeukundenLeadItems(),
+      createdAt: new Date().toISOString()
+    };
+
+    if(!lead.name){
+      alert('Bitte mindestens den Namen des Neukunden eingeben.');
+      return;
+    }
+
+    await ensureNeukundenLeadsStore();
+    await idbAdd('neukundenLeads', lead);
+    clearNeukundenForm();
+    await renderNeukundenLeads();
+    await triggerAutoBackup('neukunden_saved');
+  });
+}
+
+const clearNeukundeBtn = document.getElementById('clearNeukundeBtn');
+if(clearNeukundeBtn){
+  clearNeukundeBtn.addEventListener('click', ()=> clearNeukundenForm());
+}
+
 saveCustomerAgreementBtn = document.getElementById('saveCustomerAgreement');
 if(saveCustomerAgreementBtn){
   saveCustomerAgreementBtn.addEventListener('click', async ()=>{
@@ -1667,6 +1782,7 @@ if(saveCustomerAgreementBtn){
     clearCustomerAgreementForm();
     await renderCustomerAgreements();
     await renderCustomerAddressSuggestions('');
+    await renderNeukundenLeads();
     await triggerAutoBackup('customer_agreement_saved');
   });
 }
@@ -3930,6 +4046,7 @@ export async function init(){
   try {
     await renderCustomerAgreements();
     await renderCustomerAddressSuggestions('');
+    await renderNeukundenLeads();
   } catch (err) {
     console.error('Kundenbereich konnte nicht initialisiert werden.', err);
   }
