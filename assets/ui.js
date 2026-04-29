@@ -621,11 +621,15 @@ async function renderNeukundenLeads(){
     const total = (lead.items || []).reduce((sum, item)=> sum + (Number(item.qty || 0) * Number(item.price || 0)), 0);
     const card = document.createElement('details');
     card.className = 'card neukunden-tile';
+    const itemsList = (lead.items || []).length
+      ? `<ul class="neukunden-items-list">${(lead.items || []).map((item, idx)=> `<li><span>${idx + 1}. ${sanitizeForPdf(item.articleNumber || '—')}</span><strong>${Number(item.qty || 0)} × € ${Number(item.price || 0).toFixed(2).replace('.', ',')}</strong></li>`).join('')}</ul>`
+      : '<div class="muted">Keine Positionen erfasst.</div>';
     card.innerHTML = `<summary><strong>${sanitizeForPdf(formatNkFullName(lead))}</strong><span class="muted">${sanitizeForPdf(lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('de-DE') : '—')}</span></summary>
       <div class="muted">${sanitizeForPdf(formatNkAddress(lead))}</div>
       <div class="muted">${sanitizeForPdf(lead.phone || '—')} · ${sanitizeForPdf(lead.email || '—')}</div>
       <div class="muted">Wunschtermin: ${sanitizeForPdf(lead.preferredDate || '—')} ${sanitizeForPdf(lead.preferredTimeFrom || '')} ${lead.preferredTimeTo ? '– ' + sanitizeForPdf(lead.preferredTimeTo) : ''}</div>
       <div class="muted">Erstbestellung: ${itemCount} Artikel · € ${total.toFixed(2).replace('.', ',')}</div>
+      ${itemsList}
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px"><button class="small" type="button" data-nk-print="${lead.idAuto}">🖨️</button><button class="small" type="button" data-nk-edit="${lead.idAuto}">✏️</button><button class="small" type="button" data-nk-delete="${lead.idAuto}">🗑️</button></div>`;
 
     card.querySelector('[data-nk-print]')?.addEventListener('click', async (ev)=>{ ev.preventDefault(); await printNeukundenLeads(lead.idAuto); });
