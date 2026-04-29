@@ -1,5 +1,5 @@
 const DB_NAME = 'provisionDB_v1';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 let dbPromise = null;
 
 function ensureStores(db) {
@@ -14,6 +14,9 @@ function ensureStores(db) {
   }
   if (!db.objectStoreNames.contains('customerAgreements')) {
     db.createObjectStore('customerAgreements', { keyPath: 'idAuto', autoIncrement: true });
+  }
+  if (!db.objectStoreNames.contains('neukundenLeads')) {
+    db.createObjectStore('neukundenLeads', { keyPath: 'idAuto', autoIncrement: true });
   }
 }
 
