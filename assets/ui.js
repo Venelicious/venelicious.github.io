@@ -486,18 +486,39 @@ function createNeukundenPositionRow(articleNumber = '', price = '', qty = ''){
   delBtn.textContent = 'x';
   delBtn.addEventListener('click', ()=>{
     row.remove();
-    syncNeukundenPositionsCount();
+    updateNeukundenItemsSummary();
   });
+
+  const refreshSummary = ()=> updateNeukundenItemsSummary();
+  priceInput.addEventListener('input', refreshSummary);
+  qtyInput.addEventListener('input', refreshSummary);
 
   row.append(articleInput, priceInput, qtyInput, delBtn);
   return row;
 }
 
-function syncNeukundenPositionsCount(){
-  const countInput = document.getElementById('nkItemsCount');
+function updateNeukundenItemsSummary(){
   const list = document.getElementById('nkItemsList');
-  if(!countInput || !list) return;
-  countInput.value = String(list.querySelectorAll('.neukunden-position-row').length);
+  const summaryCount = document.getElementById('nkItemsSummaryCount');
+  const summaryTotal = document.getElementById('nkItemsSummaryTotal');
+  if(!list || !summaryCount || !summaryTotal) return;
+
+  const rows = Array.from(list.querySelectorAll('.neukunden-position-row'));
+  const totalArticles = rows.reduce((sum, row)=>{
+    const qtyVal = Number(row.querySelector('.nkQty')?.value || 0);
+    return sum + (Number.isFinite(qtyVal) ? qtyVal : 0);
+  }, 0);
+
+  const totalPrice = rows.reduce((sum, row)=>{
+    const qtyVal = Number(row.querySelector('.nkQty')?.value || 0);
+    const priceVal = Number(row.querySelector('.nkPrice')?.value || 0);
+    const safeQty = Number.isFinite(qtyVal) ? qtyVal : 0;
+    const safePrice = Number.isFinite(priceVal) ? priceVal : 0;
+    return sum + (safeQty * safePrice);
+  }, 0);
+
+  summaryCount.textContent = String(totalArticles);
+  summaryTotal.textContent = `€ ${totalPrice.toFixed(2).replace('.', ',')}`;
 }
 
 bindById('addNkItemBtn', 'click', (event)=>{
@@ -505,7 +526,7 @@ bindById('addNkItemBtn', 'click', (event)=>{
   const list = document.getElementById('nkItemsList');
   if(!list) return;
   list.appendChild(createNeukundenPositionRow());
-  syncNeukundenPositionsCount();
+  updateNeukundenItemsSummary();
 });
 
 async function ensureCustomerAgreementsStore(){

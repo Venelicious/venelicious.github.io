@@ -439,7 +439,7 @@
     <div class="panelHeader">
       <div>
         <h3>Neukunden erfassen</h3>
-        <p class="muted">Erfasse Kontaktdaten von Neukunden und deren Erstbestellung mit beliebig vielen Positionen (N).</p>
+        <p class="muted">Erfasse Kontaktdaten von Neukunden, Wunschtermin und deren Erstbestellung mit beliebig vielen Positionen.</p>
       </div>
     </div>
 
@@ -461,17 +461,31 @@
       </label>
     </div>
 
+
+    <div class="row">
+      <label>Wunschtermin Datum
+        <input id="nkPreferredDate" type="date" />
+      </label>
+      <label>Uhrzeit von
+        <input id="nkPreferredTimeFrom" type="time" />
+      </label>
+      <label>Uhrzeit bis
+        <input id="nkPreferredTimeTo" type="time" />
+      </label>
+    </div>
+
     <hr/>
     <h4>Erstbestellung</h4>
-    <p class="muted">Positionen: Artikelnummer, Preis und Anzahl. Die Anzahl N ergibt sich aus den Zeilen.</p>
-
-    <label>Anzahl Positionen (N)
-      <input id="nkItemsCount" type="number" min="0" value="0" readonly />
-    </label>
+    <p class="muted">Positionen: Artikelnummer, Preis und Anzahl.</p>
 
     <div id="nkItemsList" class="actions-list"></div>
     <div class="controls">
       <button id="addNkItemBtn" class="small" type="button" aria-label="Position hinzufügen" title="Position hinzufügen">➕ Position</button>
+    </div>
+
+    <div class="summary" style="margin-top:10px">
+      <div class="sum-row"><span>Artikel gesamt</span><span id="nkItemsSummaryCount">0</span></div>
+      <div class="sum-row"><span>Gesamtpreis</span><span id="nkItemsSummaryTotal">€ 0,00</span></div>
     </div>
   </div>
 </section>
