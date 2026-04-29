@@ -95,6 +95,7 @@
     <button type="button" id="tabWorktime" class="tabButton" data-section-id="sectionWorktime">Arbeitszeit</button>
     <button type="button" id="tabStats" class="tabButton" data-section-id="sectionStats">Statistik</button>
     <button type="button" id="tabCustomers" class="tabButton" data-section-id="sectionCustomers">Kunden</button>
+    <button type="button" id="tabNeukunden" class="tabButton" data-section-id="sectionNeukunden">Neukunden</button>
     <button type="button" id="tabSettings" class="tabButton" data-section-id="sectionSettings">Einstellungen</button>
     <button type="button" id="tabBackups" class="tabButton" data-section-id="sectionBackups">Backups</button>
     <button type="button" id="tabExport" class="tabButton" data-section-id="sectionExport">Export</button>
@@ -430,6 +431,48 @@
     <p class="muted" style="margin-top:6px">Beim Drucken werden Kundendaten nach „Gültig ab" im gewählten Zeitraum gefiltert.</p>
 
     <div id="customerAgreementsList" class="customer-agreements-list" style="margin-top:12px"></div>
+  </div>
+</section>
+
+<section id="sectionNeukunden" class="tabSection">
+  <div class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3>Neukunden erfassen</h3>
+        <p class="muted">Erfasse Kontaktdaten von Neukunden und deren Erstbestellung mit beliebig vielen Positionen (N).</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Name
+        <input id="nkName" placeholder="z.B. Max Mustermann" />
+      </label>
+      <label>Adresse
+        <input id="nkAddress" placeholder="z.B. Musterstraße 12, 12345 Musterstadt" />
+      </label>
+    </div>
+
+    <div class="row">
+      <label>Telefonnummer
+        <input id="nkPhone" type="tel" placeholder="z.B. 0151 12345678" />
+      </label>
+      <label>E-Mail-Adresse
+        <input id="nkEmail" type="email" placeholder="z.B. max@beispiel.de" />
+      </label>
+    </div>
+
+    <hr/>
+    <h4>Erstbestellung</h4>
+    <p class="muted">Positionen: Artikelnummer, Preis und Anzahl. Die Anzahl N ergibt sich aus den Zeilen.</p>
+
+    <label>Anzahl Positionen (N)
+      <input id="nkItemsCount" type="number" min="0" value="0" readonly />
+    </label>
+
+    <div id="nkItemsList" class="actions-list"></div>
+    <div class="controls">
+      <button id="addNkItemBtn" class="small" type="button" aria-label="Position hinzufügen" title="Position hinzufügen">➕ Position</button>
+    </div>
   </div>
 </section>
 

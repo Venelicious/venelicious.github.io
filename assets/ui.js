@@ -199,9 +199,10 @@ const NAVIGATION_STRUCTURE = [
   { index: 4, tabId: 'tabWorktime', sectionId: 'sectionWorktime', label: 'Arbeitszeit' },
   { index: 5, tabId: 'tabStats', sectionId: 'sectionStats', label: 'Statistik' },
   { index: 6, tabId: 'tabCustomers', sectionId: 'sectionCustomers', label: 'Kunden' },
-  { index: 7, tabId: 'tabSettings', sectionId: 'sectionSettings', label: 'Einstellungen' },
-  { index: 8, tabId: 'tabBackups', sectionId: 'sectionBackups', label: 'Backups' },
-  { index: 9, tabId: 'tabExport', sectionId: 'sectionExport', label: 'Export' }
+  { index: 7, tabId: 'tabNeukunden', sectionId: 'sectionNeukunden', label: 'Neukunden' },
+  { index: 8, tabId: 'tabSettings', sectionId: 'sectionSettings', label: 'Einstellungen' },
+  { index: 9, tabId: 'tabBackups', sectionId: 'sectionBackups', label: 'Backups' },
+  { index: 10, tabId: 'tabExport', sectionId: 'sectionExport', label: 'Export' }
 ];
 
 const tabTargets = Object.fromEntries(NAVIGATION_STRUCTURE.map(item => [item.tabId, item.sectionId]));
@@ -453,6 +454,58 @@ bindById('addActionBtn', 'click', (e)=>{
   }));
   renderActionsList([...existing, { price: p, qty: q }], list);
   document.getElementById('actPrice').value=''; document.getElementById('actQty').value='';
+});
+
+function createNeukundenPositionRow(articleNumber = '', price = '', qty = ''){
+  const row = document.createElement('div');
+  row.className = 'action-row neukunden-position-row';
+
+  const articleInput = document.createElement('input');
+  articleInput.className = 'nkArticle';
+  articleInput.placeholder = 'Artikelnummer';
+  articleInput.value = articleNumber;
+
+  const priceInput = document.createElement('input');
+  priceInput.className = 'nkPrice';
+  priceInput.type = 'number';
+  priceInput.step = '0.01';
+  priceInput.placeholder = 'Preis €';
+  priceInput.value = price;
+
+  const qtyInput = document.createElement('input');
+  qtyInput.className = 'nkQty';
+  qtyInput.type = 'number';
+  qtyInput.step = '1';
+  qtyInput.min = '1';
+  qtyInput.placeholder = 'Anzahl';
+  qtyInput.value = qty;
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'small delAct';
+  delBtn.type = 'button';
+  delBtn.textContent = 'x';
+  delBtn.addEventListener('click', ()=>{
+    row.remove();
+    syncNeukundenPositionsCount();
+  });
+
+  row.append(articleInput, priceInput, qtyInput, delBtn);
+  return row;
+}
+
+function syncNeukundenPositionsCount(){
+  const countInput = document.getElementById('nkItemsCount');
+  const list = document.getElementById('nkItemsList');
+  if(!countInput || !list) return;
+  countInput.value = String(list.querySelectorAll('.neukunden-position-row').length);
+}
+
+bindById('addNkItemBtn', 'click', (event)=>{
+  event.preventDefault();
+  const list = document.getElementById('nkItemsList');
+  if(!list) return;
+  list.appendChild(createNeukundenPositionRow());
+  syncNeukundenPositionsCount();
 });
 
 async function ensureCustomerAgreementsStore(){
