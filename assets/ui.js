@@ -589,6 +589,16 @@ async function renderNeukundenLeads(){
   leads.forEach((lead)=>{
     const itemCount = (lead.items || []).reduce((sum, item)=> sum + Number(item.qty || 0), 0);
     const total = (lead.items || []).reduce((sum, item)=> sum + (Number(item.qty || 0) * Number(item.price || 0)), 0);
+    const itemsOverview = (lead.items || [])
+      .filter((item)=> item && (item.articleNumber || Number(item.qty || 0) > 0 || Number(item.price || 0) > 0))
+      .map((item, index)=>{
+        const article = sanitizeForPdf(item.articleNumber || '—');
+        const qty = Number(item.qty || 0);
+        const price = Number(item.price || 0).toFixed(2).replace('.', ',');
+        return `${index + 1}. ${article} · ${qty} × € ${price}`;
+      })
+      .join('<br>');
+
     const card = document.createElement('article');
     card.className = 'card';
     card.innerHTML = `
@@ -597,6 +607,7 @@ async function renderNeukundenLeads(){
       <div class="muted">${sanitizeForPdf(lead.phone || '—')} · ${sanitizeForPdf(lead.email || '—')}</div>
       <div class="muted">Wunschtermin: ${sanitizeForPdf(lead.preferredDate || '—')} ${sanitizeForPdf(lead.preferredTimeFrom || '')} ${lead.preferredTimeTo ? '– ' + sanitizeForPdf(lead.preferredTimeTo) : ''}</div>
       <div class="muted">Erstbestellung: ${itemCount} Artikel · € ${total.toFixed(2).replace('.', ',')}</div>
+      <div class="muted neukunden-items-overview">${itemsOverview || 'Positionen: —'}</div>
       <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="small" type="button" data-nk-delete="${lead.idAuto}">🗑️</button></div>
     `;
     card.querySelector('[data-nk-delete]')?.addEventListener('click', async ()=>{
