@@ -487,6 +487,14 @@
       <div class="sum-row"><span>Artikel gesamt</span><span id="nkItemsSummaryCount">0</span></div>
       <div class="sum-row"><span>Gesamtpreis</span><span id="nkItemsSummaryTotal">€ 0,00</span></div>
     </div>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="saveNeukundeBtn" class="small" type="button" aria-label="Neukunden speichern" title="Neukunden speichern">💾</button>
+      <button id="clearNeukundeBtn" class="small" type="button" aria-label="Neukundenformular leeren" title="Neukundenformular leeren">🧹</button>
+    </div>
+
+    <h4 style="margin-top:14px">Gespeicherte Neukunden</h4>
+    <div id="nkLeadsList" class="customer-agreements-list"></div>
   </div>
 </section>
 
