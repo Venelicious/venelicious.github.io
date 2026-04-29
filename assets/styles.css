@@ -338,7 +338,14 @@ tbody tr:hover {
 th[data-sort] { cursor: pointer; }
 th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,255,0.85); }
 
+
 .muted { color: var(--muted); font-size: 0.9rem; }
+
+.neukunden-items-overview {
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
 
 .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 
