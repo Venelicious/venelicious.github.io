@@ -862,5 +862,28 @@ th[data-sort]::after { content: " ⇅"; font-size: 0.75rem; color: rgba(255,255,
   list-style:none;
 }
 .neukunden-tile summary::-webkit-details-marker{display:none;}
-.neukunden-tile{padding:10px;}
+.neukunden-tile{
+  padding:10px;
+  border:1px solid #b9d3ff;
+  border-radius:8px;
+  background:linear-gradient(180deg, #eef5ff 0%, #e3efff 100%);
+  box-shadow:0 8px 16px rgba(16, 66, 148, 0.12);
+}
 .neukunden-tile > *:not(summary){margin-top:6px;}
+.neukunden-items-list{
+  margin:8px 0 0;
+  padding:0;
+  list-style:none;
+  border:1px solid #cfe2ff;
+  border-radius:6px;
+  background:#fff;
+}
+.neukunden-items-list li{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 8px;
+  border-top:1px solid #e3edff;
+}
+.neukunden-items-list li:first-child{border-top:none;}
+.neukunden-items-list strong{white-space:nowrap;color:#0f2f78;}
