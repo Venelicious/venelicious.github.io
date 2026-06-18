@@ -120,6 +120,10 @@
         <label>Datum
           <input id="date" type="date"/>
         </label>
+        <div class="date-period-tools">
+          <button id="syncPeriodFromDate" type="button" class="small">Monat/Jahr aus Datum</button>
+          <label class="inlineCheckbox"><input id="autoSyncPeriodFromDate" type="checkbox" checked/> automatisch übernehmen</label>
+        </div>
       </div>
       <div>
         <label>Umsatz

@@ -47,6 +47,8 @@ const statsRangeToInput = document.getElementById('statsRangeTo');
 const statsRangeResetBtn = document.getElementById('statsRangeReset');
 let statsRangeApplyBtn = document.getElementById('statsRangeApply');
 const statsPeriodHint = document.getElementById('statsPeriodHint');
+const syncPeriodFromDateBtn = document.getElementById('syncPeriodFromDate');
+const autoSyncPeriodFromDateCheckbox = document.getElementById('autoSyncPeriodFromDate');
 const customerAddressSuggestionMap = new Map();
 let editingCustomerAgreementId = null;
 let saveCustomerAgreementBtn;
@@ -91,6 +93,24 @@ function normalizeDateValue(value){
   if(!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0,10);
 
   return new Date().toISOString().slice(0,10);
+}
+
+function applyPeriodFromDate(dateValue, { shouldRender = true } = {}){
+  if(!selectMonth || !selectYear) return;
+  const normalizedDate = normalizeDateValue(dateValue);
+  const parsed = new Date(normalizedDate);
+  if(Number.isNaN(parsed.getTime())) return;
+
+  selectMonth.value = String(parsed.getMonth() + 1).padStart(2,'0');
+  selectYear.value = String(parsed.getFullYear());
+  syncStatsRangeToMonth();
+
+  if(shouldRender){
+    renderTours();
+    if(document.getElementById('sectionSettings')?.classList.contains('active')){
+      populateSettingsSection();
+    }
+  }
 }
 
 function normalizePeriodValue(period, dateValue){
@@ -1629,7 +1649,10 @@ csvInput.addEventListener('change', async (ev) => {
         } catch(_) { actions = []; }
       }
     }
-    const t = {
+    const month = selectMonth.value;
+  const year = selectYear.value;
+
+  const t = {
       date: parts[idx.date] || new Date().toISOString().slice(0,10),
       id: parts[idx.id] || '—',
       tourType: parts[idx.art] || 'tourentag',
@@ -1661,11 +1684,18 @@ csvInput.addEventListener('change', async (ev) => {
 
 /* ========== Tour aus Formular speichern ========== */
 bindById('addBtn', 'click', async ()=>{
+  const dateValue = document.getElementById('date').value || new Date().toISOString().slice(0,10);
+  const normalizedDateValue = normalizeDateValue(dateValue);
+  if(autoSyncPeriodFromDateCheckbox?.checked){
+    applyPeriodFromDate(normalizedDateValue, { shouldRender: false });
+  }
+
   const month = selectMonth.value;
   const year = selectYear.value;
+
   const t = {
     id: document.getElementById('tourId').value || '—',
-    date: document.getElementById('date').value || new Date().toISOString().slice(0,10),
+    date: normalizedDateValue,
     amount: readDecimalInput('amount'),
     umsatzvorgabe: readDecimalInput('umsatzvorgabe'),
     reklamation: readDecimalInput('reklamation'),
@@ -4062,6 +4092,20 @@ export async function init(){
       closeSideMenu();
     });
   });
+
+  if(dateInput){
+    dateInput.addEventListener('change', ()=>{
+      if(autoSyncPeriodFromDateCheckbox?.checked){
+        applyPeriodFromDate(dateInput.value);
+      }
+    });
+  }
+
+  if(syncPeriodFromDateBtn){
+    syncPeriodFromDateBtn.addEventListener('click', ()=>{
+      applyPeriodFromDate(dateInput?.value);
+    });
+  }
 
   if(selectMonth){
     selectMonth.addEventListener('change', ()=> {
